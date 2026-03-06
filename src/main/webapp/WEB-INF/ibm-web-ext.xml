@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Configuracion especifica de IBM WebSphere Application Server 9.
+    Define el context root y el class loader de la aplicacion.
+-->
+<web-ext
+    xmlns="http://websphere.ibm.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://websphere.ibm.com/xml/ns/javaee
+                        http://websphere.ibm.com/xml/ns/javaee/ibm-web-ext_1_1.xsd"
+    version="1.1">
+
+    <!-- Context root de la aplicacion en WAS -->
+    <context-root uri="/was9-spring-app"/>
+
+    <!-- Habilitar recarga automatica si cambian clases -->
+    <enable-reloading value="true"/>
+
+</web-ext>

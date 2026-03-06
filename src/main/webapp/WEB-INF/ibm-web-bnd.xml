@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Binding de recursos JNDI para WAS 9.
+    Asocia los resource-ref del web.xml con los recursos reales configurados en WAS.
+-->
+<web-bnd
+    xmlns="http://websphere.ibm.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://websphere.ibm.com/xml/ns/javaee
+                        http://websphere.ibm.com/xml/ns/javaee/ibm-web-bnd_1_2.xsd"
+    version="1.2">
+
+    <!-- Binding del DataSource JNDI definido en applicationContext.xml -->
+    <!-- El nombre 'jdbc/AppDataSource' debe coincidir con el DataSource
+         configurado en la consola administrativa de WAS 9 -->
+    <resource-ref name="jdbc/AppDataSource"
+                  binding-name="jdbc/AppDataSource"/>
+
+</web-bnd>
