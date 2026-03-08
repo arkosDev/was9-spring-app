@@ -2,14 +2,19 @@ package com.empresa.api.struts.action;
 
 import com.empresa.api.dto.ProductoDTO;
 import com.empresa.api.service.ProductoService;
+import com.empresa.api.struts.form.ProductoForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
- * Action Struts 2 para el CRUD de Productos via vistas JSP.
- * Reutiliza ProductoService (Spring) sin duplicar logica de negocio.
+ * Action Struts 2 para el CRUD de Productos.
+ *
+ * Sigue el patrón ActionForm de Struts 1 usando ProductoForm como form bean:
+ *   - ProductoForm agrupa los campos del formulario HTML
+ *   - Struts 2 los popula automáticamente via OGNL (name="form.campo")
+ *   - El Action convierte el form a DTO antes de llamar al servicio
  *
  * URLs (namespace /views/producto):
  *   /views/producto/listar.action
@@ -21,14 +26,21 @@ import java.util.List;
 @Component
 public class ProductoAction extends BaseAction {
 
+    // --- Servicio inyectado por Spring ---
     @Autowired
     private ProductoService productoService;
 
-    private ProductoDTO     producto = new ProductoDTO();
-    private Long            id;
-    private List<ProductoDTO> productos;
+    // --- Form bean (equivalente a ActionForm de Struts 1) ---
+    // Struts 2 popula sus campos via OGNL desde los parámetros HTTP
+    private ProductoForm form = new ProductoForm();
 
-    // ---- LISTAR ----
+    // --- Datos para las vistas ---
+    private List<ProductoDTO> productos;
+    private Long id;
+
+    // =========================================================
+    // LISTAR
+    // =========================================================
     public String listar() {
         try {
             productos = productoService.listarActivos();
@@ -40,19 +52,24 @@ public class ProductoAction extends BaseAction {
         }
     }
 
-    // ---- NUEVO (formulario vacío) ----
+    // =========================================================
+    // NUEVO — muestra el formulario vacío
+    // =========================================================
     public String nuevo() {
-        producto = new ProductoDTO();
+        form.reset();
         return SUCCESS;
     }
 
-    // ---- GUARDAR (crear o actualizar) ----
+    // =========================================================
+    // GUARDAR — crea o actualiza usando datos del form bean
+    // =========================================================
     public String guardar() {
         try {
-            if (producto.getId() == null) {
-                productoService.crear(producto);
+            ProductoDTO dto = formToDTO();
+            if (dto.getId() == null) {
+                productoService.crear(dto);
             } else {
-                productoService.actualizar(producto.getId(), producto);
+                productoService.actualizar(dto.getId(), dto);
             }
             getSession().put("flash", "Producto guardado correctamente");
             return SUCCESS;
@@ -63,10 +80,13 @@ public class ProductoAction extends BaseAction {
         }
     }
 
-    // ---- EDITAR (carga datos) ----
+    // =========================================================
+    // EDITAR — carga datos en el form bean para pre-poblar el HTML
+    // =========================================================
     public String editar() {
         try {
-            producto = productoService.obtenerPorId(id);
+            ProductoDTO dto = productoService.obtenerPorId(id);
+            dtoToForm(dto);
             return SUCCESS;
         } catch (Exception e) {
             log.warn("Producto {} no encontrado", id);
@@ -74,7 +94,9 @@ public class ProductoAction extends BaseAction {
         }
     }
 
-    // ---- ELIMINAR ----
+    // =========================================================
+    // ELIMINAR
+    // =========================================================
     public String eliminar() {
         try {
             productoService.eliminar(id);
@@ -87,20 +109,54 @@ public class ProductoAction extends BaseAction {
         }
     }
 
-    // ---- Validacion Struts 2 para guardar() ----
+    // =========================================================
+    // Validacion Struts 2 — se ejecuta antes de guardar()
+    // Equivale a ActionForm.validate() de Struts 1
+    // =========================================================
     public void validateGuardar() {
-        if (producto.getNombre() == null || producto.getNombre().trim().isEmpty())
-            addFieldError("producto.nombre", "El nombre es requerido");
-        if (producto.getPrecio() == null || producto.getPrecio() < 0)
-            addFieldError("producto.precio", "El precio debe ser >= 0");
-        if (producto.getStock() == null || producto.getStock() < 0)
-            addFieldError("producto.stock", "El stock debe ser >= 0");
+        if (form.getNombre() == null || form.getNombre().trim().isEmpty())
+            addFieldError("form.nombre", "El nombre es requerido");
+
+        if (form.getPrecioAsDouble() == null)
+            addFieldError("form.precio", "El precio debe ser un número >= 0");
+        else if (form.getPrecioAsDouble() < 0)
+            addFieldError("form.precio", "El precio no puede ser negativo");
+
+        if (form.getStockAsInteger() == null)
+            addFieldError("form.stock", "El stock debe ser un número entero >= 0");
+        else if (form.getStockAsInteger() < 0)
+            addFieldError("form.stock", "El stock no puede ser negativo");
     }
 
-    // ---- Getters / Setters ----
-    public List<ProductoDTO> getProductos()         { return productos; }
-    public ProductoDTO       getProducto()           { return producto; }
-    public void              setProducto(ProductoDTO p) { this.producto = p; }
-    public Long              getId()                 { return id; }
-    public void              setId(Long id)          { this.id = id; }
+    // =========================================================
+    // Helpers de conversión form <-> DTO
+    // =========================================================
+    private ProductoDTO formToDTO() {
+        ProductoDTO dto = new ProductoDTO();
+        dto.setId(form.getId());
+        dto.setNombre(form.getNombre());
+        dto.setDescripcion(form.getDescripcion());
+        dto.setPrecio(form.getPrecioAsDouble());
+        dto.setStock(form.getStockAsInteger());
+        dto.setCategoria(form.getCategoria());
+        return dto;
+    }
+
+    private void dtoToForm(ProductoDTO dto) {
+        form.setId(dto.getId());
+        form.setNombre(dto.getNombre());
+        form.setDescripcion(dto.getDescripcion());
+        form.setPrecio(dto.getPrecio() != null ? String.valueOf(dto.getPrecio()) : "");
+        form.setStock(dto.getStock() != null ? String.valueOf(dto.getStock()) : "");
+        form.setCategoria(dto.getCategoria());
+    }
+
+    // =========================================================
+    // Getters / Setters
+    // =========================================================
+    public ProductoForm       getForm()               { return form; }
+    public void               setForm(ProductoForm f) { this.form = f; }
+    public List<ProductoDTO>  getProductos()          { return productos; }
+    public Long               getId()                 { return id; }
+    public void               setId(Long id)          { this.id = id; }
 }

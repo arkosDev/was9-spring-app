@@ -13,7 +13,7 @@
     <constant name="struts.objectFactory"                 value="spring"/>
     <constant name="struts.objectFactory.spring.autoWire" value="name"/>
 
-    <!-- Paquete base — namespace /views -->
+    <!-- Paquete base -->
     <package name="base" namespace="/views" extends="struts-default">
 
         <global-results>
@@ -28,20 +28,29 @@
     <!-- Productos -->
     <package name="producto" namespace="/views/producto" extends="base">
 
+        <!--
+            form-class declara explicitamente el form bean de cada action,
+            equivalente al form-bean de struts-config.xml en Struts 1.
+            Struts 2 lo popula via OGNL antes de ejecutar el method.
+        -->
+
         <action name="listar" class="com.empresa.api.struts.action.ProductoAction" method="listar">
             <result name="success">/WEB-INF/views/struts/producto/lista.jsp</result>
         </action>
 
         <action name="nuevo" class="com.empresa.api.struts.action.ProductoAction" method="nuevo">
+            <param name="form-class">com.empresa.api.struts.form.ProductoForm</param>
             <result name="success">/WEB-INF/views/struts/producto/form.jsp</result>
         </action>
 
         <action name="guardar" class="com.empresa.api.struts.action.ProductoAction" method="guardar">
+            <param name="form-class">com.empresa.api.struts.form.ProductoForm</param>
             <result name="success"  type="redirect">/views/producto/listar.action</result>
-            <result name="input">   /WEB-INF/views/struts/producto/form.jsp</result>
+            <result name="input">/WEB-INF/views/struts/producto/form.jsp</result>
         </action>
 
         <action name="editar" class="com.empresa.api.struts.action.ProductoAction" method="editar">
+            <param name="form-class">com.empresa.api.struts.form.ProductoForm</param>
             <result name="success">/WEB-INF/views/struts/producto/form.jsp</result>
             <result name="notFound" type="redirect">/views/producto/listar.action</result>
         </action>

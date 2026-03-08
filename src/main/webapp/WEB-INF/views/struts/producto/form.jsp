@@ -3,7 +3,7 @@
 <%@ include file="/WEB-INF/views/struts/common/layout-header.jsp" %>
 
 <div class="ph">
-    <h1><s:if test="producto.id != null">Editar Producto</s:if><s:else>Nuevo Producto</s:else></h1>
+    <h1><s:if test="form.id != null">Editar Producto</s:if><s:else>Nuevo Producto</s:else></h1>
     <a href="${pageContext.request.contextPath}/views/producto/listar.action" class="btn btn-sec">&larr; Volver</a>
 </div>
 
@@ -12,44 +12,49 @@
 </s:if>
 
 <div class="fc">
+    <%--
+        Los campos usan name="form.campo"
+        Struts 2 llama a ProductoAction.getForm().setCampo(valor) via OGNL
+        — mismo comportamiento que ActionForm.setCampo() en Struts 1
+    --%>
     <s:form action="guardar" method="post" theme="simple">
 
-        <s:hidden name="producto.id"/>
+        <s:hidden name="form.id"/>
 
         <div class="fr">
             <div class="fg">
                 <label>Nombre *</label>
-                <s:textfield name="producto.nombre"/>
-                <s:fielderror fieldName="producto.nombre" cssClass="fe"/>
+                <s:textfield name="form.nombre"/>
+                <s:fielderror fieldName="form.nombre" cssClass="fe"/>
             </div>
             <div class="fg">
                 <label>Categoría</label>
-                <s:textfield name="producto.categoria"/>
+                <s:textfield name="form.categoria"/>
             </div>
         </div>
 
         <div class="fg">
             <label>Descripción</label>
-            <s:textarea name="producto.descripcion" rows="3"/>
+            <s:textarea name="form.descripcion" rows="3"/>
         </div>
 
         <div class="fr">
             <div class="fg">
                 <label>Precio *</label>
-                <s:textfield name="producto.precio"/>
-                <s:fielderror fieldName="producto.precio" cssClass="fe"/>
+                <s:textfield name="form.precio"/>
+                <s:fielderror fieldName="form.precio" cssClass="fe"/>
             </div>
             <div class="fg">
                 <label>Stock *</label>
-                <s:textfield name="producto.stock"/>
-                <s:fielderror fieldName="producto.stock" cssClass="fe"/>
+                <s:textfield name="form.stock"/>
+                <s:fielderror fieldName="form.stock" cssClass="fe"/>
             </div>
         </div>
 
         <div class="fa">
             <a href="${pageContext.request.contextPath}/views/producto/listar.action" class="btn btn-sec">Cancelar</a>
             <s:submit cssClass="btn btn-pri">
-                <s:if test="producto.id != null">Actualizar</s:if><s:else>Crear</s:else>
+                <s:if test="form.id != null">Actualizar</s:if><s:else>Crear</s:else>
             </s:submit>
         </div>
 
