@@ -1,31 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{30} - %msg%n</pattern>
         </encoder>
     </appender>
-
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${WAS_LOG_DIR:-logs}/was9-spring-app.log</file>
+        <file>${WAS_LOG_DIR:-logs}/api-backend.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${WAS_LOG_DIR:-logs}/was9-spring-app.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <fileNamePattern>${WAS_LOG_DIR:-logs}/api-backend.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>15</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-
-    <logger name="com.empresa.app" level="INFO"/>
+    <logger name="com.empresa.api" level="DEBUG"/>
     <logger name="org.springframework" level="WARN"/>
-    <logger name="org.hibernate" level="WARN"/>
     <logger name="org.hibernate.SQL" level="DEBUG"/>
-
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>
-
 </configuration>

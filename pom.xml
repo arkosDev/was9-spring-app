@@ -7,13 +7,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.empresa</groupId>
-    <artifactId>was9-spring-app</artifactId>
+    <artifactId>api-backend</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <!-- WAR para despliegue en WAS 9 -->
     <packaging>war</packaging>
 
-    <name>WAS9 Spring JEE Application</name>
-    <description>Aplicacion J2EE para WebSphere Application Server 9 con Spring Framework y JEE 3.1</description>
+    <name>API Backend - WAS9 Spring Hibernate</name>
+    <description>API REST J2EE para WebSphere Application Server 9, Spring Framework 5 e Hibernate 5, JDK 8</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -21,30 +20,45 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Spring Framework 5.3.x - ultima version compatible con Java 8 -->
+        <!-- Spring Framework 5.3.x - ultima version LTS compatible con JDK 8 -->
         <spring.version>5.3.39</spring.version>
         <spring.security.version>5.8.16</spring.security.version>
 
-        <!-- JEE 8 API (scope provided - WAS 9 lo provee todo, incluido JPA) -->
+        <!-- JEE 8 (scope provided - WAS 9 lo suministra) -->
         <jee.version>8.0.1</jee.version>
         <servlet.api.version>4.0.1</servlet.api.version>
-        <jax.rs.version>2.1.6</jax.rs.version>
-        <jpa.version>2.2</jpa.version>
-        <cdi.version>2.0</cdi.version>
-        <bean.validation.version>2.0.1.Final</bean.validation.version>
+        <jpa.version>2.2.3</jpa.version>
+        <cdi.version>2.0.2</cdi.version>
+        <bean.validation.version>2.0.2</bean.validation.version>
+
+        <!-- Hibernate ORM 5.6.x - ultima compatible con JPA 2.2 / JDK 8 -->
+        <hibernate.version>5.6.15.Final</hibernate.version>
+        <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
+
+        <!-- Connection Pool -->
+        <hikari.version>4.0.3</hikari.version>
+
+        <!-- JWT -->
+        <jjwt.version>0.9.1</jjwt.version>
+
+        <!-- Jackson -->
+        <jackson.version>2.15.4</jackson.version>
 
         <!-- Logging -->
         <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.13</logback.version>
 
-        <!-- Jackson - ultima version compatible con Java 8 -->
-        <jackson.version>2.15.4</jackson.version>
+        <!-- Struts 2 - ultima version compatible con JDK 8 / JEE 8 -->
+        <struts2.version>2.5.33</struts2.version>
+
+        <!-- JSTL -->
+        <jstl.version>1.2</jstl.version>
 
         <!-- Test -->
         <junit.version>4.13.2</junit.version>
         <mockito.version>3.12.4</mockito.version>
 
-        <!-- Maven plugins -->
+        <!-- Plugins -->
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
     </properties>
@@ -52,7 +66,7 @@
     <dependencies>
 
         <!-- ==========================================
-             JEE 8 API (scope provided - WAS 9 lo provee)
+             JEE 8 API - scope provided (WAS 9 los suministra)
              ========================================== -->
         <dependency>
             <groupId>javax</groupId>
@@ -61,7 +75,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Servlet API 4.0 (provisto por WAS 9) -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -69,7 +82,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JPA API (provisto por WAS 9) -->
         <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>javax.persistence-api</artifactId>
@@ -77,15 +89,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- CDI API (provisto por WAS 9) -->
-        <dependency>
-            <groupId>javax.enterprise</groupId>
-            <artifactId>cdi-api</artifactId>
-            <version>${cdi.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Bean Validation (provisto por WAS 9) -->
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
@@ -94,12 +97,18 @@
         </dependency>
 
         <!-- ==========================================
-             Spring Framework Core
+             Spring Framework
              ========================================== -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -108,13 +117,6 @@
             <version>${spring.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <!-- Spring Web MVC -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
@@ -127,21 +129,18 @@
             <version>${spring.version}</version>
         </dependency>
 
-        <!-- Spring TX (Transacciones con JPA del contenedor WAS 9) -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <!-- Spring ORM - integracion con JPA provisto por WAS 9 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
             <version>${spring.version}</version>
         </dependency>
 
-        <!-- Spring AOP -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
@@ -151,7 +150,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.9.22.1</version>
+            <version>1.9.7</version>
         </dependency>
 
         <!-- ==========================================
@@ -176,6 +175,43 @@
         </dependency>
 
         <!-- ==========================================
+             Hibernate ORM 5 (proveedor JPA)
+             ========================================== -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.persistence</groupId>
+                    <artifactId>javax.persistence-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate.validator.version}</version>
+        </dependency>
+
+        <!-- Connection Pool HikariCP (compatible JDK 8) -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikari.version}</version>
+        </dependency>
+
+        <!-- ==========================================
+             JWT (autenticacion stateless para Angular)
+             ========================================== -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <!-- ==========================================
              Jackson (JSON)
              ========================================== -->
         <dependency>
@@ -186,13 +222,7 @@
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
+            <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
         </dependency>
 
@@ -211,7 +241,6 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- Bridging commons-logging (usado por Spring) a SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
@@ -219,7 +248,56 @@
         </dependency>
 
         <!-- ==========================================
-             Testing
+             Struts 2 + Plugin Spring (inyecta beans de Spring en Actions)
+             ========================================== -->
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-core</artifactId>
+            <version>${struts2.version}</version>
+            <!-- Excluir javassist que puede colisionar con Hibernate -->
+            <exclusions>
+                <exclusion>
+                    <groupId>javassist</groupId>
+                    <artifactId>javassist</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Integración Struts 2 + Spring: los Actions son beans de Spring -->
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-spring-plugin</artifactId>
+            <version>${struts2.version}</version>
+        </dependency>
+
+        <!-- Plugin de tiles / convención (opcional pero muy útil) -->
+        <dependency>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-convention-plugin</artifactId>
+            <version>${struts2.version}</version>
+        </dependency>
+
+        <!-- JSTL para JSPs -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>${jstl.version}</version>
+        </dependency>
+
+        <!-- JSP API (provisto por WAS 9) -->
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
+            <version>2.3.3</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ==========================================
+             Test
              ========================================== -->
         <dependency>
             <groupId>junit</groupId>
@@ -245,10 +323,9 @@
     </dependencies>
 
     <build>
-        <finalName>was9-spring-app</finalName>
-
+        <finalName>api-backend</finalName>
         <plugins>
-            <!-- Compiler Plugin -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -260,31 +337,22 @@
                 </configuration>
             </plugin>
 
-            <!-- WAR Plugin - configurado para WAS 9 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven.war.plugin.version}</version>
                 <configuration>
-                    <!-- WAS 9 requiere web.xml -->
                     <failOnMissingWebXml>true</failOnMissingWebXml>
-                    <warName>was9-spring-app</warName>
-                    <!-- Excluir JARs que provee WAS 9 -->
+                    <warName>api-backend</warName>
                     <packagingExcludes>
                         WEB-INF/lib/javax.servlet-api-*.jar,
                         WEB-INF/lib/javaee-api-*.jar,
                         WEB-INF/lib/javax.persistence-api-*.jar,
-                        WEB-INF/lib/cdi-api-*.jar
+                        WEB-INF/lib/validation-api-*.jar
                     </packagingExcludes>
-                    <archive>
-                        <manifestEntries>
-                            <Built-By>Maven</Built-By>
-                        </manifestEntries>
-                    </archive>
                 </configuration>
             </plugin>
 
-            <!-- Surefire para tests JUnit 4 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

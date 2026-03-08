@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+    "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+
+    <!-- ==========================================
+         Configuracion global
+         ========================================== -->
+    <constant name="struts.devMode"                  value="false"/>
+    <constant name="struts.i18n.encoding"            value="UTF-8"/>
+    <constant name="struts.action.extension"         value="action,"/>
+    <constant name="struts.ui.theme"                 value="simple"/>
+
+    <!--
+        CLAVE: Struts 2 delega la creacion de Actions a Spring.
+        El ObjectFactory de Spring permite @Autowired en Actions.
+    -->
+    <constant name="struts.objectFactory"            value="spring"/>
+    <constant name="struts.objectFactory.spring.autoWire" value="name"/>
+
+    <!-- Prefix para el mapeo de URLs de acciones -->
+    <constant name="struts.mapper.alwaysSelectFullNamespace" value="false"/>
+
+    <!-- ==========================================
+         Paquete base de la aplicacion
+         namespace="/views" -> URLs: /views/productos/listar.action
+         ========================================== -->
+    <package name="base" namespace="/views" extends="struts-default">
+
+        <!-- Interceptor stack personalizado con manejo de excepciones -->
+        <interceptors>
+            <interceptor-stack name="appStack">
+                <interceptor-ref name="defaultStack"/>
+            </interceptor-stack>
+        </interceptors>
+        <default-interceptor-ref name="appStack"/>
+
+        <!-- Resultado global para errores no manejados -->
+        <global-results>
+            <result name="error">/WEB-INF/views/struts/common/error.jsp</result>
+            <result name="login" type="redirect">/views/auth/login.action</result>
+        </global-results>
+        <global-exception-mappings>
+            <exception-mapping exception="java.lang.Exception" result="error"/>
+        </global-exception-mappings>
+
+    </package>
+
+    <!-- ==========================================
+         Modulo: Autenticacion (sesion web, independiente del JWT de Angular)
+         ========================================== -->
+    <package name="auth" namespace="/views/auth" extends="base">
+
+        <action name="login" class="com.empresa.api.struts.action.LoginAction">
+            <result name="success"  type="redirect">/views/producto/listar.action</result>
+            <result name="input">   /WEB-INF/views/struts/common/login.jsp</result>
+            <result name="error">   /WEB-INF/views/struts/common/login.jsp</result>
+        </action>
+
+        <action name="logout" class="com.empresa.api.struts.action.LogoutAction">
+            <result name="success" type="redirect">/views/auth/login.action</result>
+        </action>
+
+    </package>
+
+    <!-- ==========================================
+         Modulo: Productos (CRUD con vistas JSP)
+         ========================================== -->
+    <package name="producto" namespace="/views/producto" extends="base">
+
+        <!-- Listar productos -->
+        <action name="listar" class="com.empresa.api.struts.action.ProductoAction" method="listar">
+            <result name="success">/WEB-INF/views/struts/producto/lista.jsp</result>
+        </action>
+
+        <!-- Formulario nuevo producto -->
+        <action name="nuevo" class="com.empresa.api.struts.action.ProductoAction" method="nuevo">
+            <result name="success">/WEB-INF/views/struts/producto/form.jsp</result>
+        </action>
+
+        <!-- Guardar producto (POST) -->
+        <action name="guardar" class="com.empresa.api.struts.action.ProductoAction" method="guardar">
+            <result name="success"  type="redirect">/views/producto/listar.action</result>
+            <result name="input">   /WEB-INF/views/struts/producto/form.jsp</result>
+        </action>
+
+        <!-- Formulario editar producto -->
+        <action name="editar" class="com.empresa.api.struts.action.ProductoAction" method="editar">
+            <result name="success">/WEB-INF/views/struts/producto/form.jsp</result>
+            <result name="notFound" type="redirect">/views/producto/listar.action</result>
+        </action>
+
+        <!-- Eliminar producto -->
+        <action name="eliminar" class="com.empresa.api.struts.action.ProductoAction" method="eliminar">
+            <result name="success" type="redirect">/views/producto/listar.action</result>
+        </action>
+
+    </package>
+
+</struts>

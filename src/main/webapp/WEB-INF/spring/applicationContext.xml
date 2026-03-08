@@ -14,60 +14,61 @@
            http://www.springframework.org/schema/aop
            http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <!-- ==========================================
-         Component Scan (excluye @Controller - los maneja el dispatcher)
-         ========================================== -->
-    <context:component-scan base-package="com.empresa.app">
+    <context:component-scan base-package="com.empresa.api">
         <context:exclude-filter type="annotation"
             expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation"
+            expression="org.springframework.web.bind.annotation.RestController"/>
+        <context:exclude-filter type="annotation"
+            expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
     </context:component-scan>
+    <!--
+        Los Actions de Struts 2 (@Component en com.empresa.api.struts.action)
+        son detectados por el scan anterior y gestionados por Spring.
+        El struts2-spring-plugin los obtiene del ApplicationContext
+        via ObjectFactory de Spring, permitiendo @Autowired en Actions.
+    -->
 
-    <!-- Habilitar anotaciones de configuracion -->
     <context:annotation-config/>
-
-    <!-- Cargar propiedades externas -->
     <context:property-placeholder location="classpath:application.properties"/>
 
     <!-- ==========================================
-         Data Source - usando JNDI de WAS 9
+         DataSource - JNDI WAS 9
          ========================================== -->
     <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-        <property name="jndiName" value="java:comp/env/jdbc/AppDataSource"/>
+        <property name="jndiName" value="java:comp/env/jdbc/ApiDataSource"/>
         <property name="resourceRef" value="true"/>
     </bean>
 
     <!-- ==========================================
-         JPA EntityManagerFactory
-         WAS 9 provee el proveedor JPA (OpenJPA por defecto).
-         Sin Hibernate: se usa el proveedor del contenedor.
+         Hibernate SessionFactory via Spring ORM
          ========================================== -->
-    <bean id="entityManagerFactory"
-          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
-        <property name="packagesToScan" value="com.empresa.app.model"/>
-        <!-- Sin jpaVendorAdapter: WAS 9 usa su propio proveedor JPA (IBM OpenJPA) -->
-        <property name="persistenceUnitName" value="appPU"/>
-        <property name="jpaProperties">
+        <property name="packagesToScan" value="com.empresa.api.model"/>
+        <property name="hibernateProperties">
             <props>
-                <prop key="openjpa.Log">DefaultLevel=WARN</prop>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+                <prop key="hibernate.jdbc.batch_size">20</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.connection.handling_mode">DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION</prop>
             </props>
         </property>
     </bean>
 
     <!-- ==========================================
-         Transaction Manager JPA
+         Transaction Manager Hibernate 5
          ========================================== -->
     <bean id="transactionManager"
-          class="org.springframework.orm.jpa.JpaTransactionManager">
-        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+          class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
-    <!-- Habilitar @Transactional -->
     <tx:annotation-driven transaction-manager="transactionManager"/>
-
-    <!-- ==========================================
-         AOP
-         ========================================== -->
     <aop:aspectj-autoproxy/>
 
 </beans>
