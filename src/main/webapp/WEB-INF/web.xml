@@ -6,56 +6,37 @@
          version="4.0"
          metadata-complete="false">
 
-    <display-name>API Backend - WAS9</display-name>
+    <display-name>API Backend - WAS9 Spring Hibernate Struts2</display-name>
 
-    <!-- CORS Filter (antes que Spring Security) -->
+    <!-- Encoding -->
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param><param-name>encoding</param-name><param-value>UTF-8</param-value></init-param>
+        <init-param><param-name>forceEncoding</param-name><param-value>true</param-value></init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- CORS (para peticiones Angular) -->
     <filter>
         <filter-name>corsFilter</filter-name>
         <filter-class>com.empresa.api.config.CorsFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>corsFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <!-- Spring Security -->
-    <filter>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <!-- Encoding -->
-    <filter>
-        <filter-name>encodingFilter</filter-name>
-        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-        <init-param>
-            <param-name>encoding</param-name>
-            <param-value>UTF-8</param-value>
-        </init-param>
-        <init-param>
-            <param-name>forceEncoding</param-name>
-            <param-value>true</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>encodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/api/*</url-pattern>
     </filter-mapping>
 
     <!-- ==========================================
-         Struts 2 Filter
-         Atiende /views/* (acciones con JSP)
-         Las rutas /api/* las maneja Spring MVC (DispatcherServlet)
+         Struts 2  →  /views/*
          ========================================== -->
     <filter>
         <filter-name>struts2</filter-name>
         <filter-class>org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter</filter-class>
         <init-param>
-            <!-- Excluir las rutas REST de Spring MVC -->
             <param-name>excludedPatterns</param-name>
             <param-value>/api/.*</param-value>
         </init-param>
@@ -65,7 +46,9 @@
         <url-pattern>/views/*</url-pattern>
     </filter-mapping>
 
-    <!-- Spring Root Context -->
+    <!-- ==========================================
+         Spring Root ApplicationContext
+         ========================================== -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>/WEB-INF/spring/applicationContext.xml</param-value>
@@ -75,7 +58,9 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
-    <!-- Spring MVC DispatcherServlet -->
+    <!-- ==========================================
+         Spring MVC DispatcherServlet  →  /api/*
+         ========================================== -->
     <servlet>
         <servlet-name>dispatcher</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -86,7 +71,6 @@
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>dispatcher</servlet-name>
         <url-pattern>/api/*</url-pattern>
@@ -95,5 +79,9 @@
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
 
 </web-app>

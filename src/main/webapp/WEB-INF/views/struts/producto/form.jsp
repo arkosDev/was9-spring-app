@@ -1,67 +1,56 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="s" uri="/struts-tags" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ include file="/WEB-INF/views/struts/common/layout-header.jsp" %>
 
-<div class="page-header">
-    <h1>${not empty producto.id ? 'Editar Producto' : 'Nuevo Producto'}</h1>
-    <a href="${pageContext.request.contextPath}/views/producto/listar.action"
-       class="btn btn-secondary">&larr; Volver</a>
+<div class="ph">
+    <h1><s:if test="producto.id != null">Editar Producto</s:if><s:else>Nuevo Producto</s:else></h1>
+    <a href="${pageContext.request.contextPath}/views/producto/listar.action" class="btn btn-sec">&larr; Volver</a>
 </div>
 
-<%-- Errores globales de accion --%>
 <s:if test="hasActionErrors()">
-    <div class="alert alert-error"><s:actionerror/></div>
+    <div class="alert a-err"><s:actionerror/></div>
 </s:if>
 
-<div class="form-card">
-    <%--
-        Struts 2: <s:form> genera el <form> HTML apuntando al action "guardar"
-        Los <s:textfield> bindean directamente con los campos del ProductoAction
-        usando OGNL: "producto.nombre" -> action.getProducto().getNombre()
-    --%>
+<div class="fc">
     <s:form action="guardar" method="post" theme="simple">
 
-        <%-- ID oculto para diferenciar crear vs actualizar --%>
         <s:hidden name="producto.id"/>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="nombre">Nombre *</label>
-                <s:textfield id="nombre" name="producto.nombre" cssClass="form-control"/>
-                <s:fielderror fieldName="producto.nombre" cssClass="field-error"/>
+        <div class="fr">
+            <div class="fg">
+                <label>Nombre *</label>
+                <s:textfield name="producto.nombre"/>
+                <s:fielderror fieldName="producto.nombre" cssClass="fe"/>
             </div>
-
-            <div class="form-group">
-                <label for="categoria">Categoría</label>
-                <s:textfield id="categoria" name="producto.categoria" cssClass="form-control"/>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="descripcion">Descripción</label>
-            <s:textarea id="descripcion" name="producto.descripcion" rows="3" cssClass="form-control"/>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="precio">Precio *</label>
-                <s:textfield id="precio" name="producto.precio" cssClass="form-control"/>
-                <s:fielderror fieldName="producto.precio" cssClass="field-error"/>
-            </div>
-
-            <div class="form-group">
-                <label for="stock">Stock *</label>
-                <s:textfield id="stock" name="producto.stock" cssClass="form-control"/>
-                <s:fielderror fieldName="producto.stock" cssClass="field-error"/>
+            <div class="fg">
+                <label>Categoría</label>
+                <s:textfield name="producto.categoria"/>
             </div>
         </div>
 
-        <div class="form-actions">
-            <a href="${pageContext.request.contextPath}/views/producto/listar.action"
-               class="btn btn-secondary">Cancelar</a>
-            <s:submit value="${not empty producto.id ? 'Actualizar' : 'Crear'}"
-                      cssClass="btn btn-primary"/>
+        <div class="fg">
+            <label>Descripción</label>
+            <s:textarea name="producto.descripcion" rows="3"/>
+        </div>
+
+        <div class="fr">
+            <div class="fg">
+                <label>Precio *</label>
+                <s:textfield name="producto.precio"/>
+                <s:fielderror fieldName="producto.precio" cssClass="fe"/>
+            </div>
+            <div class="fg">
+                <label>Stock *</label>
+                <s:textfield name="producto.stock"/>
+                <s:fielderror fieldName="producto.stock" cssClass="fe"/>
+            </div>
+        </div>
+
+        <div class="fa">
+            <a href="${pageContext.request.contextPath}/views/producto/listar.action" class="btn btn-sec">Cancelar</a>
+            <s:submit cssClass="btn btn-pri">
+                <s:if test="producto.id != null">Actualizar</s:if><s:else>Crear</s:else>
+            </s:submit>
         </div>
 
     </s:form>

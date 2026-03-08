@@ -2,73 +2,23 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd
            http://www.springframework.org/schema/context
-           http://www.springframework.org/schema/context/spring-context.xsd
-           http://www.springframework.org/schema/tx
-           http://www.springframework.org/schema/tx/spring-tx.xsd
-           http://www.springframework.org/schema/aop
-           http://www.springframework.org/schema/aop/spring-aop.xsd">
+           http://www.springframework.org/schema/context/spring-context.xsd">
 
+    <!--
+        Escanea servicios y Actions de Struts.
+        Los @RestController y @ControllerAdvice los gestiona dispatcher-servlet.xml.
+    -->
     <context:component-scan base-package="com.empresa.api">
-        <context:exclude-filter type="annotation"
-            expression="org.springframework.stereotype.Controller"/>
         <context:exclude-filter type="annotation"
             expression="org.springframework.web.bind.annotation.RestController"/>
         <context:exclude-filter type="annotation"
             expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
     </context:component-scan>
-    <!--
-        Los Actions de Struts 2 (@Component en com.empresa.api.struts.action)
-        son detectados por el scan anterior y gestionados por Spring.
-        El struts2-spring-plugin los obtiene del ApplicationContext
-        via ObjectFactory de Spring, permitiendo @Autowired en Actions.
-    -->
 
     <context:annotation-config/>
-    <context:property-placeholder location="classpath:application.properties"/>
-
-    <!-- ==========================================
-         DataSource - JNDI WAS 9
-         ========================================== -->
-    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-        <property name="jndiName" value="java:comp/env/jdbc/ApiDataSource"/>
-        <property name="resourceRef" value="true"/>
-    </bean>
-
-    <!-- ==========================================
-         Hibernate SessionFactory via Spring ORM
-         ========================================== -->
-    <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
-        <property name="dataSource" ref="dataSource"/>
-        <property name="packagesToScan" value="com.empresa.api.model"/>
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-                <prop key="hibernate.format_sql">true</prop>
-                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
-                <prop key="hibernate.jdbc.batch_size">20</prop>
-                <prop key="hibernate.cache.use_second_level_cache">false</prop>
-                <prop key="hibernate.connection.handling_mode">DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION</prop>
-            </props>
-        </property>
-    </bean>
-
-    <!-- ==========================================
-         Transaction Manager Hibernate 5
-         ========================================== -->
-    <bean id="transactionManager"
-          class="org.springframework.orm.hibernate5.HibernateTransactionManager">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <tx:annotation-driven transaction-manager="transactionManager"/>
-    <aop:aspectj-autoproxy/>
 
 </beans>

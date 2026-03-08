@@ -22,19 +22,13 @@
     <mvc:annotation-driven>
         <mvc:message-converters>
             <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
-                <property name="objectMapper" ref="objectMapper"/>
+                <property name="objectMapper">
+                    <bean class="com.fasterxml.jackson.databind.ObjectMapper">
+                        <property name="serializationInclusion" value="NON_NULL"/>
+                    </bean>
+                </property>
             </bean>
         </mvc:message-converters>
     </mvc:annotation-driven>
-
-    <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
-        <property name="serializationInclusion" value="NON_NULL"/>
-        <!-- Evita error de lazy loading de Hibernate en JSON -->
-        <property name="features">
-            <map>
-                <entry key="FAIL_ON_EMPTY_BEANS" value="false"/>
-            </map>
-        </property>
-    </bean>
 
 </beans>

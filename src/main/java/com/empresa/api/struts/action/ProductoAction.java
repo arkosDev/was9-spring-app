@@ -9,35 +9,26 @@ import java.util.List;
 
 /**
  * Action Struts 2 para el CRUD de Productos via vistas JSP.
+ * Reutiliza ProductoService (Spring) sin duplicar logica de negocio.
  *
- * Reutiliza ProductoService (Spring) exactamente igual que los
- * @RestController de Spring MVC — sin duplicar logica de negocio.
- *
- * URLs expuestas (namespace /views/producto):
- *   GET  /views/producto/listar.action
- *   GET  /views/producto/nuevo.action
- *   POST /views/producto/guardar.action
- *   GET  /views/producto/editar.action?id=X
- *   GET  /views/producto/eliminar.action?id=X
+ * URLs (namespace /views/producto):
+ *   /views/producto/listar.action
+ *   /views/producto/nuevo.action
+ *   /views/producto/guardar.action   (POST)
+ *   /views/producto/editar.action?id=X
+ *   /views/producto/eliminar.action?id=X
  */
 @Component
 public class ProductoAction extends BaseAction {
 
-    // --- Inyectado por Spring via struts2-spring-plugin ---
     @Autowired
     private ProductoService productoService;
 
-    // --- Modelo del formulario ---
-    private ProductoDTO producto = new ProductoDTO();
-    private Long id;
-
-    // --- Datos para la vista ---
+    private ProductoDTO     producto = new ProductoDTO();
+    private Long            id;
     private List<ProductoDTO> productos;
-    private String mensajeExito;
 
-    // =====================================================
-    // LISTAR
-    // =====================================================
+    // ---- LISTAR ----
     public String listar() {
         try {
             productos = productoService.listarActivos();
@@ -49,86 +40,67 @@ public class ProductoAction extends BaseAction {
         }
     }
 
-    // =====================================================
-    // NUEVO (muestra formulario vacio)
-    // =====================================================
+    // ---- NUEVO (formulario vacío) ----
     public String nuevo() {
         producto = new ProductoDTO();
         return SUCCESS;
     }
 
-    // =====================================================
-    // GUARDAR (crea o actualiza)
-    // =====================================================
+    // ---- GUARDAR (crear o actualizar) ----
     public String guardar() {
         try {
             if (producto.getId() == null) {
                 productoService.crear(producto);
-                mensajeExito = "Producto creado correctamente";
             } else {
                 productoService.actualizar(producto.getId(), producto);
-                mensajeExito = "Producto actualizado correctamente";
             }
-            getSession().put("mensajeExito", mensajeExito);
+            getSession().put("flash", "Producto guardado correctamente");
             return SUCCESS;
         } catch (Exception e) {
             log.error("Error guardando producto", e);
-            addActionError("Error al guardar el producto: " + e.getMessage());
+            addActionError("Error al guardar: " + e.getMessage());
             return INPUT;
         }
     }
 
-    // =====================================================
-    // EDITAR (carga datos en formulario)
-    // =====================================================
+    // ---- EDITAR (carga datos) ----
     public String editar() {
         try {
             producto = productoService.obtenerPorId(id);
             return SUCCESS;
         } catch (Exception e) {
-            log.warn("Producto {} no encontrado para editar", id);
-            addActionError("Producto no encontrado");
+            log.warn("Producto {} no encontrado", id);
             return NOT_FOUND;
         }
     }
 
-    // =====================================================
-    // ELIMINAR (borrado logico)
-    // =====================================================
+    // ---- ELIMINAR ----
     public String eliminar() {
         try {
             productoService.eliminar(id);
-            getSession().put("mensajeExito", "Producto eliminado");
+            getSession().put("flash", "Producto eliminado");
             return SUCCESS;
         } catch (Exception e) {
             log.error("Error eliminando producto {}", id, e);
-            addActionError("Error al eliminar el producto");
+            addActionError("Error al eliminar");
             return ERROR;
         }
     }
 
-    // =====================================================
-    // Validacion Struts 2 para guardar()
-    // =====================================================
+    // ---- Validacion Struts 2 para guardar() ----
     public void validateGuardar() {
-        if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
+        if (producto.getNombre() == null || producto.getNombre().trim().isEmpty())
             addFieldError("producto.nombre", "El nombre es requerido");
-        }
-        if (producto.getPrecio() == null || producto.getPrecio() < 0) {
-            addFieldError("producto.precio", "El precio debe ser mayor o igual a 0");
-        }
-        if (producto.getStock() == null || producto.getStock() < 0) {
-            addFieldError("producto.stock", "El stock debe ser mayor o igual a 0");
-        }
+        if (producto.getPrecio() == null || producto.getPrecio() < 0)
+            addFieldError("producto.precio", "El precio debe ser >= 0");
+        if (producto.getStock() == null || producto.getStock() < 0)
+            addFieldError("producto.stock", "El stock debe ser >= 0");
     }
 
-    // =====================================================
-    // Getters / Setters (requeridos por Struts para binding)
-    // =====================================================
-    public List<ProductoDTO> getProductos()      { return productos; }
-    public ProductoDTO       getProducto()        { return producto; }
+    // ---- Getters / Setters ----
+    public List<ProductoDTO> getProductos()         { return productos; }
+    public ProductoDTO       getProducto()           { return producto; }
     public void              setProducto(ProductoDTO p) { this.producto = p; }
-    public Long              getId()              { return id; }
-    public void              setId(Long id)       { this.id = id; }
-    public String            getMensajeExito()    { return mensajeExito; }
+    public Long              getId()                 { return id; }
+    public void              setId(Long id)          { this.id = id; }
 }
