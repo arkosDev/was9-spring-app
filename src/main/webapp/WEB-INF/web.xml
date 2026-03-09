@@ -57,7 +57,7 @@
 
     <!-- Tiles listener: inicializa el contenedor de tiles al arrancar -->
     <listener>
-        <listener-class>org.apache.struts2.tiles.StrutsTilesListener</listener-class>
+        <listener-class>org.apache.tiles.extras.complete.CompleteAutoloadTilesListener</listener-class>
     </listener>
 
     <!-- ==========================================
