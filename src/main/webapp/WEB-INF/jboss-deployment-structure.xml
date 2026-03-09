@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+        <exclusions>
+            <module name="com.sun.jsf-impl"/>
+            <module name="javax.faces.api"/>
+            <module name="org.jboss.as.jsf"/>
+            <module name="org.jboss.as.jsf-injection"/>
+            <module name="com.sun.faces"/>
+        </exclusions>
+        <exclude-subsystems>
+            <subsystem name="jsf"/>
+        </exclude-subsystems>
+    </deployment>
+</jboss-deployment-structure>

@@ -5,5 +5,4 @@
     xsi:schemaLocation="http://websphere.ibm.com/xml/ns/javaee
                         http://websphere.ibm.com/xml/ns/javaee/ibm-web-bnd_1_2.xsd"
     version="1.2">
-    <resource-ref name="jdbc/ApiDataSource" binding-name="jdbc/ApiDataSource"/>
 </web-bnd>
