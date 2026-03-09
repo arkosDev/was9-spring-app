@@ -55,15 +55,10 @@
         <param-value>/WEB-INF/tiles/tiles.xml</param-value>
     </context-param>
 
-    <!--
-        Tiles 3 en JBoss EAP 7.4: se inicializa via servlet en lugar de listener
-        para evitar problemas de classloader con el modulo deployer de JBoss.
-    -->
-    <servlet>
-        <servlet-name>tiles</servlet-name>
-        <servlet-class>org.apache.tiles.web.startup.TilesServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
+    <!-- Tiles 3: inicializado por listener propio empacado en el WAR -->
+    <listener>
+        <listener-class>com.empresa.api.config.TilesInitListener</listener-class>
+    </listener>
 
     <!-- ==========================================
          Spring Root ApplicationContext
