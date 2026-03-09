@@ -55,10 +55,15 @@
         <param-value>/WEB-INF/tiles/tiles.xml</param-value>
     </context-param>
 
-    <!-- Tiles listener: inicializa el contenedor de tiles al arrancar -->
-    <listener>
-        <listener-class>org.apache.tiles.web.startup.TilesListener</listener-class>
-    </listener>
+    <!--
+        Tiles 3 en JBoss EAP 7.4: se inicializa via servlet en lugar de listener
+        para evitar problemas de classloader con el modulo deployer de JBoss.
+    -->
+    <servlet>
+        <servlet-name>tiles</servlet-name>
+        <servlet-class>org.apache.tiles.web.startup.TilesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
 
     <!-- ==========================================
          Spring Root ApplicationContext
