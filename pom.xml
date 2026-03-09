@@ -19,7 +19,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.version>5.3.39</spring.version>
         <struts2.version>2.5.33</struts2.version>
-        <tiles.version>3.0.8</tiles.version>
         <jackson.version>2.15.4</jackson.version>
         <jee.version>8.0.1</jee.version>
         <servlet.api.version>4.0.1</servlet.api.version>
@@ -28,6 +27,7 @@
         <logback.version>1.2.13</logback.version>
         <junit.version>4.13.2</junit.version>
         <mockito.version>3.12.4</mockito.version>
+        <tiles.version>2.2.2</tiles.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
     </properties>
@@ -107,14 +107,9 @@
         </dependency>
 
 
-        <!-- Tiles 3 + struts2-tiles-plugin -->
-        <!--
-            JBoss EAP 7.4 ya incluye Tiles en sus modulos internos.
-            Las dependencias de Tiles se marcan "provided" para evitar
-            conflictos de ClassLoader: JBoss usa sus propias clases,
-            el WAR no las empaca.
-            Solo struts2-tiles-plugin va dentro del WAR.
-        -->
+
+
+        <!-- Tiles 2.2.2 + struts2-tiles-plugin (StrutsTilesListener esta dentro del plugin) -->
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-tiles-plugin</artifactId>

@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="s" uri="/struts-tags" %>
-
 <div class="ph"><h1>Error</h1></div>
 <div class="alert a-err">
     <s:if test="hasActionErrors()"><s:actionerror/></s:if>

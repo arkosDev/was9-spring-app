@@ -3,10 +3,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
          http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-         version="4.0"
-         metadata-complete="false">
+         version="4.0">
 
-    <display-name>API Backend - WAS9 Spring Hibernate Struts2</display-name>
+    <display-name>API Backend - JBoss EAP 7.4</display-name>
 
     <!-- Encoding -->
     <filter>
@@ -20,7 +19,7 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- CORS (para peticiones Angular) -->
+    <!-- CORS -->
     <filter>
         <filter-name>corsFilter</filter-name>
         <filter-class>com.empresa.api.config.CorsFilter</filter-class>
@@ -30,9 +29,27 @@
         <url-pattern>/api/*</url-pattern>
     </filter-mapping>
 
-    <!-- ==========================================
-         Struts 2  →  /views/*
-         ========================================== -->
+    <!-- Tiles: ruta del tiles.xml -->
+    <context-param>
+        <param-name>org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG</param-name>
+        <param-value>/WEB-INF/tiles/tiles.xml</param-value>
+    </context-param>
+
+    <!-- Tiles: listener incluido en struts2-tiles-plugin.jar -->
+    <listener>
+        <listener-class>org.apache.struts2.tiles.StrutsTilesListener</listener-class>
+    </listener>
+
+    <!-- Spring Root ApplicationContext -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/spring/applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <!-- Struts 2 -->
     <filter>
         <filter-name>struts2</filter-name>
         <filter-class>org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter</filter-class>
@@ -46,35 +63,7 @@
         <url-pattern>/views/*</url-pattern>
     </filter-mapping>
 
-
-    <!-- ==========================================
-         Tiles 2 - ruta al archivo de definiciones
-         ========================================== -->
-    <context-param>
-        <param-name>org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG</param-name>
-        <param-value>/WEB-INF/tiles/tiles.xml</param-value>
-    </context-param>
-
-    <!-- Tiles 3: inicializado por listener propio empacado en el WAR -->
-    <listener>
-        <listener-class>com.empresa.api.config.TilesInitListener</listener-class>
-    </listener>
-
-    <!-- ==========================================
-         Spring Root ApplicationContext
-         ========================================== -->
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/spring/applicationContext.xml</param-value>
-    </context-param>
-
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-
-    <!-- ==========================================
-         Spring MVC DispatcherServlet  →  /api/*
-         ========================================== -->
+    <!-- Spring MVC DispatcherServlet -->
     <servlet>
         <servlet-name>dispatcher</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -83,7 +72,6 @@
             <param-value>/WEB-INF/spring/dispatcher-servlet.xml</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>
     </servlet>
     <servlet-mapping>
         <servlet-name>dispatcher</servlet-name>

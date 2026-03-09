@@ -5,15 +5,6 @@
 
 <tiles-definitions>
 
-    <!--
-        ==========================================
-        LAYOUT BASE
-        Template principal ensamblado por Tiles 3.
-        struts2-tiles-plugin 2.5 resuelve results
-        de tipo "tiles" buscando la definicion
-        por nombre en este archivo.
-        ==========================================
-    -->
     <definition name="layouts.base"
                 template="/WEB-INF/views/struts/layouts/base.jsp">
         <put-attribute name="title"   value="SistemaApp"/>
@@ -22,21 +13,18 @@
         <put-attribute name="footer"  value="/WEB-INF/views/struts/layouts/footer.jsp"/>
     </definition>
 
-    <!-- Producto: Lista -->
     <definition name="producto.lista" extends="layouts.base">
-        <put-attribute name="title"   value="Productos - SistemaApp"/>
+        <put-attribute name="title"   value="Productos"/>
         <put-attribute name="content" value="/WEB-INF/views/struts/producto/lista.jsp"/>
     </definition>
 
-    <!-- Producto: Formulario (nuevo / editar) -->
     <definition name="producto.form" extends="layouts.base">
-        <put-attribute name="title"   value="Formulario Producto - SistemaApp"/>
+        <put-attribute name="title"   value="Formulario Producto"/>
         <put-attribute name="content" value="/WEB-INF/views/struts/producto/form.jsp"/>
     </definition>
 
-    <!-- Error global -->
     <definition name="common.error" extends="layouts.base">
-        <put-attribute name="title"   value="Error - SistemaApp"/>
+        <put-attribute name="title"   value="Error"/>
         <put-attribute name="content" value="/WEB-INF/views/struts/common/error.jsp"/>
     </definition>
 

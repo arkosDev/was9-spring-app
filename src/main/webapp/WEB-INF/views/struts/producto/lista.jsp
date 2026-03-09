@@ -3,6 +3,11 @@
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
+<c:if test="${not empty sessionScope.flash}">
+    <div class="alert a-ok">${sessionScope.flash}</div>
+    <c:remove var="flash" scope="session"/>
+</c:if>
+
 <div class="ph">
     <h1>Productos</h1>
     <a href="${pageContext.request.contextPath}/views/producto/nuevo.action" class="btn btn-pri">+ Nuevo</a>
@@ -23,7 +28,7 @@
         <tbody>
             <c:choose>
                 <c:when test="${empty productos}">
-                    <tr><td colspan="7" class="empty">No hay productos</td></tr>
+                    <tr><td colspan="7" class="empty">No hay productos registrados</td></tr>
                 </c:when>
                 <c:otherwise>
                     <c:forEach var="p" items="${productos}">
