@@ -1,9 +1,5 @@
 package com.empresa.api.config;
 
-import org.apache.tiles.TilesContainer;
-import org.apache.tiles.access.TilesAccess;
-import org.apache.tiles.impl.BasicTilesContainer;
-import org.apache.tiles.preparer.factory.BasicPreparerFactory;
 import org.apache.tiles.request.ApplicationContext;
 import org.apache.tiles.request.servlet.ServletApplicationContext;
 import org.apache.tiles.startup.DefaultTilesInitializer;
@@ -14,15 +10,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-/**
- * Inicializa Apache Tiles 3 manualmente al arrancar el WAR.
- *
- * Se usa un listener propio en lugar de los listeners de Tiles
- * para evitar conflictos de ClassLoader en JBoss EAP 7.4.
- * Todas las clases de Tiles vienen empacadas dentro del WAR
- * (scope compile en pom.xml), por lo que este listener las
- * encuentra sin depender de modulos del servidor.
- */
 public class TilesInitListener implements ServletContextListener {
 
     private static final Logger log = LoggerFactory.getLogger(TilesInitListener.class);
@@ -33,17 +20,13 @@ public class TilesInitListener implements ServletContextListener {
         try {
             log.info("Inicializando Apache Tiles 3...");
 
-            // Leer la ruta del tiles.xml desde context-param (definido en web.xml)
-            String definitions = servletContext.getInitParameter(
-                "org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG"
+            // Indicar la ruta del tiles.xml como atributo del contexto
+            // usando el nombre de parametro que Tiles 3 reconoce internamente
+            servletContext.setAttribute(
+                "org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG",
+                "/WEB-INF/tiles/tiles.xml"
             );
-            if (definitions != null) {
-                servletContext.setAttribute(
-                    BasicTilesContainer.DEFINITIONS_CONFIG, definitions
-                );
-            }
 
-            // Inicializar via DefaultTilesInitializer — bootstrap estándar de Tiles 3
             ApplicationContext applicationContext =
                 new ServletApplicationContext(servletContext);
 
@@ -60,15 +43,6 @@ public class TilesInitListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        try {
-            ApplicationContext applicationContext =
-                new ServletApplicationContext(sce.getServletContext());
-            TilesContainer container = TilesAccess.getContainer(applicationContext);
-            if (container != null) {
-                log.info("Destruyendo contenedor de Tiles...");
-            }
-        } catch (Exception e) {
-            log.warn("Error al destruir Tiles", e);
-        }
+        log.info("Contexto destruido, Tiles finalizado.");
     }
 }
