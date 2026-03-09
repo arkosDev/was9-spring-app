@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.version>5.3.39</spring.version>
         <struts2.version>2.5.33</struts2.version>
-        <tiles.version>2.2.2</tiles.version>
+        <tiles.version>3.0.8</tiles.version>
         <jackson.version>2.15.4</jackson.version>
         <jee.version>8.0.1</jee.version>
         <servlet.api.version>4.0.1</servlet.api.version>
@@ -107,7 +107,8 @@
         </dependency>
 
 
-        <!-- Tiles 2 (integración Struts 2 via struts2-tiles-plugin) -->
+        <!-- Tiles 3 + struts2-tiles-plugin -->
+        <!-- struts2-tiles-plugin 2.5.x requiere Tiles 3.x en runtime -->
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-tiles-plugin</artifactId>
@@ -115,7 +116,17 @@
         </dependency>
         <dependency>
             <groupId>org.apache.tiles</groupId>
+            <artifactId>tiles-api</artifactId>
+            <version>${tiles.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tiles</groupId>
             <artifactId>tiles-core</artifactId>
+            <version>${tiles.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tiles</groupId>
+            <artifactId>tiles-servlet</artifactId>
             <version>${tiles.version}</version>
         </dependency>
         <dependency>
@@ -125,7 +136,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.tiles</groupId>
-            <artifactId>tiles-servlet</artifactId>
+            <artifactId>tiles-extras</artifactId>
             <version>${tiles.version}</version>
         </dependency>
 
