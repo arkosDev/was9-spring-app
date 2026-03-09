@@ -2,7 +2,6 @@
 <%@ taglib prefix="s"   uri="/struts-tags" %>
 <%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ include file="/WEB-INF/views/struts/common/layout-header.jsp" %>
 
 <div class="ph">
     <h1>Productos</h1>
@@ -49,5 +48,3 @@
         </tbody>
     </table>
 </div>
-
-<%@ include file="/WEB-INF/views/struts/common/layout-footer.jsp" %>

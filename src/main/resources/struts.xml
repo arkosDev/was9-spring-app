@@ -9,15 +9,25 @@
     <constant name="struts.i18n.encoding"                 value="UTF-8"/>
     <constant name="struts.action.extension"              value="action,"/>
     <constant name="struts.ui.theme"                      value="simple"/>
-    <!-- Clave: Actions son beans de Spring -->
+    <!-- Actions son beans de Spring -->
     <constant name="struts.objectFactory"                 value="spring"/>
     <constant name="struts.objectFactory.spring.autoWire" value="name"/>
 
-    <!-- Paquete base -->
-    <package name="base" namespace="/views" extends="struts-default">
+    <!-- Paquete base con result-type "tiles" por defecto -->
+    <package name="base" namespace="/views" extends="struts-default,tiles-default">
+
+        <!--
+            "tiles-default" viene del struts2-tiles-plugin.
+            Registra el result-type "tiles" que busca la definicion
+            en WEB-INF/tiles/tiles.xml por el nombre indicado en el result.
+        -->
+        <result-types>
+            <result-type name="tiles"
+                         class="org.apache.struts2.views.tiles.TilesResult"/>
+        </result-types>
 
         <global-results>
-            <result name="error">/WEB-INF/views/struts/common/error.jsp</result>
+            <result name="error" type="tiles">common.error</r>
         </global-results>
         <global-exception-mappings>
             <exception-mapping exception="java.lang.Exception" result="error"/>
@@ -29,34 +39,34 @@
     <package name="producto" namespace="/views/producto" extends="base">
 
         <!--
-            form-class declara explicitamente el form bean de cada action,
-            equivalente al form-bean de struts-config.xml en Struts 1.
-            Struts 2 lo popula via OGNL antes de ejecutar el method.
+            form-class declara el form bean de cada action
+            (equivalente al form-bean de struts-config.xml en Struts 1).
+            Los results apuntan a nombres de definicion en tiles.xml.
         -->
 
         <action name="listar" class="com.empresa.api.struts.action.ProductoAction" method="listar">
-            <result name="success">/WEB-INF/views/struts/producto/lista.jsp</result>
+            <result name="success" type="tiles">producto.lista</r>
         </action>
 
         <action name="nuevo" class="com.empresa.api.struts.action.ProductoAction" method="nuevo">
             <param name="form-class">com.empresa.api.struts.form.ProductoForm</param>
-            <result name="success">/WEB-INF/views/struts/producto/form.jsp</result>
+            <result name="success" type="tiles">producto.form</r>
         </action>
 
         <action name="guardar" class="com.empresa.api.struts.action.ProductoAction" method="guardar">
             <param name="form-class">com.empresa.api.struts.form.ProductoForm</param>
-            <result name="success"  type="redirect">/views/producto/listar.action</result>
-            <result name="input">/WEB-INF/views/struts/producto/form.jsp</result>
+            <result name="success" type="redirect">/views/producto/listar.action</r>
+            <result name="input"   type="tiles">producto.form</r>
         </action>
 
         <action name="editar" class="com.empresa.api.struts.action.ProductoAction" method="editar">
             <param name="form-class">com.empresa.api.struts.form.ProductoForm</param>
-            <result name="success">/WEB-INF/views/struts/producto/form.jsp</result>
-            <result name="notFound" type="redirect">/views/producto/listar.action</result>
+            <result name="success"  type="tiles">producto.form</r>
+            <result name="notFound" type="redirect">/views/producto/listar.action</r>
         </action>
 
         <action name="eliminar" class="com.empresa.api.struts.action.ProductoAction" method="eliminar">
-            <result name="success" type="redirect">/views/producto/listar.action</result>
+            <result name="success" type="redirect">/views/producto/listar.action</r>
         </action>
 
     </package>

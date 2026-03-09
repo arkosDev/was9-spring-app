@@ -46,6 +46,20 @@
         <url-pattern>/views/*</url-pattern>
     </filter-mapping>
 
+
+    <!-- ==========================================
+         Tiles 2 - ruta al archivo de definiciones
+         ========================================== -->
+    <context-param>
+        <param-name>org.apache.tiles.impl.BasicTilesContainer.DEFINITIONS_CONFIG</param-name>
+        <param-value>/WEB-INF/tiles/tiles.xml</param-value>
+    </context-param>
+
+    <!-- Tiles listener: inicializa el contenedor de tiles al arrancar -->
+    <listener>
+        <listener-class>org.apache.struts2.tiles.StrutsTilesListener</listener-class>
+    </listener>
+
     <!-- ==========================================
          Spring Root ApplicationContext
          ========================================== -->

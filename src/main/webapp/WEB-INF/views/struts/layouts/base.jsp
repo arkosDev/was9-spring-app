@@ -1,12 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
+<%@ taglib prefix="c"     uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${param.titulo} - SistemaApp</title>
+    <%-- Tiles inserta el titulo definido en tiles.xml --%>
+    <title><tiles:getAsString name="title"/></title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root{--pri:#0f62fe;--pri-dk:#0043ce;--sec:#393939;--danger:#da1e28;
@@ -16,23 +17,22 @@
         body{font-family:'IBM Plex Sans',Arial,sans-serif;font-size:14px;
              background:var(--bg);color:var(--tx);}
         nav{height:var(--nh);background:var(--sec);color:#fff;display:flex;
-            align-items:center;padding:0 1.5rem;gap:2rem;
-            position:sticky;top:0;z-index:100;}
+            align-items:center;padding:0 1.5rem;gap:2rem;position:sticky;top:0;z-index:100;}
         nav .brand{font-weight:600;font-size:15px;}
         nav a{color:#c6c6c6;text-decoration:none;font-size:13px;padding:0 .75rem;
               height:var(--nh);display:flex;align-items:center;}
         nav a:hover{background:rgba(255,255,255,.1);color:#fff;}
         main{padding:1.5rem;max-width:1100px;margin:0 auto;}
+        footer.site-footer{text-align:center;padding:1.5rem;font-size:12px;
+                           color:var(--txl);border-top:1px solid var(--bdr);margin-top:2rem;}
         .ph{display:flex;align-items:center;justify-content:space-between;
             margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--bdr);}
         .ph h1{font-size:1.375rem;font-weight:600;}
         .btn{display:inline-flex;align-items:center;padding:.5rem 1.25rem;border:none;
              border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;
              text-decoration:none;font-family:inherit;}
-        .btn-pri{background:var(--pri);color:#fff;}
-        .btn-pri:hover{background:var(--pri-dk);}
-        .btn-sec{background:#e0e0e0;color:var(--tx);}
-        .btn-sec:hover{background:#c6c6c6;}
+        .btn-pri{background:var(--pri);color:#fff;} .btn-pri:hover{background:var(--pri-dk);}
+        .btn-sec{background:#e0e0e0;color:var(--tx);} .btn-sec:hover{background:#c6c6c6;}
         .btn-dan{background:var(--danger);color:#fff;}
         .btn-sm{padding:.3rem .75rem;font-size:12px;}
         .alert{padding:.75rem 1rem;border-radius:var(--r);margin-bottom:1rem;font-size:13px;}
@@ -49,16 +49,14 @@
         td.ac{display:flex;gap:.5rem;}
         .badge{display:inline-block;padding:.2rem .5rem;border-radius:2px;
                font-size:11px;font-weight:600;text-transform:uppercase;}
-        .b-on{background:#defbe6;color:var(--ok);}
-        .b-off{background:#e8e8e8;color:var(--sec);}
+        .b-on{background:#defbe6;color:var(--ok);} .b-off{background:#e8e8e8;color:var(--sec);}
         .fc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);
             padding:1.5rem;max-width:700px;}
         .fr{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
         .fg{margin-bottom:1rem;}
         label{display:block;font-size:12px;font-weight:600;margin-bottom:.35rem;color:var(--txl);}
         input[type=text],input[type=number],textarea{width:100%;padding:.5rem .75rem;
-            border:1px solid var(--bdr);border-radius:var(--r);
-            font-family:inherit;font-size:14px;}
+            border:1px solid var(--bdr);border-radius:var(--r);font-family:inherit;font-size:14px;}
         input:focus,textarea:focus{outline:none;border-color:var(--pri);
             box-shadow:0 0 0 2px rgba(15,98,254,.2);}
         textarea{resize:vertical;}
@@ -68,12 +66,23 @@
     </style>
 </head>
 <body>
-<nav>
-    <span class="brand">&#9643; SistemaApp</span>
-    <a href="${pageContext.request.contextPath}/views/producto/listar.action">Productos</a>
-</nav>
-<main>
-<c:if test="${not empty sessionScope.flash}">
-    <div class="alert a-ok">${sessionScope.flash}</div>
-    <c:remove var="flash" scope="session"/>
-</c:if>
+
+    <%-- Tiles inserta el fragmento navbar --%>
+    <tiles:insertAttribute name="navbar"/>
+
+    <main>
+        <%-- Mensaje flash de sesion --%>
+        <c:if test="${not empty sessionScope.flash}">
+            <div class="alert a-ok">${sessionScope.flash}</div>
+            <c:remove var="flash" scope="session"/>
+        </c:if>
+
+        <%-- Tiles inserta la JSP de contenido especifica de cada pagina --%>
+        <tiles:insertAttribute name="content"/>
+    </main>
+
+    <%-- Tiles inserta el footer --%>
+    <tiles:insertAttribute name="footer"/>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+    "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+    "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+
+<tiles-definitions>
+
+    <!--
+        ==========================================
+        LAYOUT BASE
+        Todas las páginas heredan de aquí.
+        Struts 2 resuelve el result de tipo "tiles"
+        buscando la definición por nombre.
+        ==========================================
+    -->
+    <definition name="layouts.base"
+                template="/WEB-INF/views/struts/layouts/base.jsp">
+        <put-attribute name="title"   value="SistemaApp"/>
+        <put-attribute name="navbar"  value="/WEB-INF/views/struts/layouts/navbar.jsp"/>
+        <put-attribute name="content" value=""/>
+        <put-attribute name="footer"  value="/WEB-INF/views/struts/layouts/footer.jsp"/>
+    </definition>
+
+    <!--
+        ==========================================
+        TILES DE PRODUCTO
+        Extienden layouts.base y solo sobreescriben
+        el atributo "content" con la JSP propia.
+        ==========================================
+    -->
+    <definition name="producto.lista" extends="layouts.base">
+        <put-attribute name="title"   value="Productos - SistemaApp"/>
+        <put-attribute name="content" value="/WEB-INF/views/struts/producto/lista.jsp"/>
+    </definition>
+
+    <definition name="producto.form" extends="layouts.base">
+        <put-attribute name="title"   value="Formulario Producto - SistemaApp"/>
+        <put-attribute name="content" value="/WEB-INF/views/struts/producto/form.jsp"/>
+    </definition>
+
+    <definition name="common.error" extends="layouts.base">
+        <put-attribute name="title"   value="Error - SistemaApp"/>
+        <put-attribute name="content" value="/WEB-INF/views/struts/common/error.jsp"/>
+    </definition>
+
+</tiles-definitions>

@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="s" uri="/struts-tags" %>
-<%@ include file="/WEB-INF/views/struts/common/layout-header.jsp" %>
 
 <div class="ph">
     <h1><s:if test="form.id != null">Editar Producto</s:if><s:else>Nuevo Producto</s:else></h1>
@@ -12,11 +11,6 @@
 </s:if>
 
 <div class="fc">
-    <%--
-        Los campos usan name="form.campo"
-        Struts 2 llama a ProductoAction.getForm().setCampo(valor) via OGNL
-        — mismo comportamiento que ActionForm.setCampo() en Struts 1
-    --%>
     <s:form action="guardar" method="post" theme="simple">
 
         <s:hidden name="form.id"/>
@@ -60,5 +54,3 @@
 
     </s:form>
 </div>
-
-<%@ include file="/WEB-INF/views/struts/common/layout-footer.jsp" %>
