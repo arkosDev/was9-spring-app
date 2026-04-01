@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.tuempresa</groupId>
+    <artifactId>mi-app-ear</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>ear</packaging>
+
+    <name>Mi Aplicación EAR</name>
+
+    <!-- Dependencia del WAR que ya existe -->
+    <dependencies>
+        <dependency>
+            <groupId>com.tuempresa</groupId>          <!-- cambia esto -->
+            <artifactId>mi-app-war</artifactId>       <!-- nombre del artifactId de tu WAR -->
+            <version>1.0.0-SNAPSHOT</version>         <!-- versión del WAR -->
+            <type>war</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>3.4.0</version>   <!-- versión actual recomendada -->
+                <configuration>
+                    <!-- Versión de Java EE / Jakarta EE -->
+                    <version>9</version>          <!-- cambia según tu servidor: 6, 7, 8, 9, 10 -->
+
+                    <!-- Carpeta donde se ponen las librerías compartidas -->
+                    <defaultLibBundleDir>lib</defaultLibBundleDir>
+
+                    <!-- Configuración del módulo WAR -->
+                    <modules>
+                        <webModule>
+                            <groupId>com.tuempresa</groupId>
+                            <artifactId>mi-app-war</artifactId>
+                            <contextRoot>/mi-app</contextRoot>     <!-- contexto de tu aplicación web -->
+                            <!-- Opcional: nombre diferente dentro del EAR -->
+                            <!-- <bundleFileName>mi-app.war</bundleFileName> -->
+                        </webModule>
+                    </modules>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
