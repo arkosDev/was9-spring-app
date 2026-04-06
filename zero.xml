@@ -1,24 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jaxb:bindings version="2.1"
-    xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+<jaxb:bindings version="2.0"
+               xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
-    <!-- Renombra las clases que colisionan del segundo schema -->
-    <jaxb:bindings schemaLocation="VehicleUploadWS.xsd2.xsd" node="/xsd:schema">
-        <jaxb:schemaBindings>
-            <jaxb:package name="com.arcos.client.vehup.xsd2"/>
-        </jaxb:schemaBindings>
-    </jaxb:bindings>
-
-    <!-- Si quieres renombrar solo las clases específicas (más control) -->
-    <!--
-    <jaxb:bindings schemaLocation="VehicleUploadWS.xsd2.xsd" node="//xsd:element[@name='VehicleUploadRequest']">
+    <!-- Renombra las clases duplicadas directamente con XPath global (más tolerante) -->
+    <jaxb:bindings node="//xsd:element[@name='VehicleUploadRequest']">
         <jaxb:class name="VehicleUploadRequest2"/>
     </jaxb:bindings>
-    <jaxb:bindings schemaLocation="VehicleUploadWS.xsd2.xsd" node="//xsd:element[@name='VehicleUploadResponse']">
+
+    <jaxb:bindings node="//xsd:element[@name='VehicleUploadResponse']">
         <jaxb:class name="VehicleUploadResponse2"/>
     </jaxb:bindings>
-    -->
+
+    <!-- Si también choca ObjectFactory -->
+    <jaxb:bindings node="//xsd:complexType[@name='VehicleUploadRequest']">
+        <jaxb:class name="VehicleUploadRequest2"/>
+    </jaxb:bindings>
 
 </jaxb:bindings>
