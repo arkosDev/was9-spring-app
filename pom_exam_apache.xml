@@ -13,7 +13,7 @@
     <properties>
         <java.version>1.8</java.version>
         <spring-boot.version>2.7.18</spring-boot.version>
-        <cxf.version>3.5.10</cxf.version>          <!-- Versión estable para JDK 8 -->
+        <cxf.version>3.5.10</cxf.version>
     </properties>
 
     <dependencies>
@@ -29,13 +29,12 @@
             <version>${spring-boot.version}</version>
         </dependency>
 
-        <!-- CXF para runtime del cliente SOAP -->
+        <!-- CXF Runtime para el cliente SOAP -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
             <version>${cxf.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
@@ -45,6 +44,7 @@
 
     <build>
         <plugins>
+            <!-- Compilador JDK 8 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -55,7 +55,7 @@
                 </configuration>
             </plugin>
 
-            <!-- ==================== CXF CODEGEN PLUGIN ==================== -->
+            <!-- ==================== CXF CODEGEN (CORREGIDO) ==================== -->
             <plugin>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-codegen-plugin</artifactId>
@@ -71,16 +71,15 @@
                             <sourceRoot>${project.build.directory}/generated-sources/cxf</sourceRoot>
                             <wsdlOptions>
                                 <wsdlOption>
-                                    <!-- Cambia esto por tu archivo o URL -->
+                                    <!-- Ruta a tu WSDL (cámbiala si es necesario) -->
                                     <wsdl>src/main/resources/wsdl/VehicleUploadWS.wsdl</wsdl>
                                     
-                                    <!-- Paquete base -->
+                                    <!-- Paquete donde se generarán las clases -->
                                     <packageName>com.arcos.client.vehup</packageName>
                                     
-                                    <!-- Opciones recomendadas para evitar duplicados -->
+                                    <!-- Ayuda a resolver conflictos de nombres duplicados (muy útil en tu caso) -->
                                     <extraArgs>
-                                        <extraArg>-autoNameResolution</extraArg>   <!-- Intenta resolver conflictos automáticamente -->
-                                        <!-- <extraArg>-verbose</extraArg> -->
+                                        <extraArg>-autoNameResolution</extraArg>
                                     </extraArgs>
                                 </wsdlOption>
                             </wsdlOptions>
@@ -89,6 +88,7 @@
                 </executions>
             </plugin>
 
+            <!-- Spring Boot plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
