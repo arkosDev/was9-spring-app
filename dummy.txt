@@ -10,3 +10,7 @@
     <bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/>
 </mvc:message-converters>
 
+return ResponseEntity.ok()
+    .contentType(MediaType.APPLICATION_XML)
+    .header("Content-Disposition", "attachment; filename=\"archivo.xml\"")
+    .body(blob);
