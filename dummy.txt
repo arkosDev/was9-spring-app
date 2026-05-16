@@ -14,3 +14,12 @@ return ResponseEntity.ok()
     .contentType(MediaType.APPLICATION_XML)
     .header("Content-Disposition", "attachment; filename=\"archivo.xml\"")
     .body(blob);
+
+return jdbcTemplate.queryForObject(
+    Q_SOLICITUD.toString(),
+    params.toArray(),
+    (rs, rowNum) -> {
+        Blob blob = rs.getBlob(1);
+        return IOUtils.toByteArray(blob.getBinaryStream());
+    }
+);
