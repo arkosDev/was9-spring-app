@@ -23,3 +23,37 @@ return jdbcTemplate.queryForObject(
         return IOUtils.toByteArray(blob.getBinaryStream());
     }
 );
+
+
+@GetMapping("/excel")
+public ResponseEntity<byte[]> descargarExcel() throws IOException {
+    List<Producto> productos = productoService.listarActivos();
+    byte[] excel = productoService.generarExcel(productos);
+
+    return ResponseEntity.ok()
+        .contentType(MediaType.parseMediaType(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+        .header("Content-Disposition", "attachment; filename=\"productos.xlsx\"")
+        .body(excel);
+}
+
+<task:annotation-driven executor="taskExecutor"/>
+
+<task:executor id="taskExecutor" 
+               pool-size="5-10" 
+               queue-capacity="25"/>
+
+@GetMapping("/excel")
+public ResponseEntity<byte[]> descargarExcel() throws Exception {
+    List<Producto> productos = productoService.listarActivos();
+    Future<byte[]> future = productoService.generarExcelAsync(productos);
+    byte[] excel = future.get(); // espera el resultado
+    
+    return ResponseEntity.ok()
+        .contentType(MediaType.parseMediaType(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+        .header("Content-Disposition", "attachment; filename=\"productos.xlsx\"")
+        .body(excel);
+}
+
+
