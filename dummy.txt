@@ -57,3 +57,11 @@ public ResponseEntity<byte[]> descargarExcel() throws Exception {
 }
 
 
+
+public static CellStyle createDateStyle(Workbook workbook) {
+    CellStyle dateStyle = workbook.createCellStyle();
+    CreationHelper helper = workbook.getCreationHelper();
+    dateStyle.setDataFormat(helper.createDataFormat().getFormat("dd/MM/yyyy HH:mm:ss"));
+    return dateStyle;
+}
+
