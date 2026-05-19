@@ -65,3 +65,63 @@ public static CellStyle createDateStyle(Workbook workbook) {
     return dateStyle;
 }
 
+<dependency>
+    <groupId>com.itextpdf</groupId>
+    <artifactId>itextpdf</artifactId>
+    <version>5.5.13.3</version>
+</dependency>
+
+public byte[] generarPdf(List<Producto> productos) throws IOException {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    Document document = new Document();
+
+    try {
+        PdfWriter.getInstance(document, out);
+        document.open();
+
+        // tabla con 4 columnas
+        PdfPTable tabla = new PdfPTable(4);
+        tabla.setWidthPercentage(100);
+
+        // encabezados
+        tabla.addCell("ID");
+        tabla.addCell("Nombre");
+        tabla.addCell("Precio");
+        tabla.addCell("Activo");
+
+        // datos
+        for (Producto p : productos) {
+            tabla.addCell(String.valueOf(p.getId()));
+            tabla.addCell(p.getNombre());
+            tabla.addCell(String.valueOf(p.getPrecio()));
+            tabla.addCell(String.valueOf(p.isActivo()));
+        }
+
+        document.add(tabla);
+
+    } finally {
+        document.close();
+    }
+
+    return out.toByteArray();
+}
+
+return ResponseEntity.ok()
+    .contentType(MediaType.APPLICATION_PDF)
+    .header("Content-Disposition", "attachment; filename=\"reporte.pdf\"")
+    .body(bytes);
+
+byte[] pdfBytes = mockMvc
+    .perform(post("/solicitud/createPDF")
+        .header("axaHeaderReq", this.getAxaH())
+        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(solReq)))
+    .andExpect(status().isOk())
+    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PDF))
+    .andReturn()
+    .getResponse()
+    .getContentAsByteArray();
+
+Files.write(Paths.get("C:/tmp/resultado.pdf"), pdfBytes);
+
+
+
