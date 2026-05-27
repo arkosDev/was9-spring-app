@@ -130,3 +130,38 @@ logger.authn.name=org.wso2.carbon.identity.application.authentication.framework
 logger.authn.level=DEBUG
 
 oauth,authn
+======================================================
+FIX 1 - home.jsp : reemplazar metodo safe() al final
+======================================================
+ 
+QUITAR esto:
+<%!
+    private String safe(String s) {
+        if (s == null) return "<em style='color:#999'>-</em>";
+        return org.apache.commons.lang.StringEscapeUtils.escapeHtml(s);
+    }
+%>
+ 
+PONER esto:
+<%!
+    private String safe(String s) {
+        if (s == null) return "<em style='color:#999'>-</em>";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
+%>
+ 
+ 
+======================================================
+FIX 2 - OidcCallbackFilter.java : claim preferred_username
+======================================================
+ 
+QUITAR esto:
+userSession.setPreferredUsername(getString(userInfo, "preferred_username"));
+ 
+PONER esto:
+userSession.setPreferredUsername(getString(userInfo, "username")); // WSO2 manda "username" no "preferred_username"
+ 
+
