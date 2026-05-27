@@ -123,5 +123,10 @@ byte[] pdfBytes = mockMvc
 
 Files.write(Paths.get("C:/tmp/resultado.pdf"), pdfBytes);
 
+logger.oauth.name=org.wso2.carbon.identity.oauth2
+logger.oauth.level=DEBUG
 
+logger.authn.name=org.wso2.carbon.identity.application.authentication.framework
+logger.authn.level=DEBUG
 
+oauth,authn
