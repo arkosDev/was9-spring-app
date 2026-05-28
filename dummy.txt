@@ -210,3 +210,114 @@ POR esto:
         .build();
 }
 
+======================================================
+REEMPLAZAR metodo exchangeCodeForTokens completo
+Usa HttpURLConnection en lugar de HttpClient
+======================================================
+
+IMPORTS a agregar:
+-----------------
+import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
+IMPORTS a QUITAR (ya no se usan):
+----------------------------------
+import org.apache.http.*
+import org.apache.http.client.*
+import org.apache.http.impl.client.*
+import org.apache.http.conn.ssl.*
+
+
+REEMPLAZAR metodo completo:
+---------------------------
+private String exchangeCodeForTokens(String code, String codeVerifier) throws IOException {
+
+    try {
+        String tokenEndpoint = FrameworkConfig.getProperty("oidc.oneaccount.tokenEndpoint");
+        String clientId      = FrameworkConfig.getProperty("oidc.oneaccount.clientId");
+        String secret        = FrameworkConfig.getProperty("oidc.oneaccount.secret");
+        String redirectUri   = FrameworkConfig.getProperty("oidc.oneaccount.redirectUri");
+
+        // Body del request
+        StringBuilder body = new StringBuilder();
+        body.append("grant_type=authorization_code");
+        body.append("&code=").append(URLEncoder.encode(code, "UTF-8"));
+        body.append("&redirect_uri=").append(URLEncoder.encode(redirectUri, "UTF-8"));
+        body.append("&code_verifier=").append(URLEncoder.encode(codeVerifier, "UTF-8"));
+
+        // Basic Auth: Base64(clientId:secret)
+        String credentials = clientId + ":" + secret;
+        String encoded = javax.xml.bind.DatatypeConverter.printBase64Binary(
+                credentials.getBytes("UTF-8"));
+
+        // Abrir conexion
+        URL url = new URL(tokenEndpoint);
+        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+
+        // Trust all certs (WSO2 con cert self-signed)
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(null, new TrustManager[]{
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() { return null; }
+                public void checkClientTrusted(X509Certificate[] c, String a) {}
+                public void checkServerTrusted(X509Certificate[] c, String a) {}
+            }
+        }, new SecureRandom());
+        conn.setSSLSocketFactory(sslContext.getSocketFactory());
+        conn.setHostnameVerifier(new HostnameVerifier() {
+            public boolean verify(String hostname, SSLSession session) { return true; }
+        });
+
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(30000);
+        conn.setReadTimeout(30000);
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        conn.setRequestProperty("Authorization", "Basic " + encoded);
+
+        // Enviar body
+        OutputStream os = conn.getOutputStream();
+        os.write(body.toString().getBytes("UTF-8"));
+        os.flush();
+        os.close();
+
+        int status = conn.getResponseCode();
+
+        // Leer respuesta
+        BufferedReader br;
+        if (status >= 200 && status < 300) {
+            br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+        } else {
+            br = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+        }
+        StringBuilder responseBody = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) responseBody.append(line);
+        br.close();
+
+        logger.info("Token endpoint status: " + status + ", body: " + responseBody);
+
+        if (status < 200 || status >= 300) {
+            throw new IOException("Token endpoint error. status: " + status + " body: " + responseBody);
+        }
+
+        return responseBody.toString();
+
+    } catch (IOException e) {
+        throw e;
+    } catch (Exception e) {
+        throw new IOException("Error en exchangeCodeForTokens: " + e.getMessage(), e);
+    }
+}
+
