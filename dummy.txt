@@ -321,3 +321,18 @@ private String exchangeCodeForTokens(String code, String codeVerifier) throws IO
     }
 }
 
+String proxyHost = FrameworkConfig.getProperty("proxy.host");
+String proxyPort = FrameworkConfig.getProperty("proxy.port");
+
+if (proxyHost != null && !proxyHost.trim().isEmpty() 
+    && proxyPort != null && !proxyPort.trim().isEmpty()) {
+    Proxy proxy = new Proxy(Proxy.Type.HTTP, 
+        new InetSocketAddress(proxyHost.trim(), 
+                              Integer.parseInt(proxyPort.trim())));
+    conn = (HttpsURLConnection) url.openConnection(proxy);
+} else {
+    conn = (HttpsURLConnection) url.openConnection();
+}
+
+
+
