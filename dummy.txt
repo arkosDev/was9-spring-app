@@ -164,4 +164,47 @@ userSession.setPreferredUsername(getString(userInfo, "preferred_username"));
 PONER esto:
 userSession.setPreferredUsername(getString(userInfo, "username")); // WSO2 manda "username" no "preferred_username"
  
+======================================================
+FIX - exchangeCodeForTokens : forzar TLSv1.2 en JDK7
+======================================================
+
+IMPORTS a agregar:
+-----------------
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+
+
+REEMPLAZAR esto:
+----------------
+} else {
+    logger.info("Sin proxy configurado. Se usa HttpClient default.");
+    httpClient = HttpClients.createDefault();
+}
+
+POR esto:
+---------
+} else {
+    logger.info("Sin proxy configurado. Forzando TLSv1.2.");
+    SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+    sslContext.init(null, new TrustManager[]{
+        new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() { return null; }
+            public void checkClientTrusted(X509Certificate[] c, String a) {}
+            public void checkServerTrusted(X509Certificate[] c, String a) {}
+        }
+    }, new SecureRandom());
+    SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(
+        sslContext,
+        new String[]{"TLSv1.2"},
+        null,
+        SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER
+    );
+    httpClient = HttpClients.custom()
+        .setSSLSocketFactory(sslFactory)
+        .build();
+}
 
