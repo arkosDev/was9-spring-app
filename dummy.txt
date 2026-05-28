@@ -163,9 +163,10 @@ userSession.setPreferredUsername(getString(userInfo, "preferred_username"));
  
 PONER esto:
 userSession.setPreferredUsername(getString(userInfo, "username")); // WSO2 manda "username" no "preferred_username"
- 
+
 ======================================================
 FIX - exchangeCodeForTokens : forzar TLSv1.2 en JDK7
+HttpClient 4.5.13
 ======================================================
 
 IMPORTS a agregar:
@@ -176,6 +177,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 
 
 REEMPLAZAR esto:
@@ -201,7 +203,7 @@ POR esto:
         sslContext,
         new String[]{"TLSv1.2"},
         null,
-        SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER
+        NoopHostnameVerifier.INSTANCE
     );
     httpClient = HttpClients.custom()
         .setSSLSocketFactory(sslFactory)
