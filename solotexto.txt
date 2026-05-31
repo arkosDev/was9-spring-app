@@ -28,3 +28,54 @@ public class XmlParserInitListener implements ServletContextListener {
 <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 </listener>
+
+package com.axa.seguros.autos.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jndi.JndiObjectFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+
+@Configuration
+@ComponentScan("com.axa.seguros")
+@EnableTransactionManagement
+public class AppConfig {
+
+    @Bean
+    public DataSource dataSource() throws Exception {
+        JndiObjectFactoryBean jndi = new JndiObjectFactoryBean();
+        jndi.setJndiName("EmisionPolizasWSDataSource");
+        jndi.setResourceRef(false);
+        jndi.setExpectedType(DataSource.class);
+        jndi.afterPropertiesSet();
+        return (DataSource) jndi.getObject();
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() throws Exception {
+        return new JdbcTemplate(dataSource());
+    }
+
+    @Bean
+    public DataSourceTransactionManager transactionManager() throws Exception {
+        return new DataSourceTransactionManager(dataSource());
+    }
+}
+
+<context-param>
+    <param-name>contextClass</param-name>
+    <param-value>
+        org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+    </param-value>
+</context-param>
+
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>com.axa.seguros.autos.config.AppConfig</param-value>
+</context-param>
+
