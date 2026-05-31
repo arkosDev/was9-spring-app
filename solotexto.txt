@@ -1,193 +1,67 @@
-package com.axa.seguros.autos.config;
+public class DateAdapter extends XmlAdapter<String, Timestamp> {
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.annotation.WebListener;
-
-@WebListener
-public class XmlParserInitListener implements ServletContextListener {
+    private static final String FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-            "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
-        System.setProperty("javax.xml.parsers.SAXParserFactory",
-            "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
-        System.setProperty("javax.xml.transform.TransformerFactory",
-            "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
+    public Timestamp unmarshal(String v) throws Exception {
+        return Timestamp.valueOf(v);
     }
 
     @Override
-    public void contextDestroyed(ServletContextEvent sce) {}
-}
-
-<listener>
-    <listener-class>com.axa.seguros.autos.config.XmlParserInitListener</listener-class>
-</listener>
-
-<listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-</listener>
-
-package com.axa.seguros.autos.config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jndi.JndiObjectFactoryBean;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import javax.sql.DataSource;
-
-@Configuration
-@ComponentScan("com.axa.seguros")
-@EnableTransactionManagement
-public class AppConfig {
-
-    @Bean
-    public DataSource dataSource() throws Exception {
-        JndiObjectFactoryBean jndi = new JndiObjectFactoryBean();
-        jndi.setJndiName("EmisionPolizasWSDataSource");
-        jndi.setResourceRef(false);
-        jndi.setExpectedType(DataSource.class);
-        jndi.afterPropertiesSet();
-        return (DataSource) jndi.getObject();
-    }
-
-    @Bean
-    public JdbcTemplate jdbcTemplate() throws Exception {
-        return new JdbcTemplate(dataSource());
-    }
-
-    @Bean
-    public DataSourceTransactionManager transactionManager() throws Exception {
-        return new DataSourceTransactionManager(dataSource());
+    public String marshal(Timestamp v) throws Exception {
+        if (v == null) return null;
+        return new SimpleDateFormat(FORMAT).format(v);
     }
 }
 
-<context-param>
-    <param-name>contextClass</param-name>
-    <param-value>
-        org.springframework.web.context.support.AnnotationConfigWebApplicationContext
-    </param-value>
-</context-param>
+@XmlElement(name = "fechaSolicitud")
+@XmlJavaTypeAdapter(DateAdapter.class)
+private Timestamp fecha;
 
-<context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>com.axa.seguros.autos.config.AppConfig</param-value>
-</context-param>
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+public class MapAdapter extends XmlAdapter<MapAdapter.MapElements, Map<String, Integer>> {
 
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+    public static class MapElements {
+        @XmlElement(name = "entrada")
+        public List<MapEntry> entries = new ArrayList<>();
+    }
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+    public static class MapEntry {
+        @XmlElement(name = "clave")
+        public String key;
+        @XmlElement(name = "valor")
+        public Integer value;
 
-    <logger name="com.axa.seguros" level="DEBUG"/>
-    <logger name="org.springframework"  level="INFO"/>
-    <logger name="org.springframework.jdbc" level="DEBUG"/>
+        public MapEntry() {}
+        public MapEntry(String key, Integer value) {
+            this.key   = key;
+            this.value = value;
+        }
+    }
 
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    @Override
+    public Map<String, Integer> unmarshal(MapElements v) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        for (MapEntry e : v.entries) map.put(e.key, e.value);
+        return map;
+    }
 
-</configuration>
-
-<dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-test</artifactId>
-    <version>${spring.version}</version>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>junit</groupId>
-    <artifactId>junit</artifactId>
-    <version>4.13.2</version>
-    <scope>test</scope>
-</dependency>
-
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = AppConfig.class)
-public class SolicitudServiceIT {
-
-    @Autowired
-    private SolicitudService solicitudService;
-
-    @Test
-    public void testGetSolicitudes() {
-        SolicitudResp resp = solicitudService.getSolicitudes();
-        assertNotNull(resp);
-        assertNotNull(resp.getSolicitudes());
-        System.out.println("Total: " + resp.getSize());
+    @Override
+    public MapElements marshal(Map<String, Integer> v) {
+        MapElements elements = new MapElements();
+        if (v != null) {
+            for (Map.Entry<String, Integer> e : v.entrySet()) {
+                elements.entries.add(new MapEntry(e.getKey(), e.getValue()));
+            }
+        }
+        return elements;
     }
 }
 
-@Configuration
-@ComponentScan("com.axa.seguros")
-@EnableTransactionManagement
-@PropertySource("classpath:application-test.properties")
-public class AppTestConfig {
-
-    @Value("${db.url}")
-    private String url;
-
-    @Value("${db.username}")
-    private String username;
-
-    @Value("${db.password}")
-    private String password;
-
-    @Bean
-    public DataSource dataSource() {
-        org.springframework.jdbc.datasource.DriverManagerDataSource ds = 
-            new org.springframework.jdbc.datasource.DriverManagerDataSource();
-        ds.setDriverClassName("com.ibm.db2.jcc.DB2Driver");
-        ds.setUrl(url);
-        ds.setUsername(username);
-        ds.setPassword(password);
-        return ds;
-    }
-
-    @Bean
-    public JdbcTemplate jdbcTemplate() throws Exception {
-        return new JdbcTemplate(dataSource());
-    }
-
-    @Bean
-    public DataSourceTransactionManager transactionManager() throws Exception {
-        return new DataSourceTransactionManager(dataSource());
-    }
-}
-
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = AppTestConfig.class)
-public class SolicitudServiceIT {
-
-    @Autowired
-    private SolicitudService solicitudService;
-
-    @Test
-    public void testGetSolicitudes() {
-        SolicitudResp resp = solicitudService.getSolicitudes();
-        assertNotNull(resp);
-    }
-}
-
-@Test
-public void testSerializaXML() throws Exception {
-    SolicitudResp resp = solicitudService.getSolicitudes();
-    
-    JAXBContext context = JAXBContext.newInstance(SolicitudResp.class);
-    Marshaller marshaller = context.createMarshaller();
-    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-    marshaller.marshal(resp, System.out);
-}
+@XmlElement(name = "estatusSolicitud")
+@XmlJavaTypeAdapter(MapAdapter.class)
+private Map<String, Integer> estatus;
 
 
 
