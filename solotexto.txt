@@ -98,3 +98,97 @@ public class AppConfig {
     </root>
 
 </configuration>
+
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>${spring.version}</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = AppConfig.class)
+public class SolicitudServiceIT {
+
+    @Autowired
+    private SolicitudService solicitudService;
+
+    @Test
+    public void testGetSolicitudes() {
+        SolicitudResp resp = solicitudService.getSolicitudes();
+        assertNotNull(resp);
+        assertNotNull(resp.getSolicitudes());
+        System.out.println("Total: " + resp.getSize());
+    }
+}
+
+@Configuration
+@ComponentScan("com.axa.seguros")
+@EnableTransactionManagement
+@PropertySource("classpath:application-test.properties")
+public class AppTestConfig {
+
+    @Value("${db.url}")
+    private String url;
+
+    @Value("${db.username}")
+    private String username;
+
+    @Value("${db.password}")
+    private String password;
+
+    @Bean
+    public DataSource dataSource() {
+        org.springframework.jdbc.datasource.DriverManagerDataSource ds = 
+            new org.springframework.jdbc.datasource.DriverManagerDataSource();
+        ds.setDriverClassName("com.ibm.db2.jcc.DB2Driver");
+        ds.setUrl(url);
+        ds.setUsername(username);
+        ds.setPassword(password);
+        return ds;
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() throws Exception {
+        return new JdbcTemplate(dataSource());
+    }
+
+    @Bean
+    public DataSourceTransactionManager transactionManager() throws Exception {
+        return new DataSourceTransactionManager(dataSource());
+    }
+}
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = AppTestConfig.class)
+public class SolicitudServiceIT {
+
+    @Autowired
+    private SolicitudService solicitudService;
+
+    @Test
+    public void testGetSolicitudes() {
+        SolicitudResp resp = solicitudService.getSolicitudes();
+        assertNotNull(resp);
+    }
+}
+
+@Test
+public void testSerializaXML() throws Exception {
+    SolicitudResp resp = solicitudService.getSolicitudes();
+    
+    JAXBContext context = JAXBContext.newInstance(SolicitudResp.class);
+    Marshaller marshaller = context.createMarshaller();
+    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+    marshaller.marshal(resp, System.out);
+}
+
+
+
+
