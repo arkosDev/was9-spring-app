@@ -1,6 +1,216 @@
-HttpServletRequest request = (HttpServletRequest) MessageContext
-    .getCurrentContext()
-    .getProperty(org.apache.axis.transport.http.HTTPConstants.MC_HTTP_SERVLETREQUEST);
+/** valor original chrNumPoliza */
+    private String numPol;
 
-ServletContext sc = request.getSession().getServletContext();
+    /** valor original chrTipoPoliza */
+    private String tipPol;
+
+    /** valor original dteFechaDesde */
+    private Date fecDesde;
+
+    /** valor original dteFechaHasta */
+    private Date fecHasta;
+
+    /** valor original dteFechaEmision */
+    private Date fecEmi;
+
+    /** valor original chrEstadoPol */
+    private String estPol;
+
+    /** valor original dteFechaCance */
+    private Date fecCance;
+
+    /** valor original chrSubramo */
+    private String subramo;
+
+    /** valor original chrFormaPago */
+    private String formPago;
+
+    /** valor original chrMoneda */
+    private String moneda;
+
+    /** valor original intAgente */
+    private Integer agente;
+
+    /** valor original intCentroCosto */
+    private Integer centCosto;
+
+    /** valor original chrTipoPersona */
+    private String tipPersona;
+
+    /** valor original chrNombreCte */
+    private String nomCte;
+
+    /** valor original chrApPaternoCte */
+    private String apPatCte;
+
+    /** valor original chrApMaternoCte */
+    private String apMatCte;
+
+    /** valor original chrRFC */
+    private String valRFC;
+
+    /** valor original chrDireccion */
+    private String direccion;
+
+    /** valor original chrColonia */
+    private String colonia;
+
+    /** valor original intCodPostal */
+    private Integer codPost;
+
+    /** valor original chrDescEstado */
+    private String descEst;
+
+    /** valor original chrDescPobla */
+    private String descPob;
+
+    /** valor original chrTelefono */
+    private String telefono;
+
+    /** valor original chrPolizaAnt */
+    private String polAnt;
+
+    /** valor original chrPolizaSig */
+    private String polSig;
+
+    /** valor original lgcPagoTarjeta */
+    private Boolean pagTarj;
+
+    /** valor original chrTarifaAlta */
+    private String tarifAlta;
+
+    /** valor original intArrendador */
+    private Integer arrendador;
+
+    /** valor original intVersion */
+    private Integer version;
+
+    /** valor original dcmDescExp */
+    private BigDecimal descExp;
+
+    /** valor original dcmDescVol */
+    private BigDecimal descVol;
+
+    /** valor original chrServidora */
+    private String servidora;
+
+    /** valor original chrAfianzadora */
+    private String afianzadora;
+
+    /** valor original chrClaveAmis */
+    private String claveAmis;
+
+    /** valor original intIndTar */
+    private Integer indTar;
+
+    /** valor original chrTarifa */
+    private String tarifa;
+
+    /** valor original intModelo */
+    private Integer modelo;
+
+    /** valor original chrMarca */
+    private String marca;
+
+    /** valor original chrDescVeh */
+    private String descVeh;
+
+    /** valor original intOcupantes */
+    private Integer ocupantes;
+
+    /** valor original chrMotor */
+    private String motor;
+
+    /** valor original chrSerieVeh */
+    private String serieVeh;
+
+    /** valor original chrPlacas */
+    private String placas;
+
+    /** valor original chrEdoPlacas */
+    private String edoPlacas;
+
+    /** valor original intUso */
+    private Integer uso;
+
+    /** valor original chrDescUso */
+    private String descUso;
+
+    /** valor original chrServicio */
+    private String servicio;
+
+    /** valor original chrTipoCarga */
+    private String tipoCarga;
+
+    /** valor original dcmPorcSuma */
+    private BigDecimal porcSuma;
+
+    /** valor original intValorVeh */
+    private Integer valorVeh;
+
+    /** valor original chrValorCom */
+    private String valorCom;
+
+    /** valor original intDedDM */
+    private Integer dedDM;
+
+    /** valor original intDedRB */
+    private Integer dedRB;
+
+    /** valor original intDedRC */
+    private Integer dedRC;
+
+    /** valor original intSumaRC */
+    private Integer sumaRC;
+
+    /** valor original intSumaRCP */
+    private Integer sumaRCP;
+
+    /** valor original intSumaAcc */
+    private Integer sumaAcc;
+
+    /** valor original intSumaAutoSust */
+    private Integer sumaAutoSust;
+
+    /** valor original intSumaGtosMed */
+    private Integer sumaGtosMed;
+
+    /** valor original lgcFianza */
+    private Boolean fianza;
+
+    /** valor original lgcSigueConAuto */
+    private Boolean sigConAuto;
+
+    /** valor original intSumaFianza */
+    private Integer sumFianza;
+
+    /** valor original intSumaEqEsp */
+    private Integer sumEqEsp;
+
+    /** valor original intSumaAdapta */
+    private Integer sumAdapta;
+
+    /** valor original intSumaRoboExt */
+    private Integer sumRoboExt;
+
+    /** valor original intSumaRoboInt */
+    private Integer sumRoboInt;
+
+    /** valor original intSumaViaj */
+    private Integer sumViaj;
+
+    /** valor original lgcDobleRemol */
+    private Boolean dobRemol;
+
+    /** valor original lgcAmplRC */
+    private Boolean amplRC;
+
+    /** valor original lgcPrix */
+    private Boolean valPrix;
+
+    /** valor original lgcExtRC */
+    private Boolean extRC;
+
+    /** valor original lgcSUVA */
+    private Boolean valSUVA;
 
