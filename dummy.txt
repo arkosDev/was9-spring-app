@@ -1,216 +1,329 @@
-/** valor original chrNumPoliza */
-    private String numPol;
-
-    /** valor original chrTipoPoliza */
-    private String tipPol;
-
-    /** valor original dteFechaDesde */
-    private Date fecDesde;
-
-    /** valor original dteFechaHasta */
-    private Date fecHasta;
-
-    /** valor original dteFechaEmision */
-    private Date fecEmi;
-
-    /** valor original chrEstadoPol */
-    private String estPol;
-
-    /** valor original dteFechaCance */
-    private Date fecCance;
-
-    /** valor original chrSubramo */
-    private String subramo;
-
-    /** valor original chrFormaPago */
-    private String formPago;
-
-    /** valor original chrMoneda */
-    private String moneda;
-
-    /** valor original intAgente */
-    private Integer agente;
-
-    /** valor original intCentroCosto */
-    private Integer centCosto;
-
-    /** valor original chrTipoPersona */
-    private String tipPersona;
-
-    /** valor original chrNombreCte */
-    private String nomCte;
-
-    /** valor original chrApPaternoCte */
-    private String apPatCte;
-
-    /** valor original chrApMaternoCte */
-    private String apMatCte;
-
-    /** valor original chrRFC */
-    private String valRFC;
-
-    /** valor original chrDireccion */
-    private String direccion;
-
-    /** valor original chrColonia */
-    private String colonia;
-
-    /** valor original intCodPostal */
-    private Integer codPost;
-
-    /** valor original chrDescEstado */
-    private String descEst;
-
-    /** valor original chrDescPobla */
-    private String descPob;
-
-    /** valor original chrTelefono */
-    private String telefono;
-
-    /** valor original chrPolizaAnt */
-    private String polAnt;
-
-    /** valor original chrPolizaSig */
-    private String polSig;
-
-    /** valor original lgcPagoTarjeta */
-    private Boolean pagTarj;
-
-    /** valor original chrTarifaAlta */
-    private String tarifAlta;
-
-    /** valor original intArrendador */
-    private Integer arrendador;
-
-    /** valor original intVersion */
-    private Integer version;
-
-    /** valor original dcmDescExp */
-    private BigDecimal descExp;
-
-    /** valor original dcmDescVol */
-    private BigDecimal descVol;
-
-    /** valor original chrServidora */
-    private String servidora;
-
-    /** valor original chrAfianzadora */
-    private String afianzadora;
-
-    /** valor original chrClaveAmis */
-    private String claveAmis;
-
-    /** valor original intIndTar */
-    private Integer indTar;
-
-    /** valor original chrTarifa */
-    private String tarifa;
-
-    /** valor original intModelo */
-    private Integer modelo;
-
-    /** valor original chrMarca */
-    private String marca;
-
-    /** valor original chrDescVeh */
-    private String descVeh;
-
-    /** valor original intOcupantes */
-    private Integer ocupantes;
-
-    /** valor original chrMotor */
-    private String motor;
-
-    /** valor original chrSerieVeh */
-    private String serieVeh;
-
-    /** valor original chrPlacas */
-    private String placas;
-
-    /** valor original chrEdoPlacas */
-    private String edoPlacas;
-
-    /** valor original intUso */
-    private Integer uso;
-
-    /** valor original chrDescUso */
-    private String descUso;
-
-    /** valor original chrServicio */
-    private String servicio;
-
-    /** valor original chrTipoCarga */
-    private String tipoCarga;
-
-    /** valor original dcmPorcSuma */
-    private BigDecimal porcSuma;
-
-    /** valor original intValorVeh */
-    private Integer valorVeh;
-
-    /** valor original chrValorCom */
-    private String valorCom;
-
-    /** valor original intDedDM */
-    private Integer dedDM;
-
-    /** valor original intDedRB */
-    private Integer dedRB;
-
-    /** valor original intDedRC */
-    private Integer dedRC;
-
-    /** valor original intSumaRC */
-    private Integer sumaRC;
-
-    /** valor original intSumaRCP */
-    private Integer sumaRCP;
-
-    /** valor original intSumaAcc */
-    private Integer sumaAcc;
-
-    /** valor original intSumaAutoSust */
-    private Integer sumaAutoSust;
-
-    /** valor original intSumaGtosMed */
-    private Integer sumaGtosMed;
-
-    /** valor original lgcFianza */
-    private Boolean fianza;
-
-    /** valor original lgcSigueConAuto */
-    private Boolean sigConAuto;
-
-    /** valor original intSumaFianza */
-    private Integer sumFianza;
-
-    /** valor original intSumaEqEsp */
-    private Integer sumEqEsp;
-
-    /** valor original intSumaAdapta */
-    private Integer sumAdapta;
-
-    /** valor original intSumaRoboExt */
-    private Integer sumRoboExt;
-
-    /** valor original intSumaRoboInt */
-    private Integer sumRoboInt;
-
-    /** valor original intSumaViaj */
-    private Integer sumViaj;
-
-    /** valor original lgcDobleRemol */
-    private Boolean dobRemol;
-
-    /** valor original lgcAmplRC */
-    private Boolean amplRC;
-
-    /** valor original lgcPrix */
-    private Boolean valPrix;
-
-    /** valor original lgcExtRC */
-    private Boolean extRC;
-
-    /** valor original lgcSUVA */
-    private Boolean valSUVA;
-
+@Autowired
+    private AppServerHolder appSHolder;
+
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void consultaPolizaProgress(String numeroPoliza, RespuEmmaPolDto respuestaPolVO,
+            Map<String, Boolean> filtros) throws ProcesException, AppServException, ChangeStatException {
+
+        logger.info("***  ENTRA A EMMAPOLIZASZPROXY.CONSULTAPOLIZAPROGRESS  ***");
+        /** Se obtiene un objeto con la conexion a progress */
+        logger.info("consultaPolizaProgres - Conexion AppServer " + appSHolder.getAppServer());
+
+        ConsultaAutos emma =
+                EmmaPolUtil.connectToProgress(appSHolder.getAppServer(), ConsultaAutos.class);
+
+        /** Definicion de vectores */
+        Vector vectorAux = new Vector();
+        Vector ttPoliza = new Vector();
+
+        /** Definicion de resultSetHolders donde se almacenaran las respuestas de progress */
+        ResultSetHolder ttConsPoliza = new ResultSetHolder();
+        ResultSetHolder ttConsBeneficiario = new ResultSetHolder();
+        ResultSetHolder ttConsNombreYO = new ResultSetHolder();
+
+        ttPoliza.add(numeroPoliza);
+        vectorAux.add(ttPoliza);
+
+        try {
+            emma.pstmconsultagralespolB2B(new Vector2ResultSet(vectorAux), ttConsPoliza,
+                    ttConsBeneficiario, ttConsNombreYO);
+
+            if (isFiltroActivo(filtros, KEY_CONSULTA_GENERALES)) {
+                llenaVPoliza(ttConsPoliza, respuestaPolVO);
+            } else {
+                closeResultSet(ttConsPoliza,
+                        "ERROR AL CERRAR EL RESULTSET AUXILIAR DE LA CONSULTA DE DATOS GENERALES");
+            }
+
+            if (isFiltroActivo(filtros, KEY_CONSULTA_BENEFICIARIO)) {
+                llenaVBeneficiario(ttConsBeneficiario, respuestaPolVO);
+            } else {
+                closeResultSet(ttConsBeneficiario,
+                        "ERROR AL CERRAR EL RESULTSET AUXILIAR DE LA CONSULTA DE BENEFICIARIOS");
+            }
+
+            if (isFiltroActivo(filtros, KEY_CONSULTA_CLIENTEYO)) {
+                llenaVContratanteYO(ttConsNombreYO, respuestaPolVO);
+            } else {
+                closeResultSet(ttConsNombreYO,
+                        "ERROR AL CERRAR EL RESULTSET AUXILIAR DE LA CONSULTA DE CLIENTESY/O");
+            }
+
+            if (isFiltroActivo(filtros, KEY_CONSULTA_CONDUCTORES_REGISTRADOS)) {
+                logger.info("*** KEY_CONSULTA_CONDUCTORES_REGISTRADOS  *** ES TRUE");
+                consultaConductoresProgress(numeroPoliza, respuestaPolVO);
+            }
+
+            if (isFiltroActivo(filtros, KEY_CONSULTA_BENEFICIARIOS_ACCIDENTES)) {
+                logger.info("*** KEY_CONSULTA_BENEFICIARIOS_ACCIDENTES  *** ES TRUE");
+                consultaBenefAccidentesProgress(numeroPoliza, respuestaPolVO);
+            }
+
+        } catch (RunTime4GLException e) {
+            throw new ProcesException(
+                    EjecutarMetodo + "emma.pstmconsultagralespolB2B -(RunTime4GLException) " + e.getMessage(),
+                    e);
+        } catch (SystemErrorException e) {
+            throw new ProcesException(EjecutarMetodo
+                    + "emma.pstmconsultagralespolB2B -(SystemErrorException) " + e.getMessage(), e);
+        } catch (Open4GLException e) {
+            throw new ProcesException(
+                    EjecutarMetodo + "emma.pstmconsultagralespolB2B -(Open4GLException) " + e.getMessage(),
+                    e);
+        } catch (Exception e) {
+            throw new ProcesException(
+                    EjecutarMetodo + ": consultaPolizaProgress -(Exception) " + e.getMessage(), e);
+        } finally {
+            try {
+                emma._release();
+            } catch (Exception e) {
+                logger.info(
+                        " La conexion no pudo ser liberada manualmente, sera liberada por el pool de conexiones: "
+                                + e.getMessage());
+            }
+        }
+    }
+
+    private boolean isFiltroActivo(Map<String, Boolean> filtros, String key) {
+        return Optional.ofNullable(filtros)
+                .map(map -> Boolean.TRUE.equals(map.get(key)))
+                .orElse(false);
+    }
+
+    private void closeResultSet(ResultSetHolder holder, String errorMsg) {
+        if (holder == null || holder.getResultSetValue() == null) {
+            return;
+        }
+        try {
+            holder.getResultSetValue().close();
+        } catch (SQLException e) {
+            logger.error(errorMsg, e);
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void llenaVPoliza(ResultSetHolder ttConsPoliza, RespuEmmaPolDto respuestaPolVO)
+            throws ProcesException {
+        try {
+            Vector vectorPolizas = new Vector(EmmaPolUtil.parseResultSet(ttConsPoliza, rs -> {
+                return PolizaDto.builder()
+                        .numPoliza(EmmaPolUtil.getString(rs, "chrNumPoliza"))
+                        .tipPol(EmmaPolUtil.getString(rs, "chrTipoPoliza"))
+                        .fecDesde(rs.getDate("dteFechaDesde"))
+                        .fecHasta(rs.getDate("dteFechaHasta"))
+                        .fecEmi(rs.getDate("dteFechaEmision"))
+                        .estPol(EmmaPolUtil.getString(rs, "chrEstadoPol"))
+                        .fecCance(rs.getDate("dteFechaCance"))
+                        .subramo(EmmaPolUtil.getString(rs, "chrSubramo"))
+                        .formPago(EmmaPolUtil.getString(rs, "chrFormaPago"))
+                        .moneda(EmmaPolUtil.getString(rs, "chrMoneda"))
+                        .agente(rs.getInt("intAgente"))
+                        .centCosto(rs.getInt("intCentroCosto"))
+                        .tipPersona(EmmaPolUtil.getString(rs, "chrTipoPers"))
+                        .nomCte(EmmaPolUtil.getString(rs, "chrNombreCte"))
+                        .apPatCte(EmmaPolUtil.getString(rs, "chrApPaternoCte"))
+                        .apMatCte(EmmaPolUtil.getString(rs, "chrApMaternoCte"))
+                        .valRFC(EmmaPolUtil.getString(rs, "chrRFC"))
+                        .direccion(EmmaPolUtil.getString(rs, "chrDireccion"))
+                        .colonia(EmmaPolUtil.getString(rs, "chrColonia"))
+                        .codPost(rs.getInt("intCodPostal"))
+                        .descEst(EmmaPolUtil.getString(rs, "chrDescEstado"))
+                        .descPob(EmmaPolUtil.getString(rs, "chrDescPobla"))
+                        .telefono(EmmaPolUtil.getString(rs, "chrTelefono"))
+                        .polAnt(EmmaPolUtil.getString(rs, "chrPolizaAnt"))
+                        .polSig(EmmaPolUtil.getString(rs, "chrPolizaSig"))
+                        .pagTarj(rs.getBoolean("lgcPagoTarjeta"))
+                        .tarifAlta(EmmaPolUtil.getString(rs, "chrTarifaAlta"))
+                        .arrendador(rs.getInt("intArrendador"))
+                        .version(rs.getInt("intVersion"))
+                        .descExp(rs.getBigDecimal("dcmDescExp"))
+                        .descVol(rs.getBigDecimal("dcmDescVol"))
+                        .servidora(EmmaPolUtil.getString(rs, "chrServidora"))
+                        .afianzadora(EmmaPolUtil.getString(rs, "chrAfianzadora"))
+                        .claveAmis(EmmaPolUtil.getString(rs, "chrCveAMIS"))
+                        .indTar(rs.getInt("intIndTar"))
+                        .tarifa(EmmaPolUtil.getString(rs, "chrTarifa"))
+                        .modelo(rs.getInt("intModelo"))
+                        .marca(EmmaPolUtil.getString(rs, "chrMarca"))
+                        .descVeh(EmmaPolUtil.getString(rs, "chrDescVeh"))
+                        .ocupantes(rs.getInt("intOcupantes"))
+                        .motor(EmmaPolUtil.getString(rs, "chrMotor"))
+                        .serieVeh(EmmaPolUtil.getString(rs, "chrSerieVeh"))
+                        .placas(EmmaPolUtil.getString(rs, "chrPlacas"))
+                        .edoPlacas(EmmaPolUtil.getString(rs, "chrEdoPlacas"))
+                        .uso(rs.getInt("intUso"))
+                        .descUso(EmmaPolUtil.getString(rs, "chrDescUso"))
+                        .servicio(EmmaPolUtil.getString(rs, "chrServicio"))
+                        .tipoCarga(EmmaPolUtil.getString(rs, "chrTipoCarga"))
+                        .porcSuma(rs.getBigDecimal("dcmPorcSuma"))
+                        .valorVeh(rs.getInt("intValorVeh"))
+                        .valorCom(EmmaPolUtil.getString(rs, "chrValorCom"))
+                        .dedDM(rs.getInt("intDedDM"))
+                        .dedRB(rs.getInt("intDedRB"))
+                        .dedRC(rs.getInt("intDedRC"))
+                        .sumaRC(rs.getInt("intSumaRC"))
+                        .sumaRCP(rs.getInt("intSumaRCP"))
+                        .sumaAcc(rs.getInt("intSumaAcc"))
+                        .sumaAutoSust(rs.getInt("intSumaAutoSust"))
+                        .sumaGtosMed(rs.getInt("intSumaGtosMed"))
+                        .fianza(rs.getBoolean("lgcFianza"))
+                        .sigConAuto(rs.getBoolean("lgcSigueConAuto"))
+                        .sumFianza(rs.getInt("intSumaFianza"))
+                        .sumEqEsp(rs.getInt("intSumaEqEsp"))
+                        .sumAdapta(rs.getInt("intSumaAdapta"))
+                        .sumRoboExt(rs.getInt("intSumaRoboExt"))
+                        .sumRoboInt(rs.getInt("intSumaRoboInt"))
+                        .sumViaj(rs.getInt("intSumaViaj"))
+                        .dobRemol(rs.getBoolean("lgcDobleRemol"))
+                        .amplRC(rs.getBoolean("lgcAmplRC"))
+                        .valPrix(rs.getBoolean("lgcPrix"))
+                        .extRC(rs.getBoolean("lgcExtRC"))
+                        .valSUVA(rs.getBoolean("lgcSUVA"))
+                        .build();
+            }));
+
+            respuestaPolVO.setVConsPoliza(vectorPolizas);
+        } catch (ResSetCallbException e) {
+            throw new ProcesException(
+                    "ERROR AL CONVERTIR DATOS notifyResultSetPolizaProgress -(ResSetCallbException) "
+                            + e.getMessage(),
+                    e);
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void llenaVBeneficiario(ResultSetHolder ttConsBeneficiario, RespuEmmaPolDto respuestaPolVO)
+            throws ProcesException {
+        try {
+            Vector vectorBenef = new Vector(EmmaPolUtil.parseResultSet(ttConsBeneficiario, rs -> {
+                return BeneficiaroDto.builder()
+                        .numPol(EmmaPolUtil.getString(rs, "chrNumPoliza"))
+                        .beneficiario(EmmaPolUtil.getString(rs, "chrBeneficiario"))
+                        .build();
+            }));
+
+            respuestaPolVO.setVConsBeneficiario(vectorBenef);
+        } catch (ResSetCallbException e) {
+            throw new ProcesException(
+                    "ERROR AL CONVERTIR DATOS notifyResultSetBeneficiarioProgress -(ResSetCallbException) "
+                            + e.getMessage(),
+                    e);
+        }
+    }
+
+    private void llenaVContratanteYO(ResultSetHolder ttConsNombreYO, RespuEmmaPolDto respuestaPolVO)
+            throws ProcesException {
+        try {
+            Vector<ClienteYODto> clientes = new Vector<>(EmmaPolUtil.parseResultSet(ttConsNombreYO,
+                    rs -> ClienteYODto.builder()
+                            .numPol(EmmaPolUtil.getString(rs, "chrNumPoliza"))
+                            .tipoPers(EmmaPolUtil.getString(rs, "chrTipoPers"))
+                            .nombre(EmmaPolUtil.getString(rs, "chrNombre"))
+                            .apPat(EmmaPolUtil.getString(rs, "chrApPaterno"))
+                            .apMat(EmmaPolUtil.getString(rs, "chrApMaterno"))
+                            .build()));
+
+            respuestaPolVO.setVConsClienteYO(clientes);
+        } catch (ResSetCallbException e) {
+            throw new ProcesException(
+                    "ERROR AL CONVERTIR DATOS notifyResultSetClienteYOProgress -(ResSetCallbException) "
+                            + e.getMessage(),
+                    e);
+        }
+    }
+
+    private String getOptionalString(ResultSet rs, String columnName) {
+        try {
+            String value = rs.getString(columnName);
+            return value != null ? value : "";
+        } catch (SQLException ex) {
+            return "";
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void consultaConductoresProgress(String numeroPoliza, RespuEmmaPolDto respuestaPolVO)
+            throws ProcesException, AppServException {
+        ConsultaAutos emma = EmmaPolUtil.connectToProgress(appSHolder.getAppServer(), ConsultaAutos.class);
+        Vector input = new Vector();
+        Vector data = new Vector();
+        ResultSetHolder holder = new ResultSetHolder();
+        data.add(numeroPoliza);
+        input.add(data);
+
+        try {
+            emma.pstmconsultacondB2B(new Vector2ResultSet(input), holder);
+            // TODO: reemplazar Map por ConductorDto cuando esté disponible
+            Vector result = new Vector(EmmaPolUtil.parseResultSet(holder, rs -> {
+                java.util.Map<String, Object> row = new java.util.HashMap<>();
+                row.put("chrNumPoliza", EmmaPolUtil.getString(rs, "chrNumPoliza"));
+                row.put("chrNombre", getOptionalString(rs, "chrNombre"));
+                return row;
+            }));
+            respuestaPolVO.setVConsConductores(result);
+        } catch (RunTime4GLException e) {
+            throw new ProcesException(
+                    EjecutarMetodo + "emma.pstmconsultacondB2B -(RunTime4GLException) " + e.getMessage(), e);
+        } catch (SystemErrorException e) {
+            throw new ProcesException(
+                    EjecutarMetodo + "emma.pstmconsultacondB2B -(SystemErrorException) " + e.getMessage(), e);
+        } catch (Open4GLException e) {
+            throw new ProcesException(
+                    EjecutarMetodo + "emma.pstmconsultacondB2B -(Open4GLException) " + e.getMessage(), e);
+        } catch (ResSetCallbException e) {
+            throw new ProcesException(
+                    "ERROR AL CONVERTIR DATOS llenaVOConductores -(ResSetCallbException) " + e.getMessage(), e);
+        } finally {
+            try {
+                emma._release();
+            } catch (Exception e) {
+                logger.info(" La conexion no pudo ser liberada manualmente, sera liberada por el pool de conexiones: "
+                        + e.getMessage());
+            }
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void consultaBenefAccidentesProgress(String numeroPoliza, RespuEmmaPolDto respuestaPolVO)
+            throws ProcesException, AppServException {
+        ConsultaAutos emma = EmmaPolUtil.connectToProgress(appSHolder.getAppServer(), ConsultaAutos.class);
+        Vector input = new Vector();
+        Vector data = new Vector();
+        ResultSetHolder holder = new ResultSetHolder();
+        data.add(numeroPoliza);
+        input.add(data);
+
+        try {
+            emma.pstmconsultabenefaccB2B(new Vector2ResultSet(input), holder);
+            // TODO: reemplazar Map por BenefAccidenteDto cuando esté disponible
+            Vector result = new Vector(EmmaPolUtil.parseResultSet(holder, rs -> {
+                java.util.Map<String, Object> row = new java.util.HashMap<>();
+                row.put("chrNumPoliza", EmmaPolUtil.getString(rs, "chrNumPoliza"));
+                row.put("chrBeneficiario", getOptionalString(rs, "chrBeneficiario"));
+                row.put("intPorParti", Integer.valueOf(rs.getInt("intPorParti")));
+                return row;
+            }));
+            respuestaPolVO.setVConsBenefAccidentes(result);
+        } catch (RunTime4GLException e) {
+            throw new ProcesException(EjecutarMetodo
+                    + "emma.consultaBenefAccidentesProgress -(RunTime4GLException) " + e.getMessage(), e);
+        } catch (SystemErrorException e) {
+            throw new ProcesException(EjecutarMetodo
+                    + "emma.consultaBenefAccidentesProgress -(SystemErrorException) " + e.getMessage(), e);
+        } catch (Open4GLException e) {
+            throw new ProcesException(EjecutarMetodo
+                    + "emma.consultaBenefAccidentesProgress -(Open4GLException) " + e.getMessage(), e);
+        } catch (ResSetCallbException e) {
+            throw new ProcesException(
+                    "ERROR AL CONVERTIR DATOS llenaVOBenefAccidentes -(ResSetCallbException) "
+                            + e.getMessage(), e);
+        } finally {
+            try {
+                emma._release();
+            } catch (Exception e) {
+                logger.info(" La conexion no pudo ser liberada manualmente, sera liberada por el pool de conexiones: "
+                        + e.getMessage());
+            }
+        }
+    }
