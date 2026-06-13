@@ -1,58 +1,6 @@
-@SuppressWarnings({"rawtypes", "unchecked"})
-private void consultaConductoresProgress(String numeroPoliza, RespuEmmaPolDto respuestaPolVO)
-        throws ProcesException, AppServException {
-    ConsultaAutos emma = EmmaPolUtil.connectToProgress(appSHolder.getAppServer(), ConsultaAutos.class);
-    Vector input = new Vector();
-    Vector data = new Vector();
-    ResultSetHolder holder = new ResultSetHolder();
-    data.add(numeroPoliza);
-    input.add(data);
+org.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog
+org.apache.commons.logging.simplelog.defaultlog=debug
+org.apache.commons.logging.simplelog.log.Test=debug
 
-    try {
-        emma.pstmconsultacondB2B(new Vector2ResultSet(input), holder);
-        Vector result = new Vector(EmmaPolUtil.parseResultSet(holder, rs -> {
-            return CondRegistDto.builder()
-                    .numPol(EmmaPolUtil.getString(rs, "chrNumPoliza"))
-                    .numInc(rs.getInt("intNumInc"))
-                    .secCond(rs.getInt("intSecCond"))
-                    .nombre(EmmaPolUtil.getString(rs, "chrNombre"))
-                    .apPat(EmmaPolUtil.getString(rs, "chrApPaterno"))
-                    .apMat(EmmaPolUtil.getString(rs, "chrApMaterno"))
-                    .valSexo(EmmaPolUtil.getString(rs, "chrSexo"))
-                    .fecNac(rs.getDate("dtenacim"))
-                    .cveEdo(rs.getInt("intClvEdo"))
-                    .cvePob(rs.getInt("intClvPob"))
-                    .calle(EmmaPolUtil.getString(rs, "chrCalle"))
-                    .colonia(EmmaPolUtil.getString(rs, "chrColonia"))
-                    .valCP(rs.getInt("intCP"))
-                    .valRFC(EmmaPolUtil.getString(rs, "chrRfc"))
-                    .valCURP(EmmaPolUtil.getString(rs, "chrCURP"))
-                    .folioIFE(EmmaPolUtil.getString(rs, "chrFolioIFE"))
-                    .alta(rs.getBoolean("lgcAlta"))
-                    .excluye(rs.getBoolean("lgcExcluye"))
-                    .fecBaja(rs.getDate("dtebaja"))
-                    .contratante(rs.getBoolean("lgcContratante"))
-                    .build();
-        }));
-        respuestaPolVO.setVConsConductores(result);
-    } catch (RunTime4GLException e) {
-        throw new ProcesException(
-                EjecutarMetodo + "emma.pstmconsultacondB2B -(RunTime4GLException) " + e.getMessage(), e);
-    } catch (SystemErrorException e) {
-        throw new ProcesException(
-                EjecutarMetodo + "emma.pstmconsultacondB2B -(SystemErrorException) " + e.getMessage(), e);
-    } catch (Open4GLException e) {
-        throw new ProcesException(
-                EjecutarMetodo + "emma.pstmconsultacondB2B -(Open4GLException) " + e.getMessage(), e);
-    } catch (ResSetCallbException e) {
-        throw new ProcesException(
-                "ERROR AL CONVERTIR DATOS llenaVOConductores -(ResSetCallbException) " + e.getMessage(), e);
-    } finally {
-        try {
-            emma._release();
-        } catch (Exception e) {
-            logger.info(" La conexion no pudo ser liberada manualmente, sera liberada por el pool de conexiones: "
-                    + e.getMessage());
-        }
-    }
-}
+private static final Log log = LogFactory.getLog(Test.class);
+
