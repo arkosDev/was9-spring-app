@@ -1,6 +1,39 @@
-org.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog
-org.apache.commons.logging.simplelog.defaultlog=debug
-org.apache.commons.logging.simplelog.log.Test=debug
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
-private static final Log log = LogFactory.getLog(Test.class);
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1} - %m%n"/>
+        </layout>
+    </appender>
+
+    <!-- El framework busca específicamente esta categoría -->
+    <category name="AlertCategory" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
+    </category>
+
+    <!-- Framework Root Category -->
+    <category name="Framework Root Category">
+        <priority value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
+    </category>
+
+    <root>
+        <priority value="INFO"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</log4j:configuration>
+
+@BeforeClass
+public static void setUp() {
+    FrameworkNameSpace.LOG4J_INPUT_STREAM = 
+        MyTest.class.getClassLoader().getResourceAsStream("log4j.xml");
+    FrameworkNameSpace.FRAMEWORK_PROPERTIES_INPUT_STREAM = 
+        MyTest.class.getClassLoader().getResourceAsStream("framework.properties");
+}
 
