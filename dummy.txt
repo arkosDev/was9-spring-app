@@ -1,18 +1,28 @@
-if (null != ensDto.getBeneficiarios() && !ensDto.getBeneficiarios().isEmpty()) {
-    logger.info("*** GUARDA BENEFICIARIOS PREFERENTES ***");
+if (null != ensDto.getClientYO() && !ensDto.getClientYO().isEmpty()) {
+    logger.info("*** GUARDA CLIENTESYO***");
     try {
-        List<BeneficiaroDto> beneficiarios = ensDto.getBeneficiarios().stream()
-            .peek(benefDto -> {
-                benefDto.setIdBenef(UUIDUtil.getUUIDLong());
-                benefDto.setIdDatPol(ensDto.getIdDatPol());
-                benefDto.setNumPol(ensDto.getNumPol());
-                benefDto.setTipPers(ZERO);
+        List<ClienteYODto> clientes = ensDto.getClientYO().stream()
+            .peek(cliente -> {
+                cliente.setIdClient(new Long(UUIDUtil.getUUIDLong()));
+                cliente.setIdDatPol(ensDto.getIdDatPol());
+                if (!TextUtil.isUsable(cliente.getTipoPers())) {
+                    cliente.setTipoPers("0");
+                }
+                if (!TextUtil.isUsable(cliente.getApPat())) {
+                    cliente.setApPat(EMPTY);
+                }
+                if (!TextUtil.isUsable(cliente.getApMat())) {
+                    cliente.setApMat(EMPTY);
+                }
+                if (!TextUtil.isUsable(cliente.getValRFC())) {
+                    cliente.setValRFC(EMPTY);
+                }
             })
             .collect(Collectors.toList());
-        benefSer.cargarBenef(beneficiarios);
+        clientServ.createClienteYO(clientes);
     } catch (Exception e) {
         logger.info(
-            "***En EmmaEndososProxy::createBeneficiario. Ocurrio un error al guardar el beneficiario Preferente: "
+            "****En EmmaEndososProxy::createClienteYO. Ocurrio un error al guardar el Cliente: "
                 + e.getMessage());
     }
 }
