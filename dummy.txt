@@ -1,28 +1,48 @@
-if (null != ensDto.getClientYO() && !ensDto.getClientYO().isEmpty()) {
-    logger.info("*** GUARDA CLIENTESYO***");
+public void guardarBeneficiariosYClientes(Long idSolPol, final Vector<SolEndsoBDto> endosos)
+        throws ProcesException, ChangeStatException, ProgException, AppServException {
+
     try {
-        List<ClienteYODto> clientes = ensDto.getClientYO().stream()
-            .peek(cliente -> {
-                cliente.setIdClient(new Long(UUIDUtil.getUUIDLong()));
-                cliente.setIdDatPol(ensDto.getIdDatPol());
-                if (!TextUtil.isUsable(cliente.getTipoPers())) {
-                    cliente.setTipoPers("0");
+        datPolSer.cambiaStatusDatosPolizas(idSolPol, DATP_PROCESAN, null);
+
+        endosos.forEach(ensDto -> {
+            if (DATP_NUEV.equals(ensDto.getStatPol())) {
+
+                guardBenef(ensDto.getBeneficiarios(), ensDto.getIdDatPol(), ensDto.getNumPol(), false);
+                guardBenef(ensDto.getBenefAcco(), ensDto.getIdDatPol(), ensDto.getNumPol(), true);
+
+                if (null != ensDto.getClientYO() && !ensDto.getClientYO().isEmpty()) {
+                    logger.info("*** GUARDA CLIENTESYO***");
+                    try {
+                        List<ClienteYODto> clientes = ensDto.getClientYO().stream()
+                            .peek(cliente -> {
+                                cliente.setIdClient(new Long(UUIDUtil.getUUIDLong()));
+                                cliente.setIdDatPol(ensDto.getIdDatPol());
+                                if (!TextUtil.isUsable(cliente.getTipoPers())) {
+                                    cliente.setTipoPers("0");
+                                }
+                                if (!TextUtil.isUsable(cliente.getApPat())) {
+                                    cliente.setApPat(EMPTY);
+                                }
+                                if (!TextUtil.isUsable(cliente.getApMat())) {
+                                    cliente.setApMat(EMPTY);
+                                }
+                                if (!TextUtil.isUsable(cliente.getValRFC())) {
+                                    cliente.setValRFC(EMPTY);
+                                }
+                            })
+                            .collect(Collectors.toList());
+                        clientServ.createClienteYO(clientes);
+                    } catch (Exception e) {
+                        logger.info(
+                            "****En EmmaEndososProxy::createClienteYO. Ocurrio un error al guardar el Cliente: "
+                                + e.getMessage());
+                    }
                 }
-                if (!TextUtil.isUsable(cliente.getApPat())) {
-                    cliente.setApPat(EMPTY);
-                }
-                if (!TextUtil.isUsable(cliente.getApMat())) {
-                    cliente.setApMat(EMPTY);
-                }
-                if (!TextUtil.isUsable(cliente.getValRFC())) {
-                    cliente.setValRFC(EMPTY);
-                }
-            })
-            .collect(Collectors.toList());
-        clientServ.createClienteYO(clientes);
-    } catch (Exception e) {
-        logger.info(
-            "****En EmmaEndososProxy::createClienteYO. Ocurrio un error al guardar el Cliente: "
-                + e.getMessage());
+            }
+        });
+    } catch (Exception exc) {
+        String sErrorMsg = "Inside guardarBeneficiariosYClientes " + exc;
+        logger.error(sErrorMsg);
+        throw new ProcesException(sErrorMsg, exc);
     }
 }
