@@ -1,48 +1,36 @@
-public void guardarBeneficiariosYClientes(Long idSolPol, final Vector<SolEndsoBDto> endosos)
-        throws ProcesException, ChangeStatException, ProgException, AppServException {
+public RespEmmaEndBDto notifyResultSetProgressError(ResultSetHolder rsh)
+        throws ResSetCallbException {
 
-    try {
-        datPolSer.cambiaStatusDatosPolizas(idSolPol, DATP_PROCESAN, null);
-
-        endosos.forEach(ensDto -> {
-            if (DATP_NUEV.equals(ensDto.getStatPol())) {
-
-                guardBenef(ensDto.getBeneficiarios(), ensDto.getIdDatPol(), ensDto.getNumPol(), false);
-                guardBenef(ensDto.getBenefAcco(), ensDto.getIdDatPol(), ensDto.getNumPol(), true);
-
-                if (null != ensDto.getClientYO() && !ensDto.getClientYO().isEmpty()) {
-                    logger.info("*** GUARDA CLIENTESYO***");
-                    try {
-                        List<ClienteYODto> clientes = ensDto.getClientYO().stream()
-                            .peek(cliente -> {
-                                cliente.setIdClient(new Long(UUIDUtil.getUUIDLong()));
-                                cliente.setIdDatPol(ensDto.getIdDatPol());
-                                if (!TextUtil.isUsable(cliente.getTipoPers())) {
-                                    cliente.setTipoPers("0");
-                                }
-                                if (!TextUtil.isUsable(cliente.getApPat())) {
-                                    cliente.setApPat(EMPTY);
-                                }
-                                if (!TextUtil.isUsable(cliente.getApMat())) {
-                                    cliente.setApMat(EMPTY);
-                                }
-                                if (!TextUtil.isUsable(cliente.getValRFC())) {
-                                    cliente.setValRFC(EMPTY);
-                                }
-                            })
-                            .collect(Collectors.toList());
-                        clientServ.createClienteYO(clientes);
-                    } catch (Exception e) {
-                        logger.info(
-                            "****En EmmaEndososProxy::createClienteYO. Ocurrio un error al guardar el Cliente: "
-                                + e.getMessage());
-                    }
-                }
-            }
-        });
-    } catch (Exception exc) {
-        String sErrorMsg = "Inside guardarBeneficiariosYClientes " + exc;
-        logger.error(sErrorMsg);
-        throw new ProcesException(sErrorMsg, exc);
+    ResultSet rs = rsh.getResultSetValue();
+    if (rs == null) {
+        throw new ResSetCallbException(
+            "EmmaProxy:notifyResultSetProgressError - null ResultSet parameter.");
     }
+
+    RespEmmaEndBDto endDto = null;
+    try {
+        if (rs.next()) {
+            endDto = new RespEmmaEndBDto();
+            endDto.setPoliza(
+                Optional.ofNullable(rs.getString("chrPoliza")).orElse(EMPTY)
+            );
+
+            final List<String> errores = new ArrayList<>();
+            do {
+                Optional.ofNullable(rs.getString("chrErrSal"))
+                    .map(String::trim)
+                    .filter(e -> !e.isEmpty())
+                    .ifPresent(e -> errores.add("ERROR:" + e));
+            } while (rs.next());
+
+            endDto.setErrozes(errores);
+        }
+    } catch (Exception ex) {
+        throw new ResSetCallbException("Error getting the result set error: " + ex, ex);
+    } finally {
+        if (rs != null) {
+            try { rs.close(); } catch (SQLException ignored) { }
+        }
+    }
+    return endDto;
 }
