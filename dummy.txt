@@ -1,20 +1,18 @@
-<plugin>
-    <groupId>com.sun.xml.ws</groupId>
-    <artifactId>jaxws-maven-plugin</artifactId>
-    <version>2.3.5</version>
-    <executions>
-        <execution>
-            <id>wsimport-solicitud</id>
-            <goals>
-                <goal>wsimport</goal>
-            </goals>
-            <configuration>
-                <wsdlDirectory>${project.basedir}/src/wsdl</wsdlDirectory>
-                <packageName>com.axa.seguros.autos.ws.client</packageName>
-                <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
-                <keep>true</keep>
-                <verbose>false</verbose>
-            </configuration>
-        </execution>
-    </executions>
-</plugin>
+if (null != ensDto.getBeneficiarios() && !ensDto.getBeneficiarios().isEmpty()) {
+    logger.info("*** GUARDA BENEFICIARIOS PREFERENTES ***");
+    try {
+        List<BeneficiaroDto> beneficiarios = ensDto.getBeneficiarios().stream()
+            .peek(benefDto -> {
+                benefDto.setIdBenef(UUIDUtil.getUUIDLong());
+                benefDto.setIdDatPol(ensDto.getIdDatPol());
+                benefDto.setNumPol(ensDto.getNumPol());
+                benefDto.setTipPers(ZERO);
+            })
+            .collect(Collectors.toList());
+        benefSer.cargarBenef(beneficiarios);
+    } catch (Exception e) {
+        logger.info(
+            "***En EmmaEndososProxy::createBeneficiario. Ocurrio un error al guardar el beneficiario Preferente: "
+                + e.getMessage());
+    }
+}
