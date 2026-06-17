@@ -1,36 +1,5 @@
-public RespEmmaEndBDto notifyResultSetProgressError(ResultSetHolder rsh)
-        throws ResSetCallbException {
-
-    ResultSet rs = rsh.getResultSetValue();
-    if (rs == null) {
-        throw new ResSetCallbException(
-            "EmmaProxy:notifyResultSetProgressError - null ResultSet parameter.");
-    }
-
-    RespEmmaEndBDto endDto = null;
-    try {
-        if (rs.next()) {
-            endDto = new RespEmmaEndBDto();
-            endDto.setPoliza(
-                Optional.ofNullable(rs.getString("chrPoliza")).orElse(EMPTY)
-            );
-
-            final List<String> errores = new ArrayList<>();
-            do {
-                Optional.ofNullable(rs.getString("chrErrSal"))
-                    .map(String::trim)
-                    .filter(e -> !e.isEmpty())
-                    .ifPresent(e -> errores.add("ERROR:" + e));
-            } while (rs.next());
-
-            endDto.setErrozes(errores);
-        }
-    } catch (Exception ex) {
-        throw new ResSetCallbException("Error getting the result set error: " + ex, ex);
-    } finally {
-        if (rs != null) {
-            try { rs.close(); } catch (SQLException ignored) { }
-        }
-    }
-    return endDto;
-}
+<args>
+    <arg>-extension</arg>
+    <arg>-B-XdisableSSLHostnameVerification</arg>
+    <arg>-Xnocompile</arg>
+</args>
