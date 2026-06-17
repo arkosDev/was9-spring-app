@@ -1,5 +1,640 @@
-<args>
-    <arg>-extension</arg>
-    <arg>-B-XdisableSSLHostnameVerification</arg>
-    <arg>-Xnocompile</arg>
-</args>
+package com.axa.seguros.autos.util;
+
+import com.axa.seguros.autos.dto.RespEmmaDto;
+import com.axa.seguros.autos.dto.ValEmiRefFisDto;
+import com.axa.seguros.autos.serv.SolicitudServ;
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import javax.xml.ws.BindingProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Utileria para construcción de XML clase original ArmaXmlRespuestaSB.
+ */
+public class ArmaXmlRespSBUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(ArmaXmlRespSBUtil.class);
+
+    public static final String ENCODE = "ISO-8859-1";
+
+    private ArmaXmlRespSBUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static String getXML(List<RespEmmaDto> respEmma, Long idSolicitud, ValEmiRefFisDto valRefF)
+            throws Exception {
+        logger.info("INICIA::ArmaXmlRespuestaSB:getXML([])");
+
+        ByteArrayOutputStream xmlBytes = new ByteArrayOutputStream();
+        XMLOutputFactory xof = XMLOutputFactory.newInstance();
+        XMLStreamWriter hd = xof.createXMLStreamWriter(xmlBytes, ENCODE);
+        String strXml = null;
+
+        try {
+            hd.writeStartDocument(ENCODE, "1.0");
+            hd.writeStartElement(ConstantesXMLSalida.EMISION);
+
+            hd.writeStartElement(ConstantesXMLSalida.SOLICITUD);
+            hd.writeCharacters(assingSafeSring(idSolicitud));
+            hd.writeEndElement();
+
+            RespEmmaDto[] respuestas = respEmma.toArray(new RespEmmaDto[0]);
+            for (int i = 0; i < respuestas.length; i++) {
+                hd.writeStartElement(ConstantesXMLSalida.POLIZA);
+
+                if (respuestas[i].getChrDocumentoEmitido().toUpperCase()
+                        .indexOf(ConstantesSolicitud.ERROR) != -1) {
+                    armaError(respuestas[i].getChrDocumentoEmitido(), hd);
+                } else {
+                    armaGenerales(respuestas[i], hd);
+                    armaTitular(respuestas[i], hd);
+                    armaVehiculo(respuestas[i], hd);
+                    armaCodicionesEmision(respuestas[i], hd);
+                }
+
+                if (respuestas.length - 1 == i) {
+                    if (valRefF != null && valRefF.isGuardaEmision()) {
+                        armaReformaFiscal(respuestas[0], hd, valRefF);
+                    }
+                }
+
+                hd.writeEndElement(); // POLIZA
+            }
+
+            hd.writeEndElement(); // EMISION
+            hd.writeEndDocument();
+            hd.flush();
+
+            strXml = xmlBytes.toString(ENCODE);
+        } finally {
+            hd.close();
+            xmlBytes.close();
+        }
+
+        logger.info("TERMINA::ArmaXmlRespuestaSB:getXML([])");
+        return strXml;
+    }
+
+    public static String getXMLCotizacion(Vector vectorRespuestas) throws Exception {
+        logger.info("INICIA::ArmaXmlRespuestaSB:getXMLCotizacion(Vector)");
+
+        ByteArrayOutputStream xmlBytes = new ByteArrayOutputStream();
+        XMLOutputFactory xof = XMLOutputFactory.newInstance();
+        XMLStreamWriter hd = xof.createXMLStreamWriter(xmlBytes, ENCODE);
+        String strXml = null;
+
+        try {
+            hd.writeStartDocument(ENCODE, "1.0");
+            hd.writeStartElement(ConstantesXMLSalida.EMISION);
+
+            for (int i = 0; i < vectorRespuestas.size(); i++) {
+                String nombrePaquete = vectorRespuestas.get(i).toString();
+                i += 1;
+                RespuestaEmmaValueObject respuestaVO = (RespuestaEmmaValueObject) vectorRespuestas.get(i);
+
+                hd.writeStartElement(ConstantesXMLSalida.POLIZA);
+
+                if (respuestaVO.getChrDocumentoEmitido().toUpperCase()
+                        .indexOf(ConstantesSolicitud.ERROR) != -1) {
+                    armaError(respuestaVO.getChrDocumentoEmitido(), hd);
+                } else {
+                    armaGenerales(respuestaVO, hd);
+                    armaTitular(respuestaVO, hd);
+                    armaVehiculo(respuestaVO, hd);
+                    armaCodicionesEmisionCotizacion(respuestaVO, hd, nombrePaquete);
+                }
+
+                hd.writeEndElement(); // POLIZA
+            }
+
+            hd.writeEndElement(); // EMISION
+            hd.writeEndDocument();
+            hd.flush();
+
+            strXml = xmlBytes.toString(ENCODE);
+        } finally {
+            hd.close();
+            xmlBytes.close();
+        }
+
+        logger.info("TERMINA::ArmaXmlRespuestaSB:getXMLCotizacion(Vector)");
+        return strXml;
+    }
+
+    public static String getXMLErrorDatos(String error) throws Exception {
+        logger.info("INICIA::ArmaXmlRespuestaSB:getXMLCotizacion(Vector)");
+
+        ByteArrayOutputStream xmlBytes = new ByteArrayOutputStream();
+        XMLOutputFactory xof = XMLOutputFactory.newInstance();
+        XMLStreamWriter hd = xof.createXMLStreamWriter(xmlBytes, ENCODE);
+        String strXml = null;
+
+        try {
+            hd.writeStartDocument(ENCODE, "1.0");
+            hd.writeStartElement(ConstantesXMLSalida.EMISION);
+
+            hd.writeStartElement(ConstantesXMLSalida.POLIZA);
+            armaError(error, hd);
+            hd.writeEndElement(); // POLIZA
+
+            hd.writeEndElement(); // EMISION
+            hd.writeEndDocument();
+            hd.flush();
+
+            strXml = xmlBytes.toString(ENCODE);
+        } finally {
+            hd.close();
+            xmlBytes.close();
+        }
+
+        logger.info("TERMINA::ArmaXmlRespuestaSB:getXMLCotizacion(Vector)");
+        return strXml;
+    }
+
+    private static void armaError(String strErrores, XMLStreamWriter hd) throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.ERRORES);
+
+            Iterator iterError = separarConEspacios(strErrores, ConstantesSolicitud.SEPARADORCHAR).iterator();
+            while (iterError.hasNext()) {
+                hd.writeStartElement(ConstantesXMLSalida.ERROR);
+                String aux = (String) iterError.next();
+                // NewRelic.noticeError(aux); // <--- newRelic
+                hd.writeCharacters(aux != null ? aux : "");
+                hd.writeEndElement(); // ERROR
+            }
+
+            hd.writeEndElement(); // ERRORES
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    private static void armaGenerales(RespuestaEmmaValueObject respuesta, XMLStreamWriter hd) throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.GENERALES);
+
+            hd.writeStartElement(ConstantesXMLSalida.SOLICITUD);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrSolicitud()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.CONSECUTIVO);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntConsecutivo()));
+            hd.writeEndElement();
+
+            if (respuesta.getChrDocumentoEmitido().toUpperCase().indexOf("COTIZACION") != -1) {
+                hd.writeStartElement(ConstantesXMLSalida.NUMEROCOTIZACION);
+                hd.writeCharacters(assingSafeSring(respuesta.getChrDocumentoEmitido()));
+                hd.writeEndElement();
+            } else {
+                hd.writeStartElement(ConstantesXMLSalida.NUMEROPOLIZA);
+                hd.writeCharacters(assingSafeSring(respuesta.getChrDocumentoEmitido()));
+                hd.writeEndElement();
+                RespuestaClienteProxy.setPolizaEncontrada(respuesta.getChrDocumentoEmitido());
+            }
+
+            hd.writeStartElement(ConstantesXMLSalida.FORMAPAGO);
+            String aux = ConstantesCatalogos.getKeyFORMAPAGO(respuesta.getChrCsFormaPago());
+            hd.writeCharacters(assingSafeSring(aux));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.FECHADESDE);
+            if (respuesta.getDteDesde() != null) {
+                hd.writeCharacters(UtilServiceDate.formatDate(respuesta.getDteDesde()));
+            } else {
+                hd.writeCharacters("");
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.FECHAHASTA);
+            if (respuesta.getDteHasta() != null) {
+                hd.writeCharacters(UtilServiceDate.formatDate(respuesta.getDteHasta()));
+            } else {
+                hd.writeCharacters("");
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.TARIFA);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrTarifa()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.INDICETARIFA);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntIndTarifa()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.FECHATRABAJO);
+            if (respuesta.getDteFechaHoy() != null) {
+                hd.writeCharacters(UtilServiceDate.formatDate(respuesta.getDteFechaHoy()));
+            } else {
+                hd.writeCharacters("");
+            }
+            hd.writeEndElement();
+
+            hd.writeEndElement(); // GENERALES
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    private static void armaTitular(RespuestaEmmaValueObject respuesta, XMLStreamWriter hd) throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.TITULAR);
+
+            hd.writeStartElement(ConstantesXMLSalida.NOMBRE);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrNomCliente()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.NUMEROCLIENTE);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrNumCliente()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.RFC);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrRFC()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.SEXO);
+            String aux = ConstantesCatalogos.getKeySEXO(respuesta.getChrSexo());
+            hd.writeCharacters(assingSafeSring(aux));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.EDAD);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntEdad()));
+            hd.writeEndElement();
+
+            hd.writeEndElement(); // TITULAR
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    private static void armaVehiculo(RespuestaEmmaValueObject respuesta, XMLStreamWriter hd) throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.VEHICULO);
+
+            hd.writeStartElement(ConstantesXMLSalida.DESCRIPCION);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrDescVehic()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.MODELO);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntModelo()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.PLACAS);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrPlacas()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.MOTOR);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrMotor()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.SERIE);
+            hd.writeCharacters(assingSafeSring(respuesta.getChrSerie()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.VALOR);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntValorVehic()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.ESVALORCOMERCIAL);
+            String aux = assingSafeSring(respuesta.getLgcValorComer());
+            if (!aux.equals("")) {
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
+            } else {
+                hd.writeCharacters(aux);
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.USO);
+            aux = ConstantesCatalogos.getKeyUSO(assingSafeSring(respuesta.getIntUso()));
+            hd.writeCharacters(assingSafeSring(aux));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.SERVICIO);
+            aux = ConstantesCatalogos.getKeySERVICIO(assingSafeSring(respuesta.getChrServicio()));
+            hd.writeCharacters(assingSafeSring(aux));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.OCUPANTES);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntOcupantes()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.TONELAJE);
+            hd.writeCharacters(assingSafeSring(respuesta.getDblTonelaje()));
+            hd.writeEndElement();
+
+            hd.writeEndElement(); // VEHICULO
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    private static void armaCodicionesEmision(RespuestaEmmaValueObject respuesta, XMLStreamWriter hd)
+            throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.CONDICIONESEMISION);
+
+            hd.writeStartElement(ConstantesXMLSalida.DECUENTOSINIESTRO);
+            hd.writeCharacters(assingSafeSring(respuesta.getDcmPorcDescSin()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.EXTENSIONRC);
+            String aux = assingSafeSring(respuesta.getLgcExtensionRC());
+            if (!aux.equals("")) {
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
+            } else {
+                hd.writeCharacters(aux);
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.AMPLACIONRC);
+            aux = assingSafeSring(respuesta.getLgcAmpliaRC());
+            if (!aux.equals("")) {
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
+            } else {
+                hd.writeCharacters(aux);
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.DOBLEREMOLQUE);
+            aux = assingSafeSring(respuesta.getLgcDobleRem());
+            if (!aux.equals("")) {
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
+            } else {
+                hd.writeCharacters(aux);
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.RECIBOSSUBSECUENTES);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntReciSubsec()));
+            hd.writeEndElement();
+
+            armaImportesRecibos(respuesta, hd);
+            armaCoberturas(respuesta, hd);
+
+            hd.writeEndElement(); // CONDICIONESEMISION
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    private static void armaCodicionesEmisionCotizacion(RespuestaEmmaValueObject respuesta,
+            XMLStreamWriter hd, String nombrePaquete) throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.CONDICIONESEMISION);
+
+            hd.writeStartElement(ConstantesXMLSalida.PAQUETE);
+            hd.writeCharacters(assingSafeSring(nombrePaquete));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.DECUENTOSINIESTRO);
+            hd.writeCharacters(assingSafeSring(respuesta.getDcmPorcDescSin()));
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.EXTENSIONRC);
+            String aux = assingSafeSring(respuesta.getLgcExtensionRC());
+            if (!aux.equals("")) {
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
+            } else {
+                hd.writeCharacters(aux);
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.AMPLACIONRC);
+            aux = assingSafeSring(respuesta.getLgcAmpliaRC());
+            if (!aux.equals("")) {
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
+            } else {
+                hd.writeCharacters(aux);
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.DOBLEREMOLQUE);
+            aux = assingSafeSring(respuesta.getLgcDobleRem());
+            if (!aux.equals("")) {
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
+            } else {
+                hd.writeCharacters(aux);
+            }
+            hd.writeEndElement();
+
+            hd.writeStartElement(ConstantesXMLSalida.RECIBOSSUBSECUENTES);
+            hd.writeCharacters(assingSafeSring(respuesta.getIntReciSubsec()));
+            hd.writeEndElement();
+
+            armaImportesRecibos(respuesta, hd);
+            armaCoberturas(respuesta, hd);
+
+            hd.writeEndElement(); // CONDICIONESEMISION
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    private static void armaImportesRecibos(RespuestaEmmaValueObject respuesta, XMLStreamWriter hd)
+            throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.IMPORTESRECIBOS);
+
+            Iterator iterPrimaNeta   = separarConEspacios(respuesta.getChrPrimaNeta(),   '|').iterator();
+            Iterator iterCesionCom   = separarConEspacios(respuesta.getChrCesionCom(),   '|').iterator();
+            Iterator iterRecargos    = separarConEspacios(respuesta.getChrRecargos(),    '|').iterator();
+            Iterator iterDerecho     = separarConEspacios(respuesta.getChrDerechos(),    '|').iterator();
+            Iterator iterImpuesto    = separarConEspacios(respuesta.getChrImpuesto(),    '|').iterator();
+            Iterator iterPrimaTotal  = separarConEspacios(respuesta.getChrPmaTotal(),    '|').iterator();
+
+            while (iterPrimaNeta.hasNext() && iterCesionCom.hasNext() && iterRecargos.hasNext()
+                    && iterDerecho.hasNext() && iterImpuesto.hasNext() && iterPrimaTotal.hasNext()) {
+
+                hd.writeStartElement(ConstantesXMLSalida.DETALLEIMPORTE);
+
+                hd.writeStartElement(ConstantesXMLSalida.PRIMANETA);
+                hd.writeCharacters(assingSafeSring(iterPrimaNeta.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.CESIONCOMISION);
+                hd.writeCharacters(assingSafeSring(iterCesionCom.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.RECARGOS);
+                hd.writeCharacters(assingSafeSring(iterRecargos.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.DERECHOS);
+                hd.writeCharacters(assingSafeSring(iterDerecho.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.IMPUESTO);
+                hd.writeCharacters(assingSafeSring(iterImpuesto.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.PRIMATOTAL);
+                hd.writeCharacters(assingSafeSring(iterPrimaTotal.next()));
+                hd.writeEndElement();
+
+                hd.writeEndElement(); // DETALLEIMPORTE
+            }
+
+            hd.writeEndElement(); // IMPORTESRECIBOS
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    private static void armaCoberturas(RespuestaEmmaValueObject respuesta, XMLStreamWriter hd)
+            throws Exception {
+        try {
+            hd.writeStartElement(ConstantesXMLSalida.COBERTURAS);
+
+            Iterator iterNombre       = separarConEspacios(respuesta.getChrCobertura(),   '|').iterator();
+            Iterator iterDeducible    = separarConEspacios(respuesta.getChrDeducCob(),    '|').iterator();
+            Iterator iterSumaAsegurada = separarConEspacios(respuesta.getChrSumaAsegCob(), '|').iterator();
+            Iterator iterPrimaNeta    = separarConEspacios(respuesta.getChrPrimaNetCob(), '|').iterator();
+
+            while (iterNombre.hasNext() && iterDeducible.hasNext()
+                    && iterSumaAsegurada.hasNext() && iterPrimaNeta.hasNext()) {
+
+                hd.writeStartElement(ConstantesXMLSalida.COBERTURA);
+
+                hd.writeStartElement(ConstantesXMLSalida.NOMBRE);
+                hd.writeCharacters(assingSafeSring(iterNombre.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.DEDUCIBLE);
+                hd.writeCharacters(assingSafeSring(iterDeducible.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.SUMAASEGURADA);
+                hd.writeCharacters(assingSafeSring(iterSumaAsegurada.next()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.PRIMANETA);
+                hd.writeCharacters(assingSafeSring(iterPrimaNeta.next()));
+                hd.writeEndElement();
+
+                hd.writeEndElement(); // COBERTURA
+            }
+
+            hd.writeEndElement(); // COBERTURAS
+        } catch (XMLStreamException e) {
+            throw new Exception(ConstantesMensajesError.ERROR_AL_GENERAR_XML_RESPUESTA, e);
+        }
+    }
+
+    static public Collection separarConEspacios(String strCadena, char strSeparador) {
+        if (strCadena == null) {
+            return new ArrayList();
+        }
+        Collection colSeparada = new ArrayList();
+        char c;
+        StringBuffer strValor = new StringBuffer();
+        for (int i = 0; i < strCadena.length(); i++) {
+            c = strCadena.charAt(i);
+            for (int j = i + 1; c != strSeparador && j < strCadena.length(); j++, i++) {
+                strValor.append(c);
+                c = strCadena.charAt(j);
+            }
+            if (i + 1 == strCadena.length()) {
+                strValor.append(c);
+            }
+            if (strValor.toString().trim().length() > 0) {
+                colSeparada.add(strValor.toString().trim());
+            }
+            strValor = new StringBuffer();
+        }
+        // Elimina el ultimo separador de la ultima cadena
+        int intColSize = colSeparada.size();
+        if (intColSize > 0) {
+            String strUltimoString = (String) ((List) colSeparada).get(intColSize - 1);
+            if (strUltimoString.charAt(strUltimoString.length() - 1) == strSeparador) {
+                strUltimoString = strUltimoString.substring(0, strUltimoString.length() - 1);
+            }
+            ((List) colSeparada).remove(intColSize - 1);
+            ((List) colSeparada).add(intColSize - 1, strUltimoString);
+        }
+        return colSeparada;
+    }
+
+    private static String assingSafeSring(Object value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toString();
+    }
+
+    private static void armaReformaFiscal(RespuestaEmmaValueObject respuesta,
+            XMLStreamWriter hd, ValEmiRefFisDto rf) throws Exception {
+
+        try {
+            String endpoint  = Utility.getFrameworkProperties().getProperty("entpoint");
+            String usuario   = Utility.getFrameworkProperties().getProperty("usuario");
+            String contrasena = Utility.getFrameworkProperties().getProperty("contrasena");
+
+            URL urlWsdl = ArmaXmlRespuestaSB.class.getClassLoader().getResource("META-INF/CFDI.wsdl");
+            if (urlWsdl == null) {
+                throw new Exception("No se encontró archivo wsdl para WS de datos fiscales");
+            }
+
+            DatosFiscalesService service = new DatosFiscalesService(urlWsdl);
+            DatosFiscalesPortType portType = service.getDatosFiscalesPortType();
+
+            BindingProvider bindingProvider = (BindingProvider) portType;
+            bindingProvider.getRequestContext().put(BindingProvider.USERNAME_PROPERTY, usuario);
+            bindingProvider.getRequestContext().put(BindingProvider.PASSWORD_PROPERTY, contrasena);
+            bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpoint);
+
+            DatosFiscalesDetallesResponse response = new DatosFiscalesDetallesResponse();
+            response = portType.datosFiscalesDetalles(rf.getDatosFiscalesDetalleRequest());
+
+            logger.info("responseReformaFiscal: "
+                + response.getData().getInformePersonas().get(0).getEstatus().getObservaciones().get(0));
+
+            if (rf.isFactura()) {
+                hd.writeStartElement(ConstantesXMLSalida.FACTURACION);
+
+                hd.writeStartElement(ConstantesXMLSalida.FOLIO);
+                hd.writeCharacters(assingSafeSring(response.getData().getFolio().getValue()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.RFCRF);
+                hd.writeCharacters(assingSafeSring(
+                    response.getData().getInformePersonas().get(0).getRfc().getValue()));
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.MENSAJE);
+                hd.writeCharacters(assingSafeSring(
+                    response.getAxaHeaderRes().getResultado().get(0).getMensaje()));
+                hd.writeEndElement();
+
+                hd.writeEndElement(); // FACTURACION
+            }
+        } catch (Exception e) {
+            if (rf.isFactura()) {
+                String error = "Fallo al registrar datos fiscales";
+                String ok = "false";
+                hd.writeStartElement(ConstantesXMLSalida.FACTURACION);
+
+                hd.writeStartElement(ConstantesXMLSalida.OK);
+                hd.writeCharacters(ok);
+                hd.writeEndElement();
+
+                hd.writeStartElement(ConstantesXMLSalida.MENSAJE);
+                hd.writeCharacters(error);
+                hd.writeEndElement();
+
+                hd.writeEndElement(); // FACTURACION
+
+                logger.info(assingSafeSring("Fallo al registrar datos fiscales"));
+            }
+            logger.error(e.getMessage(), e);
+        }
+    }
+}
