@@ -1,15 +1,4 @@
-<execution>
-    <id>copy-wsdl-to-meta-inf</id>
-    <phase>prepare-package</phase>
-    <goals>
-        <goal>run</goal>
-    </goals>
-    <configuration>
-        <target>
-            <copy todir="${project.build.directory}/${project.build.finalName}/META-INF/wsdl"
-                  failonerror="false">
-                <fileset dir="${project.basedir}/src/wsdl" includes="*.wsdl"/>
-            </copy>
-        </target>
-    </configuration>
-</execution>
+<%@ page language="java" %>
+<%
+    response.sendRedirect(request.getContextPath() + "/mainservlet/LOGON");
+%>
