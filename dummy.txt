@@ -2,3 +2,6 @@
 <%
     response.sendRedirect(request.getContextPath() + "/mainservlet/LOGON");
 %>
+
+<a href="<%=request.getContextPath()%>/mainservlet/LOGON"><bean:message key="logoff.logonTextKey"/></a>
+
