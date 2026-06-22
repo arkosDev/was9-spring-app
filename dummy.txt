@@ -1,44 +1,46 @@
-public List<SerieDto> findSerProdTip(List<String> prodIds, List<String> tipos) {
-    
-    if (prodIds == null || prodIds.isEmpty() || tipos == null || tipos.isEmpty()) {
-        return Collections.emptyList();
+import java.io.StringReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+@Override
+public String searchSchema(String xml, String attributeName)
+        throws IOException, SAXException {
+
+    String schemaURI = null;
+
+    XMLInputFactory factory = XMLInputFactory.newInstance();
+    // Evitar XXE: sin DTD, sin entidades externas
+    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    factory.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
+
+    XMLStreamReader reader = null;
+    try {
+        reader = factory.createXMLStreamReader(new StringReader(xml));
+        while (reader.hasNext()) {
+            int event = reader.next();
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                // Primer START_ELEMENT = root. Tomo el atributo y corto.
+                schemaURI = reader.getAttributeValue(null, attributeName);
+                break;
+            }
+        }
+    } catch (XMLStreamException e) {
+        throw new SAXException("Error al convertir el Xml (XMLStreamException): " + e.getMessage(), e);
+    } finally {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (XMLStreamException e) {
+                // ignorar al cerrar
+            }
+        }
     }
 
-    String prodPlaceholders = prodIds.stream()
-            .map(p -> "?")
-            .collect(Collectors.joining(","));
+    if (null == schemaURI) {
+        throw new SAXException("El atributo: '" + attributeName + "' no se encuentra en el XML de entrada: " + xml);
+    }
 
-    String tiposPlaceholders = tipos.stream()
-            .map(t -> "?")
-            .collect(Collectors.joining(","));
-
-    String sql = """
-        SELECT 
-            SERIE.lng_producto_id,
-            SERIE.str_tipo_serie,
-            LISTAGG(SERIE.str_serie_poliza, '|') 
-                WITHIN GROUP (ORDER BY SERIE.str_serie_poliza) AS series
-        FROM EMA_SERIES SERIE
-        WHERE SERIE.lng_producto_id IN (%s)
-          AND SERIE.str_tipo_serie IN (%s)
-        GROUP BY SERIE.lng_producto_id, SERIE.str_tipo_serie
-        """.formatted(prodPlaceholders, tiposPlaceholders);
-
-    // Versión moderna con PreparedStatementSetter
-    return jdbcTemplate.query(sql, 
-        ps -> {
-            int index = 1;
-            for (String id : prodIds) {
-                ps.setString(index++, id);
-            }
-            for (String tipo : tipos) {
-                ps.setString(index++, tipo);
-            }
-        },
-        (rs, rowNum) -> SerieDto.builder()
-            .idProd(rs.getLong("lng_producto_id"))
-            .tipSer(rs.getString("str_tipo_serie"))
-            .serPol(rs.getString("series"))
-            .build()
-    );
+    return schemaURI;
 }
