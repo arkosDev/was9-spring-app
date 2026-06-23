@@ -5,6 +5,8 @@ public Long createSolicitudPolizas(Integer type, String xml)
     logger.info(
         "Time Solicitud 1 (createCotizacion(String)):" + FechaUtil.formatTimestamp(new Date()));
 
+
+
     final String user = MessageContext.getCurrentContext().getUsername();
 
     validarXmlEntrada(xml);
