@@ -1,48 +1,17 @@
-public static Document validaXMLconSAXValidator(String xml) throws InvDocException {
+private String ejecutarValidaciones(SolEndsoBDto solEndDto, SolPolizaDto soldto,
+        RespuEmmaPolDto respEmmDto) {
 
-    SAXReader reader = new SAXReader(true);
-    reader.setEncoding(ENCODE);
-    reader.setErrorHandler(crearManejadorErrores());
+    List<Supplier<String>> validaciones = Arrays.<Supplier<String>>asList(
+        () -> validarSerie(solEndDto, soldto),
+        () -> validarPolizaYAgente(solEndDto, soldto, respEmmDto),
+        () -> { logger.info("***  VA A VALIDAR LOS DATOS OBLIGATORIOS *** "); return validaDatosObligatorios(solEndDto); },
+        () -> { logger.info("***  VA A VALIDAR LOS NOMBRES *** "); return validaNombres(solEndDto); },
+        () -> { logger.info("***  VALIDA EL PORCENTAJE *** "); return validarPorcentajeBeneficiarios(solEndDto); }
+    );
 
-    try (Reader stringReader = new StringReader(xml)) {
-        Document docXmlRepositorio = reader.read(stringReader);
-
-        reader.setFeature(SCHEMA, true);
-        reader.setFeature(SCHEMA_CHECK, true);
-
-        SAXValidator validator = new SAXValidator(reader.getXMLReader());
-        validator.validate(docXmlRepositorio);
-
-        return docXmlRepositorio;
-    } catch (SAXException e) {
-        throw new InvDocException(
-            ConvertirXml + "(SAXException): " + e.getMessage());
-    } catch (DocumentException e) {
-        throw new InvDocException(
-            CargarDatosValidacion + "(DocumentException): " + e.getMessage());
-    } catch (IOException e) {
-        throw new InvDocException(
-            ConvertirXml + "(IOException): " + e.getMessage());
-    }
-}
-
-private static XMLErrorHandler crearManejadorErrores() {
-    return new XMLErrorHandler() {
-        @Override
-        public void error(SAXParseException exception) {
-            Element errores = this.getErrors() != null
-                ? this.getErrors()
-                : DocumentHelper.createElement("errores");
-
-            String strError = exception.getLocalizedMessage()
-                .replaceAll("null", "")
-                .replaceAll("faceta", "mascara");
-
-            Element error = DocumentHelper.createElement("error");
-            error.setText(strError);
-            errores.add(error);
-
-            this.setErrors(errores);
-        }
-    };
+    return validaciones.stream()
+        .map(Supplier::get)
+        .filter(error -> !EMPTY.equals(error))
+        .findFirst()
+        .orElse(EMPTY);
 }
