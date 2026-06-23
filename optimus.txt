@@ -1,0 +1,346 @@
+================================================================================
+ ValidaGuardaDatosEndosos - Codigo optimizado (JDK 8)
+ - Iterator reemplazado por for-each / Streams donde aplica
+ - If anidados reducidos via guard clauses y extraccion de metodos
+ - Validaciones secuenciales convertidas a pipeline de Streams con corte temprano
+================================================================================
+
+Imports nuevos necesarios:
+    import java.util.Arrays;
+    import java.util.function.Supplier;
+
+
+--------------------------------------------------------------------------------
+ METODO PRINCIPAL
+--------------------------------------------------------------------------------
+
+@Override
+public Vector<SolEndsoBDto> validaGuardaDatos(Long idSolicitud, Boolean esInmediata)
+        throws ProcesException {
+
+    Vector<SolEndsoBDto> vEndosos = new Vector<SolEndsoBDto>();
+
+    try {
+        String xml = solPolServ.recuperaXML(idSolicitud, fileXMLSolicitud);
+        solPolServ.cambiaStatusSolicitud(idSolicitud, EmpiezaValidacion, null);
+
+        Element root = parsearYValidarXsd(xml);
+        List<Element> listaEndosos = obtenerListaEndosos(root, esInmediata);
+
+        SolPolizaDto soldto = solServ.findSolPoliza(idSolicitud);
+        if (null == soldto) {
+            throw new InvDatException(SolicitudInexistente);
+        }
+
+        logger.info(
+            "*** En ValidaGuardaDatosEndosos::validateXML Inician las validaciones. Voy a validar ");
+
+        Vector<SolEndsoBDto> vBenClien = new Vector<SolEndsoBDto>();
+        String errorGral = "";
+
+        for (Element nodoEndoso : listaEndosos) {
+            errorGral = procesarEndoso(nodoEndoso, idSolicitud, soldto, vEndosos, vBenClien);
+        }
+
+        finalizarSolicitud(idSolicitud, esInmediata, errorGral);
+
+        logger.info("*** Termina ValidaGuardaDatosEndosos::validateXML");
+    } catch (ProcesException ex) {
+        throw ex;
+    } catch (Exception e) {
+        throw new ProcesException(
+            EjecutarMetodo + "ValidarGuardaDatosEndosos::validateXML " + e.getMessage(), e);
+    }
+
+    return vEndosos;
+}
+
+
+--------------------------------------------------------------------------------
+ VALIDACION INICIAL DE XML / ESQUEMA / LISTA DE ENDOSOS
+--------------------------------------------------------------------------------
+
+private Element parsearYValidarXsd(String xml) throws InvDatException {
+    Document docXmlRepositorio = XMLEntEndosoUtil.validaXMLconSAXValidator(xml);
+    Element root = docXmlRepositorio.getRootElement();
+    Attribute attribute = root.attribute(0);
+
+    ParametroDto paramDto = paramServ.getParametroPorNombre("URL.XSD.ENDOSOB");
+    if (null == paramDto) {
+        throw new InvDatException(ConvertirXml + ParametroUrlXsdEndoso);
+    }
+    if (!attribute.getValue().equals(paramDto.getValor())) {
+        throw new InvDatException(ConvertirXml + NameSpaceInvalid);
+    }
+    return root;
+}
+
+@SuppressWarnings("unchecked")
+private List<Element> obtenerListaEndosos(Element root, Boolean esInmediata) throws InvDatException {
+    List<Element> list = root.elements(ENDOSO_B);
+
+    if (list.isEmpty()) {
+        throw new InvDatException(String.format(NoExisteTag, ENDOSO));
+    }
+    if (esInmediata.booleanValue() && list.size() > 1) {
+        throw new InvDatException(NoEsInmediata);
+    }
+    return list;
+}
+
+private void finalizarSolicitud(Long idSolicitud, Boolean esInmediata, String errorGral)
+        throws InvDatException {
+    if (esInmediata && TextUtil.isUsable(errorGral)) {
+        throw new InvDatException(errorGral);
+    }
+    if (TextUtil.isUsable(errorGral)) {
+        solPolServ.cambiaStatusSolicitud(idSolicitud, TerminaConObservaciones, errorGral);
+    }
+}
+
+
+--------------------------------------------------------------------------------
+ PROCESAMIENTO DE UN ENDOSO (cuerpo del antiguo for con Iterator)
+--------------------------------------------------------------------------------
+
+private String procesarEndoso(Element nodoEndoso, Long idSolicitud, SolPolizaDto soldto,
+        Vector<SolEndsoBDto> vEndosos, Vector<SolEndsoBDto> vBenClien) {
+
+    SolEndsoBDto solEndDto = null;
+    DatPolizaCDto datPoldto = null;
+
+    try {
+        solEndDto = XMLEntEndosoUtil.LeeXml(nodoEndoso);
+        datPoldto = construirDatosPolizaIniciales(idSolicitud, soldto);
+
+        solEndDto.setStatPol(Nueva);
+        solEndDto.setUsuario(soldto.getSolId());
+
+        RespuEmmaPolDto respEmmDto = consultarPolizaProgress(solEndDto);
+
+        String error = ejecutarValidaciones(solEndDto, soldto, respEmmDto);
+
+        DatPolUtil.inicializarDatosPoliza(datPoldto, solEndDto.getNumPol());
+        ajustarColonia(solEndDto);
+
+        boolean datosCompletos = DatPolUtil.llenarVODatosPolizas(datPoldto, solEndDto);
+        if (EMPTY.equals(error) && !datosCompletos) {
+            error = ERROR_ENDOSOS_B_PARAMS_INSUFICIENTES;
+        }
+
+        aplicarResultado(solEndDto, datPoldto, error, vEndosos);
+
+        vBenClien.add(solEndDto);
+        datPoldto.setObsvz(error);
+        datPoldto.setAgente(Integer.valueOf(solEndDto.getAgente()));
+
+        logger.info("*** GUARDA LOS DATOS DE LA POLIZA PARA LA POLIZA NUMERO:  " + solEndDto.getNumPol());
+        datPolServ.createDatosPolizas(datPoldto);
+
+        logger.info("*** En EndososServiceSessionBean::crearSolicitudEndososB  voy a "
+            + "emmaEndososProxy.GuardarBeneficiariosClientes");
+        solEndDto.setIdDatPol(idSolicitud);
+        emmEndProxServ.guardarBeneficiariosYClientes(idSolicitud, vEndosos);
+
+        return error;
+
+    } catch (Exception e) {
+        return manejarErrorEndoso(e, idSolicitud, solEndDto, datPoldto, vEndosos, vBenClien);
+    }
+}
+
+private void aplicarResultado(SolEndsoBDto solEndDto, DatPolizaCDto datPoldto, String error,
+        Vector<SolEndsoBDto> vEndosos) {
+    if (EMPTY.equals(error)) {
+        vEndosos.add(solEndDto);
+        return;
+    }
+    datPoldto.setEstatus(DRechazada);
+    solEndDto.setStatPol(datPoldto.getEstatus());
+}
+
+private String manejarErrorEndoso(Exception e, Long idSolicitud, SolEndsoBDto solEndDto,
+        DatPolizaCDto datPoldto, Vector<SolEndsoBDto> vEndosos, Vector<SolEndsoBDto> vBenClien) {
+
+    String errorGral = "ERROR." + e.toString();
+    logger.warn("error de Progress: " + errorGral, e);
+
+    DatPolUtil.inicializarDatosPoliza(datPoldto, solEndDto.getNumPol());
+    datPoldto.setEstatus(DATP_EXCE);
+    datPoldto.setObsvz(errorGral);
+    solEndDto.setStatPol(DATP_EXCE);
+
+    datPolServ.createDatosPolizas(datPoldto);
+    emmEndProxServ.guardarBeneficiariosYClientes(idSolicitud, vBenClien);
+    vEndosos.add(solEndDto);
+
+    return errorGral;
+}
+
+
+--------------------------------------------------------------------------------
+ PIPELINE DE VALIDACIONES CON STREAMS (reemplaza la cadena de 5 "if EMPTY.equals(error)")
+--------------------------------------------------------------------------------
+
+private String ejecutarValidaciones(SolEndsoBDto solEndDto, SolPolizaDto soldto,
+        RespuEmmaPolDto respEmmDto) {
+
+    List<Supplier<String>> validaciones = Arrays.asList(
+        () -> validarSerie(solEndDto, soldto),
+        () -> validarPolizaYAgente(solEndDto, soldto, respEmmDto),
+        () -> { logger.info("***  VA A VALIDAR LOS DATOS OBLIGATORIOS *** "); return validaDatosObligatorios(solEndDto); },
+        () -> { logger.info("***  VA A VALIDAR LOS NOMBRES *** "); return validaNombres(solEndDto); },
+        () -> { logger.info("***  VALIDA EL PORCENTAJE *** "); return validarPorcentajeBeneficiarios(solEndDto); }
+    );
+
+    return validaciones.stream()
+        .map(Supplier::get)
+        .filter(error -> !EMPTY.equals(error))
+        .findFirst()
+        .orElse(EMPTY);
+}
+
+
+--------------------------------------------------------------------------------
+ VALIDADORES INDIVIDUALES
+--------------------------------------------------------------------------------
+
+private String validarSerie(SolEndsoBDto solEndDto, SolPolizaDto soldto) {
+    logger.info("***  Verifica si valida la serie ***");
+
+    if (!this.validarSeriePoliza(soldto.getSolId())) {
+        return EMPTY;
+    }
+
+    logger.info("***  VALIDA LA SERIE  ***");
+    logger.info("***   ENVIA POLIZA:   ***" + solEndDto.getNumPol());
+    String serie = solEndDto.getNumPol().substring(0, 3);
+    logger.info("***   ENVIA SERIE:   ***" + serie);
+
+    boolean tieneSerie = prodServ.solicitanteTieneSerie(serie, soldto.getSolId());
+    return tieneSerie ? EMPTY : ENDOSO_PERMISOS_INSUFICIENTES + "  " + SERIE_INVALIDA;
+}
+
+private String validarPolizaYAgente(SolEndsoBDto solEndDto, SolPolizaDto soldto,
+        RespuEmmaPolDto respEmmDto) {
+
+    logger.info("***  VA POR LOS DATOS DE LA POLIZA  ***");
+    PolizaDto polDto = extraerPrimeraPoliza(respEmmDto);
+    if (null == polDto) {
+        return RESPUESTA_VACIA_EMMA;
+    }
+
+    logger.info("***  VALIDA QUE EL AGENTE SEA QUIEN HIZO LA POLIZA  ***");
+    boolean agenteHizoPoliza = solEndDto.getAgente().trim().equals(polDto.getAgente().toString());
+    logger.info(agenteHizoPoliza
+        ? "***  EL AGENTE HIZO LA POLIZA  ***"
+        : "***  EL AGENTE NO HIZO LA POLIZA  ***");
+
+    boolean agtenc = polFacServ.buscaAgtRel(
+        Integer.valueOf(solEndDto.getAgente()), soldto.getSolId(), agenteHizoPoliza);
+
+    return agtenc ? EMPTY : String.format(ENDOSO_NO_PERMITIDO, solEndDto.getAgente(), solEndDto.getNumPol());
+}
+
+private PolizaDto extraerPrimeraPoliza(RespuEmmaPolDto respEmmDto) {
+    boolean hayPoliza = null != respEmmDto && null != respEmmDto.getVConsPoliza()
+        && !respEmmDto.getVConsPoliza().isEmpty();
+
+    return hayPoliza ? respEmmDto.getVConsPoliza().iterator().next() : null;
+}
+
+private String validarPorcentajeBeneficiarios(SolEndsoBDto solEndDto) {
+    List<BeneficiaroDto> beneficiarios = solEndDto.getBenefAcc();
+    if (null == beneficiarios || beneficiarios.isEmpty()) {
+        return EMPTY;
+    }
+
+    int porcentaje = beneficiarios.stream()
+        .filter(b -> null != b.getPorcentaje())
+        .mapToInt(b -> b.getPorcentaje().intValue())
+        .sum();
+
+    return porcentaje == 100 ? EMPTY : ERROR_ENDOSOS_B_PORCENTAJE_INVALIDO;
+}
+
+
+--------------------------------------------------------------------------------
+ HELPERS DE ARMADO DE DATOS / CONSULTA EXTERNA
+--------------------------------------------------------------------------------
+
+private DatPolizaCDto construirDatosPolizaIniciales(Long idSolicitud, SolPolizaDto soldto) {
+    DatPolizaCDto datPoldto =
+        DatPolizaCDto.builder().idDaPol(UUIDUtil.getUUIDLong()).idSolPol(idSolicitud).build();
+
+    ProductoDto proDto = obtenerProductoPorDefecto(soldto.getSolId());
+    datPoldto.setIdProd(proDto.getProdId());
+
+    Date ahora = FechaUtil.toDateMidnight(new Date());
+    datPoldto.setEstatus(Nueva);
+    datPoldto.setFecEst(FechaUtil.getTimeStamp());
+    datPoldto.setObsvz(EMPTY);
+    datPoldto.setFDesde(ahora);
+    datPoldto.setFHasta(ahora);
+    datPoldto.setTipPol("###");
+    datPoldto.setMovto("ENB");
+
+    return datPoldto;
+}
+
+private ProductoDto obtenerProductoPorDefecto(String solId) {
+    List<ProductoDto> productos = prodRepo.findProdSol(solId);
+    boolean sinProductos = null == productos || productos.isEmpty();
+
+    return sinProductos ? prodRepo.findAllProd().get(0) : productos.get(0);
+}
+
+private RespuEmmaPolDto consultarPolizaProgress(SolEndsoBDto solEndDto) throws ProcesException {
+    Map<String, Boolean> filtros = new HashMap<String, Boolean>();
+    filtros.put(KEY_CONSULTA_GENERALES, Boolean.TRUE);
+
+    RespuEmmaPolDto respEmmDto = new RespuEmmaPolDto();
+    try {
+        emmProxServ.consultaPolizaProgress(solEndDto.getNumPol(), respEmmDto, filtros);
+    } catch (Exception e) {
+        throw new ProcesException(e.getMessage());
+    }
+    return respEmmDto;
+}
+
+private void ajustarColonia(SolEndsoBDto solEndDto) {
+    boolean coloniaLarga = null != solEndDto.getColonia() && solEndDto.getColonia().length() > 20;
+    if (coloniaLarga) {
+        solEndDto.setColonia(solEndDto.getColonia().substring(0, 20));
+    }
+}
+
+
+================================================================================
+ NOTAS / RIESGOS A REVISAR (no corregidos automaticamente, requieren tu OK)
+================================================================================
+
+1. NPE LATENTE EN manejarErrorEndoso:
+   Si XMLEntEndosoUtil.LeeXml(nodoEndoso) falla, "solEndDto" y "datPoldto" quedan
+   null y manejarErrorEndoso truena al llamar solEndDto.getNumPol().
+   Este riesgo YA EXISTIA en el codigo original (misma secuencia), no se modifico
+   el comportamiento porque no estaba en el alcance pedido.
+
+2. CAMBIO DE COMPORTAMIENTO EN "porcentaje":
+   En el original, la variable "porcentaje" estaba declarada FUERA del for
+   (antes de la linea 180), por lo que se acumulaba entre iteraciones de
+   distintos endosos sin resetearse a 0. Esto parece un bug latente: si el
+   endoso #1 suma 100% y el endoso #2 tiene beneficiarios propios, el
+   porcentaje del #2 se acumulaba sobre el resultado del #1.
+
+   En esta version, "porcentaje" vive SOLO dentro de
+   validarPorcentajeBeneficiarios(...) (una variable local por llamada), lo
+   que corrige ese comportamiento de forma natural.
+
+   Si el comportamiento acumulativo era intencional, avisar para revertirlo
+   a una variable compartida entre iteraciones.
+
+3. ORDEN DE setFeature EN validaXMLconSAXValidator (entrega anterior):
+   reader.setFeature(SCHEMA, true) y setFeature(SCHEMA_CHECK, true) se
+   llaman DESPUES de reader.read(stringReader). Si la intencion es que
+   read() ya valide contra el schema, esto no tendria efecto en esa llamada.
+   No se modifico sin confirmacion.
