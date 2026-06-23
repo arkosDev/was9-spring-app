@@ -1,46 +1,100 @@
-import java.io.StringReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 @Override
-public String searchSchema(String xml, String attributeName)
-        throws IOException, SAXException {
+public Long createSolicitudPolizas(Integer type, String xml)
+        throws ProcesException, IOException, SAXException {
 
-    String schemaURI = null;
+    logger.info(
+        "Time Solicitud 1 (createCotizacion(String)):" + FechaUtil.formatTimestamp(new Date()));
 
-    XMLInputFactory factory = XMLInputFactory.newInstance();
-    // Evitar XXE: sin DTD, sin entidades externas
-    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-    factory.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
+    final String user = MessageContext.getCurrentContext().getUsername();
 
-    XMLStreamReader reader = null;
-    try {
-        reader = factory.createXMLStreamReader(new StringReader(xml));
-        while (reader.hasNext()) {
-            int event = reader.next();
-            if (event == XMLStreamConstants.START_ELEMENT) {
-                // Primer START_ELEMENT = root. Tomo el atributo y corto.
-                schemaURI = reader.getAttributeValue(null, attributeName);
-                break;
-            }
-        }
-    } catch (XMLStreamException e) {
-        throw new SAXException("Error al convertir el Xml (XMLStreamException): " + e.getMessage(), e);
-    } finally {
-        if (reader != null) {
-            try {
-                reader.close();
-            } catch (XMLStreamException e) {
-                // ignorar al cerrar
-            }
-        }
+    validarXmlEntrada(xml);
+    obtenerYValidarSchema(xml);
+    validarCancelacion(type, user);
+    validarUsuario(user);
+
+    final SolPolizaDto solPolDto = construirSolicitud(type, user);
+
+    return persistirSolicitud(solPolDto, xml);
+}
+
+private void validarXmlEntrada(String xml) throws ProcesException {
+    if (!TextUtil.isUsable(xml)) {
+        throw new ProcesException(
+            "SolicitaPolizasSessionBean::create(SolicitaPolizasValueObject) - unable to save a null valueObject.");
+    }
+}
+
+private String obtenerYValidarSchema(String xml) throws IOException, SAXException, ProcesException {
+    final String schemaURI = schmValServ.searchSchema(xml, "noNamespaceSchemaLocation");
+    logger.info("Schema entrada obtenido: " + schemaURI);
+
+    if (!TextUtil.isUsable(schemaURI)) {
+        throw new ProcesException(
+            "El XML de entrada debe contener un schema valido en el atributo: 'xsi:noNamespaceSchemaLocation'.");
     }
 
-    if (null == schemaURI) {
-        throw new SAXException("El atributo: '" + attributeName + "' no se encuentra en el XML de entrada: " + xml);
+    logger.info("Validando XML...");
+    final ParametroDto paramDto = paramRepo.findByValor(schemaURI);
+    if (null == paramDto) {
+        throw new ProcesException(
+            String.format("NO COINCIDE XSD RECIBIDO: %s CON EL QUE SE ENCUENTRA EN BD.", schemaURI));
     }
-
     return schemaURI;
+}
+
+private void validarCancelacion(Integer type, String user) throws ProcesException {
+    final boolean esCancelacion =
+        CANCELACION_INMEDIATA.equals(type) || CANCELACION_NO_INMEDIATA.equals(type);
+
+    if (esCancelacion && !polFacServ.puedeCancelar(type, user)) {
+        throw new ProcesException(String.format("SolPolCrServImpl:create() - %s", CAN_NOPERM));
+    }
+}
+
+private void validarUsuario(String user) throws ProcesException {
+    if (!polFacServ.usuarioExiste(user)) {
+        throw new ProcesException("SolPolCrServImpl:create() - " + String.format(SOL_NEXIST, user));
+    }
+}
+
+private SolPolizaDto construirSolicitud(Integer type, String user) {
+    return SolPolizaDto.builder()
+        .idSolPol(UUIDUtil.getUUIDLong())
+        .solId(user)
+        .estatus(Nueva)
+        .fecEst(FechaUtil.getTimeStamp())
+        .solIni(FechaUtil.getTimeStamp())
+        .tipSol(type)
+        .observ(EMPTY)
+        .build();
+}
+
+private Long persistirSolicitud(SolPolizaDto solPolDto, String xml) throws ProcesException {
+    try {
+        solPolRepo.createSolicitudPolizas(solPolDto);
+        logXmlSiAplica(solPolDto, xml);
+        solPolRepo.insertBlob(xml, solPolDto.getIdSolPol(), fileXMLSolicitud);
+
+        logger.info(
+            "Time OnMessage 2 (createCotizacion(String)):" + FechaUtil.formatTimestamp(new Date()));
+
+        return solPolDto.getIdSolPol();
+    } catch (Exception exc) {
+        String errMsg =
+            "SolicitaPolizasSessionBean:create() - Unable to create SolicitaPolizas - " + exc;
+        logger.error(errMsg);
+        throw new ProcesException(errMsg, exc);
+    }
+}
+
+private void logXmlSiAplica(SolPolizaDto solPolDto, String xml) {
+    final List<ParametroDto> params = paramRepo.findAllByNombre("MOSTRAR.LOG");
+    final boolean mostrarLog = null != params && !params.isEmpty() && "SI".equals(params.get(0).getValor());
+
+    if (!mostrarLog) {
+        return;
+    }
+    logger.info("XML: " + xml);
+    logger.info("idSolicitud: " + solPolDto.getIdSolPol());
+    logger.info("BlobDAO.fileXMLSoli: " + fileXMLSolicitud);
 }
