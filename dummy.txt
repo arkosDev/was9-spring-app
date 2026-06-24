@@ -1,36 +1,4 @@
-@Override
-public void enviaEndosoEmma(Long idSolicitud, Vector<SolEndsoBDto> vEndosos)
-        throws ChangeStatException, ProgException, AppServException, ProcesException {
 
-    List<Long> datos = obtenerDatosPolizas(idSolicitud);
+curl.exe -X POST "http://MXALPR01J2GDJR3.asefi.mex:9080/EmisionPolizasWS/Solicitud" -H "Content-Type: text/xml; charset=UTF-8" -H "SOAPAction: \"\"" -d @catalogosrec.xml
 
-    IntStream.range(0, datos.size())
-        .forEach(i -> procesarEnvioEndoso(datos.get(i), vEndosos.get(i)));
-}
-
-private List<Long> obtenerDatosPolizas(Long idSolicitud) throws ProcesException {
-    try {
-        return datPolSer.findAllDatosPolizasBySolicitud(idSolicitud);
-    } catch (Exception exc) {
-        String sErrorMsg =
-            "Inside EmmaEndososProxy:enviaEndosoEmma(..) - Could not find all findAllDatosPolizasBySolicitud due to - "
-                + exc;
-        logger.error(sErrorMsg);
-        throw new ProcesException(sErrorMsg, exc);
-    }
-}
-
-private void procesarEnvioEndoso(Long idCotizacion, SolEndsoBDto edDto) {
-    try {
-        if (!DATP_EXCE.equals(edDto.getStatPol())) {
-            datPolSer.cambiaStatusDatosPolizas(idCotizacion, DATP_PROCESAN, null);
-        }
-        armaEnviaEmma(idCotizacion, edDto);
-    } catch (Exception e) {
-        datPolSer.cambiaStatusDatosPolizas(idCotizacion, DATP_EXCE, e.getMessage());
-        logger.error(
-            "Inside EmmaEndososProxy:enviaEndosoEmma(..) - Could not process method armaEnviaEmma due to - "
-                + e);
-    }
-}
-
+curl.exe -X POST "http://MXALPR01J2GDJR3.asefi.mex:9080/EmisionPolizasWS/Solicitud" -H "Content-Type: text/xml; charset=UTF-8" -H 'SOAPAction: \"\"' -d "@catalogosrec.xml"
