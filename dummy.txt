@@ -1,82 +1,10 @@
-### 1. buscarSol
-curl -X POST "http://MXALPR01J2GDJR3.asefi.mex:9080/EmisionPolizasWS/Solicitud" \
-  -H "Content-Type: text/xml; charset=UTF-8" \
-  -H "SOAPAction: \"\"" \
-  --data-binary @- <<'EOF'
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sol="http://axa.com.mx/EmisionPolizasWS/solicitud">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <sol:buscarSol>
-         <sol:polReq>
-            <idSolicitud>6525064555386336745</idSolicitud>
-            <pagina>0</pagina>
-         </sol:polReq>
-      </sol:buscarSol>
-   </soapenv:Body>
-</soapenv:Envelope>
-EOF
+@Test
+public void testFindAll() throws Exception {
+    // Agrega esta línea
+    System.out.println("Logger level: " + 
+        org.slf4j.LoggerFactory.getLogger("org.springframework.jdbc.core.JdbcTemplate").isDebugEnabled());
+    
+    final List<SolicitanteDto> result = solicitanteRepo.findAll();
+    System.out.println("findAll -> " + result.size() + " registros");
+}
 
-
-### 2. catalogos
-curl -X POST "http://MXALPR01J2GDJR3.asefi.mex:9080/EmisionPolizasWS/Solicitud" \
-  -H "Content-Type: text/xml; charset=UTF-8" \
-  -H "SOAPAction: \"\"" \
-  --data-binary @- <<'EOF'
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sol="http://axa.com.mx/EmisionPolizasWS/solicitud">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <sol:catalogos/>
-   </soapenv:Body>
-</soapenv:Envelope>
-EOF
-
-
-### 3. catalogosrec
-curl -X POST "http://MXALPR01J2GDJR3.asefi.mex:9080/EmisionPolizasWS/Solicitud" \
-  -H "Content-Type: text/xml; charset=UTF-8" \
-  -H "SOAPAction: \"\"" \
-  --data-binary @- <<'EOF'
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sol="http://axa.com.mx/EmisionPolizasWS/solicitud">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <sol:catalogosrec>
-         <tipoSolicitud>1</tipoSolicitud>
-      </sol:catalogosrec>
-   </soapenv:Body>
-</soapenv:Envelope>
-EOF
-
-
-### 4. createXLS
-curl -X POST "http://MXALPR01J2GDJR3.asefi.mex:9080/EmisionPolizasWS/Solicitud" \
-  -H "Content-Type: text/xml; charset=UTF-8" \
-  -H "SOAPAction: \"\"" \
-  --data-binary @- <<'EOF'
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sol="http://axa.com.mx/EmisionPolizasWS/solicitud">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <sol:createXLS>
-         <arg0>
-            <idSolicitud>6525064555386336745</idSolicitud>
-            <pagina>0</pagina>
-         </arg0>
-      </sol:createXLS>
-   </soapenv:Body>
-</soapenv:Envelope>
-EOF
-
-
-### 5. createXML
-curl -X POST "http://MXALPR01J2GDJR3.asefi.mex:9080/EmisionPolizasWS/Solicitud" \
-  -H "Content-Type: text/xml; charset=UTF-8" \
-  -H "SOAPAction: \"\"" \
-  --data-binary @- <<'EOF'
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sol="http://axa.com.mx/EmisionPolizasWS/solicitud">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <sol:createXML>
-         <idSolicitudPoliza>6525064555386336745</idSolicitudPoliza>
-      </sol:createXML>
-   </soapenv:Body>
-</soapenv:Envelope>
-EOF
