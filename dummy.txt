@@ -1,1 +1,24 @@
-javap -classpath C:\ruta\al\axis-1.4.jar org.apache.axis.MessageContext | findstr /i currentContext
+import org.apache.axis.MessageContext;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+@Test
+public void testCreate() throws Exception {
+
+    URI archivo = Objects.requireNonNull(
+        getClass().getClassLoader().getResource("zero.xml")
+    ).toURI();
+
+    String xmlContent = new String(Files.readAllBytes(Paths.get(archivo)),
+        StandardCharsets.ISO_8859_1);
+
+    try (MockedStatic<MessageContext> mocked = Mockito.mockStatic(MessageContext.class)) {
+        MessageContext mcMock = Mockito.mock(MessageContext.class);
+        Mockito.when(mcMock.getUsername()).thenReturn("testUser");
+        mocked.when(MessageContext::getCurrentContext).thenReturn(mcMock);
+
+        logger.info(xmlContent);
+        solPolServ.createSolicitudPolizas(NO_INMEDIATA, xmlContent);
+    }
+}
+
