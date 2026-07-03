@@ -1,11 +1,80 @@
-public static XMLGregorianCalendar getFormatoDate() {
-    XMLGregorianCalendar todayGC = null;
+private static final ValidaToken VALIDA_TOKEN_SERVICE;
+private static final JAXBContext VALIDA_TOKEN_JAXB_CONTEXT;
+
+static {
     try {
-        GregorianCalendar gCalendar = new GregorianCalendar();
-        gCalendar.setTime(new Date());
-        todayGC = DatatypeFactory.newInstance().newXMLGregorianCalendar(gCalendar);
-    } catch (DatatypeConfigurationException de) {
-        // manejo de excepción
+        VALIDA_TOKEN_JAXB_CONTEXT = JAXBContext.newInstance(ValidaTokenRequest.class);
+    } catch (JAXBException e) {
+        throw new ExceptionInInitializerError(e);
     }
-    return todayGC;
+    VALIDA_TOKEN_SERVICE = null; // se resuelve en runtime porque la URL viene de paramDto
+}
+
+public ValidaTokenResponse validaToken(String tokenClabe, SolicitanteDto datSolic, String nombre,
+        String apPaterno, String apMaterno) {
+
+    logger.info("***En ValidaTokenClient::validaToken");
+
+    try {
+        final ParametroDto paramDto = paramServ.getParametroPorNombre(URL_VALIDATOKEN);
+        logger.info("***En ValidaTokenClient::validaToken url servicio " + paramDto.getValor());
+
+        URL urlWsdl = new URL(paramDto.getValor() + "?wsdl");
+        ValidaToken validaToken = new ValidaToken(urlWsdl);
+        ValidaTokenRequest valTokReqType = new ValidaTokenRequest();
+        ValidaTokenPortType validaTokenPortType = validaToken.getValidaTokenPort();
+
+        BindingProvider bindProv = (BindingProvider) validaTokenPortType;
+        valTokReqType.setAXAHeaderReq(PciUtil.getHeaderReqPci(datSolic.getSolId()));
+        valTokReqType.setData(getDatosReqValidatoken(tokenClabe, nombre, apPaterno, apMaterno));
+
+        if (logger.isInfoEnabled()) {
+            try {
+                Marshaller m = VALIDA_TOKEN_JAXB_CONTEXT.createMarshaller();
+                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+                StringWriter sw = new StringWriter();
+                m.marshal(valTokReqType, sw);
+                logger.info(sw.toString());
+            } catch (JAXBException expo) {
+                logger.error("validaToken", expo);
+            }
+        }
+
+        bindProv.getRequestContext().put(BindingProvider.USERNAME_PROPERTY,
+                datSolic.getSolId());
+        bindProv.getRequestContext().put(BindingProvider.PASSWORD_PROPERTY,
+                datSolic.getContsen());
+        bindProv.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+                paramDto.getValor());
+
+        return validaTokenPortType.validaToken(valTokReqType);
+    } catch (MalformedURLException | ParametroExcept expo) {
+        logger.error("validaToken", expo);
+    }
+    return new ValidaTokenResponse();
+}
+
+public static DataReqType getDatosReqValidatoken(String tokenClabe, String nombre,
+        String apPat, String apMat) {
+
+    final DataReqType datReq = new DataReqType();
+
+    if (TextUtil.isNotBlank(nombre)) {
+        datReq.setNombreRazonSocial(nombre);
+    } else {
+        datReq.setNombreRazonSocial(ESPACIO);
+    }
+
+    if (TextUtil.isNotBlank(apPat)) {
+        datReq.setApellidoPaterno(apPat);
+    } else {
+        datReq.setApellidoPaterno(ESPACIO);
+    }
+
+    if (TextUtil.isNotBlank(apMat)) {
+        datReq.setApellidoMaterno(apMat);
+    }
+
+    datReq.setTokenClabe(tokenClabe);
+    return datReq;
 }
