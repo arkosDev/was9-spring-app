@@ -1,25 +1,11 @@
-<plugin>
-    <groupId>com.sun.xml.ws</groupId>
-    <artifactId>jaxws-maven-plugin</artifactId>
-    <version>2.3.5</version>
-    <executions>
-        <execution>
-            <id>wsimport-solicitud</id>
-            <goals>
-                <goal>wsimport</goal>
-            </goals>
-            <configuration>
-                <wsdlDirectory>${project.basedir}/src/wsdl</wsdlDirectory>
-                <packageName>com.axa.seguros.autos.wscl.datfisk</packageName>
-                <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
-                <keep>true</keep>
-                <verbose>true</verbose>
-                <args>
-                    <arg>-extension</arg>
-                    <arg>-B-XdisableSSLHostnameVerification</arg>
-                    <arg>-Xnocompile</arg>
-                </args>
-            </configuration>
-        </execution>
-    </executions>
-</plugin>
+public static XMLGregorianCalendar getFormatoDate() {
+    XMLGregorianCalendar todayGC = null;
+    try {
+        GregorianCalendar gCalendar = new GregorianCalendar();
+        gCalendar.setTime(new Date());
+        todayGC = DatatypeFactory.newInstance().newXMLGregorianCalendar(gCalendar);
+    } catch (DatatypeConfigurationException de) {
+        // manejo de excepción
+    }
+    return todayGC;
+}
