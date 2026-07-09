@@ -1,80 +1,158 @@
-private static final ValidaToken VALIDA_TOKEN_SERVICE;
-private static final JAXBContext VALIDA_TOKEN_JAXB_CONTEXT;
+public String getXml(final String solicitante, final List<ProdCompDto> productos)
+        throws Exception {
 
-static {
-    try {
-        VALIDA_TOKEN_JAXB_CONTEXT = JAXBContext.newInstance(ValidaTokenRequest.class);
-    } catch (JAXBException e) {
-        throw new ExceptionInInitializerError(e);
-    }
-    VALIDA_TOKEN_SERVICE = null; // se resuelve en runtime porque la URL viene de paramDto
-}
+    logger.info("INICIA::ArmaXmlPaquetesSB:getXml()");
 
-public ValidaTokenResponse validaToken(String tokenClabe, SolicitanteDto datSolic, String nombre,
-        String apPaterno, String apMaterno) {
+    ByteArrayOutputStream xmlBytes = new ByteArrayOutputStream();
+    XMLOutputFactory xof = XMLOutputFactory.newInstance();
+    XMLStreamWriter hd = xof.createXMLStreamWriter(xmlBytes, ENCODE);
 
-    logger.info("***En ValidaTokenClient::validaToken");
+    String strXml = null;
 
-    try {
-        final ParametroDto paramDto = paramServ.getParametroPorNombre(URL_VALIDATOKEN);
-        logger.info("***En ValidaTokenClient::validaToken url servicio " + paramDto.getValor());
+    hd.writeStartDocument(ENCODE, "1.0");
+    hd.writeStartElement(PRODUCTOS);
 
-        URL urlWsdl = new URL(paramDto.getValor() + "?wsdl");
-        ValidaToken validaToken = new ValidaToken(urlWsdl);
-        ValidaTokenRequest valTokReqType = new ValidaTokenRequest();
-        ValidaTokenPortType validaTokenPortType = validaToken.getValidaTokenPort();
+    // SOLICITANTE
+    hd.writeStartElement(SOLICITANTE);
+    hd.writeCharacters(TextUtil.valNulo(solicitante));
+    hd.writeEndElement(); // SOLICITANTE
 
-        BindingProvider bindProv = (BindingProvider) validaTokenPortType;
-        valTokReqType.setAXAHeaderReq(PciUtil.getHeaderReqPci(datSolic.getSolId()));
-        valTokReqType.setData(getDatosReqValidatoken(tokenClabe, nombre, apPaterno, apMaterno));
+    for (int i = 0; i < productos.size(); i++) {
 
-        if (logger.isInfoEnabled()) {
-            try {
-                Marshaller m = VALIDA_TOKEN_JAXB_CONTEXT.createMarshaller();
-                m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-                StringWriter sw = new StringWriter();
-                m.marshal(valTokReqType, sw);
-                logger.info(sw.toString());
-            } catch (JAXBException expo) {
-                logger.error("validaToken", expo);
-            }
+        final ProdCompDto product = productos.get(i);
+
+        // PRODUCTOS
+        hd.writeStartElement(PRODUCTO);
+
+        // NOMBRE
+        hd.writeStartElement(NOMBRE);
+        hd.writeCharacters(TextUtil.valNulo(product.getNomProd()));
+        hd.writeEndElement(); // NOMBRE
+
+        // CLAVE
+        hd.writeStartElement(CLAVE);
+        hd.writeCharacters(TextUtil.valObjNulo(product.getProdId()));
+        hd.writeEndElement(); // CLAVE
+
+        // INICIO DE VIGENCIA
+        hd.writeStartElement(INICIO_VIGENCIA);
+        if (product.getFecVigIni() != null) {
+            hd.writeCharacters(FechaUtil.format(product.getFecVigIni()));
+        } else {
+            hd.writeCharacters(EMPTY);
+        }
+        hd.writeEndElement(); // INICIO_VIGENCIA
+
+        // FIN DE VIGENCIA
+        hd.writeStartElement(FIN_VIGENCIA);
+        if (product.getFecVigFin() != null) {
+            hd.writeCharacters(FechaUtil.format(product.getFecVigFin()));
+        } else {
+            hd.writeCharacters(EMPTY);
+        }
+        hd.writeEndElement(); // FIN_VIGENCIA
+
+        // TIPO POLIZA
+        hd.writeStartElement(TIPOPOLIZA);
+        if (product.getTipPol() != null) {
+            String tipoPol = CatTipPolUtil.getKey(product.getTipPol());
+            hd.writeCharacters(TextUtil.valNulo(tipoPol));
+        } else {
+            hd.writeCharacters(EMPTY);
+        }
+        hd.writeEndElement(); // TIPOPOLIZA
+
+        // PRORRATEAR DERECHOS
+        hd.writeStartElement(PRORRATEARDERECHOS);
+        if (Boolean.valueOf(product.getProrDer())) {
+            hd.writeCharacters(TextUtil.valNulo("SI"));
+        } else {
+            hd.writeCharacters(TextUtil.valNulo("NO"));
+        }
+        hd.writeEndElement(); // PRORRATEARDERECHOS
+
+        // MODELOS VALIDOS DE
+        hd.writeStartElement(MODELOSVALIDOSDE);
+        hd.writeCharacters(TextUtil.valObjNulo(product.getModValInf()));
+        hd.writeEndElement(); // MODELOSVALIDOSDE
+
+        // MODELOS VALIDOS A
+        hd.writeStartElement(MODELOSVALIDOSA);
+        hd.writeCharacters(TextUtil.valObjNulo(product.getModValsup()));
+        hd.writeEndElement(); // MODELOSVALIDOSA
+
+        // FORMAS DE PAGO
+        hd.writeStartElement(FORMAS_PAGO);
+        generarFormasDePago(product.getFormPagVal(), hd);
+        hd.writeEndElement(); // FORMAS_PAGO
+
+        // VIGENCIAS
+        hd.writeStartElement(VIGENCIAS);
+        generarVigencias(product.getVigVal(), hd);
+        hd.writeEndElement(); // VIGENCIAS
+
+        // SERIES
+        hd.writeStartElement(SERIES);
+
+        // SERIES AUTOEXPEDIBLES
+        hd.writeStartElement(SERIESAUTOEXPEDIBLES);
+        generarSeries(product.getSerieAuto(), hd);
+        hd.writeEndElement(); // SERIESAUTOEXPEDIBLES
+
+        // SERIES EMISION
+        hd.writeStartElement(SERIESEMISION);
+        generarSeries(product.getSerPolEmi(), hd);
+        hd.writeEndElement(); // SERIESEMISION
+
+        hd.writeEndElement(); // SERIES
+
+        // CONDICIONES EMISION
+        hd.writeStartElement(CONDICIONESEMISION);
+        obtenerCondicionEmision(product, hd);
+        hd.writeEndElement(); // CONDICIONESEMISION
+
+        // PAGO EN LINEA
+        hd.writeStartElement(PAGOENLINEA);
+
+        hd.writeStartElement(PAGOINMEDIATO);
+        String valorPagoInmediato = obtenValorChecksPago(product.getPagInmVo());
+        hd.writeCharacters(TextUtil.valNulo(valorPagoInmediato));
+        hd.writeEndElement(); // PAGOINMEDIATO
+
+        hd.writeStartElement(PAGOOBLIGATORIO);
+        String valorPagoObligatorio = obtenValorChecksPago(product.getPagOblVo());
+        // TODO: en el legacy este length() usaba valorPagoInmediato en vez de
+        // valorPagoObligatorio; se preserva igual por ser migración 1:1.
+        hd.writeCharacters(TextUtil.valNulo(valorPagoObligatorio));
+        hd.writeEndElement(); // PAGOOBLIGATORIO
+
+        if (valorPagoInmediato.equals("SI")) {
+            generaAfiliaciones(product.getAfilRela(), hd);
         }
 
-        bindProv.getRequestContext().put(BindingProvider.USERNAME_PROPERTY,
-                datSolic.getSolId());
-        bindProv.getRequestContext().put(BindingProvider.PASSWORD_PROPERTY,
-                datSolic.getContsen());
-        bindProv.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-                paramDto.getValor());
+        hd.writeEndElement(); // PAGOENLINEA
 
-        return validaTokenPortType.validaToken(valTokReqType);
-    } catch (MalformedURLException | ParametroExcept expo) {
-        logger.error("validaToken", expo);
-    }
-    return new ValidaTokenResponse();
-}
+        // OBLIGATORIEDAD
+        hd.writeStartElement(IS_OBLIGATORIO);
+        if (product.getObligatorio()) {
+            hd.writeCharacters(TextUtil.valNulo("SI"));
+        } else {
+            hd.writeCharacters(TextUtil.valNulo("NO"));
+        }
+        hd.writeEndElement(); // IS_OBLIGATORIO
 
-public static DataReqType getDatosReqValidatoken(String tokenClabe, String nombre,
-        String apPat, String apMat) {
-
-    final DataReqType datReq = new DataReqType();
-
-    if (TextUtil.isNotBlank(nombre)) {
-        datReq.setNombreRazonSocial(nombre);
-    } else {
-        datReq.setNombreRazonSocial(ESPACIO);
+        hd.writeEndElement(); // PRODUCTO
     }
 
-    if (TextUtil.isNotBlank(apPat)) {
-        datReq.setApellidoPaterno(apPat);
-    } else {
-        datReq.setApellidoPaterno(ESPACIO);
-    }
+    hd.writeEndElement(); // PRODUCTOS
+    hd.writeEndDocument();
+    hd.flush();
+    hd.close();
 
-    if (TextUtil.isNotBlank(apMat)) {
-        datReq.setApellidoMaterno(apMat);
-    }
+    strXml = xmlBytes.toString(ENCODE);
+    xmlBytes.close();
 
-    datReq.setTokenClabe(tokenClabe);
-    return datReq;
+    logger.info("TERMINA::ArmaXmlPaquetesSB:getXml()");
+
+    return strXml;
 }
