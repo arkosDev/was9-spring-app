@@ -1,158 +1,802 @@
-public String getXml(final String solicitante, final List<ProdCompDto> productos)
-        throws Exception {
+package mx.com.axa.emision.sb; // TODO: ajustar al paquete real del proyecto
 
-    logger.info("INICIA::ArmaXmlPaquetesSB:getXml()");
+import java.io.ByteArrayOutputStream;
+import java.text.DecimalFormat;
+import java.util.List;
 
-    ByteArrayOutputStream xmlBytes = new ByteArrayOutputStream();
-    XMLOutputFactory xof = XMLOutputFactory.newInstance();
-    XMLStreamWriter hd = xof.createXMLStreamWriter(xmlBytes, ENCODE);
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
-    String strXml = null;
+// TODO: ajustar imports reales de DTOs, utilerías y constantes del proyecto:
+// ProdCompDto, CondEmiDto, PaqEmiDto, AfiliacionesDto, TextUtil, FechaUtil,
+// CatTipPolUtil, CatalogosUtil, ConstantesXMLEntrada (o las constantes sueltas
+// PRODUCTOS, SOLICITANTE, NOMBRE, CLAVE, etc. si viven en esa clase estática).
 
-    hd.writeStartDocument(ENCODE, "1.0");
-    hd.writeStartElement(PRODUCTOS);
+public class ArmaXmlPaquetesSB {
 
-    // SOLICITANTE
-    hd.writeStartElement(SOLICITANTE);
-    hd.writeCharacters(TextUtil.valNulo(solicitante));
-    hd.writeEndElement(); // SOLICITANTE
+    private static final String EMPTY = "";
+    private static final String ENCODE = "UTF-8";
+    private static final String SI = "SI";
+    private static final String NO = "NO";
+    private static final String ERROR_AL_GENERAR_XML = "ERROR_AL_GENERAR_XML"; // TODO: ajustar mensaje/constante real
 
-    for (int i = 0; i < productos.size(); i++) {
+    // private static final Logger logger = ...; // TODO: reusar logger real del proyecto
 
-        final ProdCompDto product = productos.get(i);
+    public String getXml(final String solicitante, final List<ProdCompDto> productos)
+            throws Exception {
 
-        // PRODUCTOS
-        hd.writeStartElement(PRODUCTO);
+        // logger.info("INICIA::ArmaXmlPaquetesSB:getXml()");
+
+        ByteArrayOutputStream xmlBytes = new ByteArrayOutputStream();
+        XMLOutputFactory xof = XMLOutputFactory.newInstance();
+        XMLStreamWriter hd = xof.createXMLStreamWriter(xmlBytes, ENCODE);
+
+        String strXml;
+
+        hd.writeStartDocument(ENCODE, "1.0");
+        hd.writeStartElement(PRODUCTOS);
+
+        // SOLICITANTE
+        hd.writeStartElement(SOLICITANTE);
+        hd.writeCharacters(TextUtil.valNulo(solicitante));
+        hd.writeEndElement(); // SOLICITANTE
+
+        for (int i = 0; i < productos.size(); i++) {
+
+            final ProdCompDto product = productos.get(i);
+
+            // PRODUCTOS
+            hd.writeStartElement(PRODUCTO);
+
+            // NOMBRE
+            hd.writeStartElement(NOMBRE);
+            hd.writeCharacters(TextUtil.valNulo(product.getNomProd()));
+            hd.writeEndElement(); // NOMBRE
+
+            // CLAVE
+            hd.writeStartElement(CLAVE);
+            hd.writeCharacters(TextUtil.valObjNulo(product.getProdId()));
+            hd.writeEndElement(); // CLAVE
+
+            // INICIO DE VIGENCIA
+            hd.writeStartElement(INICIO_VIGENCIA);
+            if (product.getFecVigIni() != null) {
+                hd.writeCharacters(FechaUtil.format(product.getFecVigIni()));
+            } else {
+                hd.writeCharacters(EMPTY);
+            }
+            hd.writeEndElement(); // INICIO_VIGENCIA
+
+            // FIN DE VIGENCIA
+            hd.writeStartElement(FIN_VIGENCIA);
+            if (product.getFecVigFin() != null) {
+                hd.writeCharacters(FechaUtil.format(product.getFecVigFin()));
+            } else {
+                hd.writeCharacters(EMPTY);
+            }
+            hd.writeEndElement(); // FIN_VIGENCIA
+
+            // TIPO POLIZA
+            hd.writeStartElement(TIPOPOLIZA);
+            if (product.getTipPol() != null) {
+                String tipoPol = CatTipPolUtil.getKey(product.getTipPol());
+                hd.writeCharacters(TextUtil.valNulo(tipoPol));
+            } else {
+                hd.writeCharacters(EMPTY);
+            }
+            hd.writeEndElement(); // TIPOPOLIZA
+
+            // PRORRATEAR DERECHOS
+            hd.writeStartElement(PRORRATEARDERECHOS);
+            if (Boolean.valueOf(product.getProrDer())) {
+                hd.writeCharacters(SI);
+            } else {
+                hd.writeCharacters(NO);
+            }
+            hd.writeEndElement(); // PRORRATEARDERECHOS
+
+            // MODELOS VALIDOS DE
+            hd.writeStartElement(MODELOSVALIDOSDE);
+            hd.writeCharacters(TextUtil.valObjNulo(product.getModValInf()));
+            hd.writeEndElement(); // MODELOSVALIDOSDE
+
+            // MODELOS VALIDOS A
+            hd.writeStartElement(MODELOSVALIDOSA);
+            hd.writeCharacters(TextUtil.valObjNulo(product.getModValsup()));
+            hd.writeEndElement(); // MODELOSVALIDOSA
+
+            // FORMAS DE PAGO
+            hd.writeStartElement(FORMAS_PAGO);
+            generarFormasDePago(product.getFormPagVal(), hd);
+            hd.writeEndElement(); // FORMAS_PAGO
+
+            // VIGENCIAS
+            hd.writeStartElement(VIGENCIAS);
+            generarVigencias(product.getVigVal(), hd);
+            hd.writeEndElement(); // VIGENCIAS
+
+            // SERIES
+            hd.writeStartElement(SERIES);
+
+            // SERIES AUTOEXPEDIBLES
+            hd.writeStartElement(SERIESAUTOEXPEDIBLES);
+            generarSeries(product.getSerieAuto(), hd);
+            hd.writeEndElement(); // SERIESAUTOEXPEDIBLES
+
+            // SERIES EMISION
+            hd.writeStartElement(SERIESEMISION);
+            generarSeries(product.getSerPolEmi(), hd);
+            hd.writeEndElement(); // SERIESEMISION
+
+            hd.writeEndElement(); // SERIES
+
+            // CONDICIONES EMISION
+            hd.writeStartElement(CONDICIONESEMISION);
+            obtenerCondicionEmision(product, hd);
+            hd.writeEndElement(); // CONDICIONESEMISION
+
+            // PAGO EN LINEA
+            hd.writeStartElement(PAGOENLINEA);
+
+            hd.writeStartElement(PAGOINMEDIATO);
+            String valorPagoInmediato = obtenValorChecksPago(product.getPagInmVo());
+            hd.writeCharacters(TextUtil.valNulo(valorPagoInmediato));
+            hd.writeEndElement(); // PAGOINMEDIATO
+
+            hd.writeStartElement(PAGOOBLIGATORIO);
+            String valorPagoObligatorio = obtenValorChecksPago(product.getPagOblVo());
+            // TODO: en el legacy este valor usaba el length() de valorPagoInmediato
+            // en vez de valorPagoObligatorio; con writeCharacters(String) el bug
+            // ya no aplica porque StAX no requiere length manual.
+            hd.writeCharacters(TextUtil.valNulo(valorPagoObligatorio));
+            hd.writeEndElement(); // PAGOOBLIGATORIO
+
+            if (valorPagoInmediato.equals(SI)) {
+                generaAfiliaciones(product.getAfilRela(), hd);
+            }
+
+            hd.writeEndElement(); // PAGOENLINEA
+
+            // OBLIGATORIEDAD
+            hd.writeStartElement(IS_OBLIGATORIO);
+            if (product.getObligatorio()) {
+                hd.writeCharacters(SI);
+            } else {
+                hd.writeCharacters(NO);
+            }
+            hd.writeEndElement(); // IS_OBLIGATORIO
+
+            hd.writeEndElement(); // PRODUCTO
+        }
+
+        hd.writeEndElement(); // PRODUCTOS
+        hd.writeEndDocument();
+        hd.flush();
+        hd.close();
+
+        strXml = xmlBytes.toString(ENCODE);
+        xmlBytes.close();
+
+        // logger.info("TERMINA::ArmaXmlPaquetesSB:getXml()");
+
+        return strXml;
+    }
+
+    private void obtenerCondicionEmision(ProdCompDto producto, XMLStreamWriter hd)
+            throws Exception {
+
+        if (producto.getCondEmision() == null) {
+            return;
+        }
+
+        for (int i = 0; i < producto.getCondEmision().size(); i++) {
+
+            hd.writeStartElement(CONDICION);
+
+            final CondEmiDto condicion = producto.getCondEmision().get(i);
+
+            // SUBRAMO
+            hd.writeStartElement(SUBRAMO);
+            if (condicion.getSubramo() != null) {
+                String subramo = CatalogosUtil.getKeySubramo(condicion.getSubramo().toString());
+                hd.writeCharacters(TextUtil.valNulo(subramo));
+            } else {
+                hd.writeCharacters(EMPTY);
+            }
+            hd.writeEndElement(); // SUBRAMO
+
+            // TIPOS DE VEHICULO
+            hd.writeStartElement(TIPOSVEHICULO);
+            generarTiposVehiculo(condicion.getValTip(), hd, condicion.getSubramo().toString());
+            hd.writeEndElement(); // TIPOSVEHICULO
+
+            // DEDUCIBLES
+            hd.writeStartElement(DEDUCIBLES);
+            generarDeducibles(condicion, hd);
+            hd.writeEndElement(); // DEDUCIBLES
+
+            // SUMAS ASEGURADAS
+            hd.writeStartElement(SUMASASEGURADAS);
+            generarSumasCondicionesEmision(condicion, hd);
+            hd.writeEndElement(); // SUMASASEGURADAS
+
+            generarValorConvenidoComercial(condicion, hd);
+            generarLogicos(condicion, hd);
+
+            // TIPOS DE CARGA
+            hd.writeStartElement(TIPOSCARGA);
+            generarTiposCarga(condicion.getTipCarga(), hd);
+            hd.writeEndElement(); // TIPOSCARGA
+
+            // TARIFAS
+            hd.writeStartElement(TARIFAS);
+            generarTarifas(condicion.getTarifVal(), hd);
+            hd.writeEndElement(); // TARIFAS
+
+            // PAQUETES DE EMISION
+            hd.writeStartElement(PAQUETEEMISION);
+
+            if (condicion.getPaquetes() != null) {
+                for (int j = 0; j < condicion.getPaquetes().size(); j++) {
+                    // BUG LEGACY preservado: el original indexa con "i" (índice del loop
+                    // externo de condiciones) en vez de "j" (índice del loop de paquetes).
+                    // Se deja igual por ser migración 1:1; avisar si se debe corregir.
+                    final PaqEmiDto paquete = condicion.getPaquetes().get(i);
+                    generarPaquetesEmision(paquete, hd);
+                }
+            }
+
+            hd.writeEndElement(); // PAQUETEEMISION
+            hd.writeEndElement(); // CONDICION
+        }
+    }
+
+    private void generarLogicos(CondEmiDto condicion, XMLStreamWriter hd) throws XMLStreamException {
+
+        String aux;
+        String salida;
+
+        // VIAJERO
+        aux = TextUtil.valObjNulo(condicion.getSumRCVia());
+        hd.writeStartElement(VIAJERO);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // VIAJERO
+
+        // EXCENCION DEDUCIBLE
+        aux = TextUtil.valObjNulo(condicion.getValPrix());
+        hd.writeStartElement(EXENCIONDEDUCIBLE);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // EXENCIONDEDUCIBLE
+
+        // EXTENSION RC
+        aux = TextUtil.valObjNulo(condicion.getExtRC());
+        hd.writeStartElement(EXTENSIONRC);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // EXTENSIONRC
+
+        // AMPLIACION RC
+        aux = TextUtil.valObjNulo(condicion.getAmplRC());
+        hd.writeStartElement(AMPLACIONRC);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // AMPLACIONRC
+
+        // SERVICIO ASISTENCIA
+        aux = TextUtil.valObjNulo(condicion.getServAsist());
+        hd.writeStartElement(SERVICIOASISTENCIA);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // SERVICIOASISTENCIA
+
+        // DOBLE REMOLQUE
+        aux = TextUtil.valObjNulo(condicion.getValRem());
+        hd.writeStartElement(DOBLEREMOLQUE);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // DOBLEREMOLQUE
+
+        // DEDUCIBLE VALOR COMERCIAL
+        aux = TextUtil.valObjNulo(condicion.getDedValCom());
+        hd.writeStartElement(DEDUCIBLEVALORCOMERCIAL);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // DEDUCIBLEVALORCOMERCIAL
+
+        // DEDUCIBLE VALOR CONVENIDO
+        aux = TextUtil.valObjNulo(condicion.getDedValConv());
+        hd.writeStartElement(DEDUCIBLEVALORCONVENIDO);
+        if (!aux.equals(EMPTY)) {
+            salida = aux.equalsIgnoreCase("true") ? SI : NO;
+            hd.writeCharacters(salida);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // DEDUCIBLEVALORCONVENIDO
+
+        // PORCENTAJE COASEGURO
+        hd.writeStartElement(PORCENTAJECOASEGURO);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getPorcCoaseg()));
+        hd.writeEndElement(); // PORCENTAJECOASEGURO
+    }
+
+    private void generarValorConvenidoComercial(CondEmiDto condicion, XMLStreamWriter hd)
+            throws XMLStreamException {
+
+        // VALOR CONVENIDO
+        hd.writeStartElement(VALORCONVENIDO);
+
+        hd.writeStartElement(MODELODESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getModValConvInf()));
+        hd.writeEndElement(); // MODELODESDE
+
+        hd.writeStartElement(MODELOHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getModValConvSup()));
+        hd.writeEndElement(); // MODELOHASTA
+
+        hd.writeEndElement(); // VALORCONVENIDO
+
+        // VALOR COMERCIAL
+        hd.writeStartElement(VALORCOMERCIAL);
+
+        hd.writeStartElement(MODELODESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getModValComInf()));
+        hd.writeEndElement(); // MODELODESDE
+
+        hd.writeStartElement(MODELOHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getModValComSup()));
+        hd.writeEndElement(); // MODELOHASTA
+
+        hd.writeEndElement(); // VALORCOMERCIAL
+    }
+
+    private void generarSumasCondicionesEmision(CondEmiDto condicion, XMLStreamWriter hd)
+            throws XMLStreamException {
+
+        DecimalFormat decimalFormat = new DecimalFormat("#0");
+        String equipoEspecial;
+        String adaptaciones;
+
+        // RC BIENES
+        hd.writeStartElement(RCBIENES);
+        hd.writeStartElement(SUMADESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCInf()));
+        hd.writeEndElement(); // SUMADESDE
+        hd.writeStartElement(SUMAHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCSup()));
+        hd.writeEndElement(); // SUMAHASTA
+        hd.writeStartElement(INCREMENTOS);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCInc()));
+        hd.writeEndElement(); // INCREMENTOS
+        hd.writeEndElement(); // RCBIENES
+
+        // GASTOS MEDICOS
+        hd.writeStartElement(GASTOSMEDICOS);
+        hd.writeStartElement(SUMADESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumGMInf()));
+        hd.writeEndElement(); // SUMADESDE
+        hd.writeStartElement(SUMAHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumGMSup()));
+        hd.writeEndElement(); // SUMAHASTA
+        hd.writeStartElement(INCREMENTOS);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumGMInc()));
+        hd.writeEndElement(); // INCREMENTOS
+        hd.writeEndElement(); // GASTOSMEDICOS
+
+        // EQUIPO ESPECIAL
+        if (condicion.getSumEE() != null) {
+            equipoEspecial = decimalFormat.format(condicion.getSumEE().doubleValue());
+        } else {
+            equipoEspecial = decimalFormat.format(new Double(0).doubleValue());
+        }
+        hd.writeStartElement(EQUIPOESPECIAL);
+        hd.writeCharacters(TextUtil.valNulo(equipoEspecial));
+        hd.writeEndElement(); // EQUIPOESPECIAL
+
+        // ADAPTACIONES
+        if (condicion.getSumAD() != null) {
+            adaptaciones = decimalFormat.format(condicion.getSumAD().doubleValue());
+        } else {
+            adaptaciones = decimalFormat.format(new Double(0).doubleValue());
+        }
+        hd.writeStartElement(ADAPTACIONES);
+        hd.writeCharacters(TextUtil.valNulo(adaptaciones));
+        hd.writeEndElement(); // ADAPTACIONES
+
+        // ACCIDENTES
+        hd.writeStartElement(ACCIDENTES);
+        hd.writeStartElement(SUMADESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumACCInf()));
+        hd.writeEndElement(); // SUMADESDE
+        hd.writeStartElement(SUMAHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumACCSup()));
+        hd.writeEndElement(); // SUMAHASTA
+        hd.writeStartElement(INCREMENTOS);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumACCInc()));
+        hd.writeEndElement(); // INCREMENTOS
+        hd.writeEndElement(); // ACCIDENTES
+
+        // AUTO SUSTITUTO
+        hd.writeStartElement(AUTOSUSTITUTO);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumAuSus()));
+        hd.writeEndElement(); // AUTOSUSTITUTO
+
+        // FIANZA
+        hd.writeStartElement(FIANZA);
+        hd.writeStartElement(SUMADESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumProInf()));
+        hd.writeEndElement(); // SUMADESDE
+        hd.writeStartElement(SUMAHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumProSup()));
+        hd.writeEndElement(); // SUMAHASTA
+        hd.writeStartElement(INCREMENTOS);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumProInc()));
+        hd.writeEndElement(); // INCREMENTOS
+        hd.writeEndElement(); // FIANZA
+
+        // RCPE (RC PERSONAS)
+        hd.writeStartElement(RCPERSONAS);
+        hd.writeStartElement(SUMADESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCPEInf()));
+        hd.writeEndElement(); // SUMADESDE
+        hd.writeStartElement(SUMAHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCPESup()));
+        hd.writeEndElement(); // SUMAHASTA
+        hd.writeStartElement(INCREMENTOS);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCPEInc()));
+        hd.writeEndElement(); // INCREMENTOS
+        hd.writeEndElement(); // RCPERSONAS
+
+        // RCViajero
+        hd.writeStartElement(RCVIAJERO);
+        hd.writeStartElement(SUMADESDE);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCViaInf()));
+        hd.writeEndElement(); // SUMADESDE
+        hd.writeStartElement(SUMAHASTA);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCViaSup()));
+        hd.writeEndElement(); // SUMAHASTA
+        hd.writeStartElement(INCREMENTOS);
+        hd.writeCharacters(TextUtil.valObjNulo(condicion.getSumRCViaInc()));
+        hd.writeEndElement(); // INCREMENTOS
+        hd.writeEndElement(); // RCVIAJERO
+    }
+
+    private void generarDeducibles(CondEmiDto condicion, XMLStreamWriter hd) throws XMLStreamException {
+
+        // DAÑOS MATERIALES
+        hd.writeStartElement(DANOSMATERIALES);
+        hd.writeCharacters(TextUtil.valNulo(condicion.getDDMVal()).replace('|', ','));
+        hd.writeEndElement(); // DANOSMATERIALES
+
+        // ROBO TOTAL
+        hd.writeStartElement(ROBOTOTAL);
+        hd.writeCharacters(TextUtil.valNulo(condicion.getDRBVal()).replace('|', ','));
+        hd.writeEndElement(); // ROBOTOTAL
+
+        // RESPONSABILIDAD CIVIL
+        hd.writeStartElement(RESPONSABILIDADCIVIL);
+        hd.writeCharacters(TextUtil.valNulo(condicion.getDRCVal()).replace('|', ','));
+        hd.writeEndElement(); // RESPONSABILIDADCIVIL
+    }
+
+    private void generarPaquetesEmision(PaqEmiDto paquete, XMLStreamWriter hd) throws Exception {
+
+        hd.writeStartElement(PAQUETE);
 
         // NOMBRE
         hd.writeStartElement(NOMBRE);
-        hd.writeCharacters(TextUtil.valNulo(product.getNomProd()));
+        hd.writeCharacters(TextUtil.valNulo(paquete.getNomPaq()));
         hd.writeEndElement(); // NOMBRE
 
         // CLAVE
         hd.writeStartElement(CLAVE);
-        hd.writeCharacters(TextUtil.valObjNulo(product.getProdId()));
+        hd.writeCharacters(TextUtil.valObjNulo(paquete.getIdPaqEmi()));
         hd.writeEndElement(); // CLAVE
 
-        // INICIO DE VIGENCIA
-        hd.writeStartElement(INICIO_VIGENCIA);
-        if (product.getFecVigIni() != null) {
-            hd.writeCharacters(FechaUtil.format(product.getFecVigIni()));
+        // DEDUCIBLES
+        getDeducibles(paquete, hd);
+
+        // SUMAS
+        getSumas(paquete, hd);
+
+        // EXCENCION DEDUCIBLE
+        hd.writeStartElement(EXENCIONDEDUCIBLE);
+        if (paquete.getValPrix().booleanValue()) {
+            hd.writeCharacters(SI);
         } else {
-            hd.writeCharacters(EMPTY);
+            hd.writeCharacters(NO);
         }
-        hd.writeEndElement(); // INICIO_VIGENCIA
+        hd.writeEndElement(); // EXENCIONDEDUCIBLE
 
-        // FIN DE VIGENCIA
-        hd.writeStartElement(FIN_VIGENCIA);
-        if (product.getFecVigFin() != null) {
-            hd.writeCharacters(FechaUtil.format(product.getFecVigFin()));
+        // EXTENCION RC
+        hd.writeStartElement(EXTENSIONRC);
+        if (paquete.getExtRC().booleanValue()) {
+            hd.writeCharacters(SI);
         } else {
-            hd.writeCharacters(EMPTY);
+            hd.writeCharacters(NO);
         }
-        hd.writeEndElement(); // FIN_VIGENCIA
+        hd.writeEndElement(); // EXTENSIONRC
 
-        // TIPO POLIZA
-        hd.writeStartElement(TIPOPOLIZA);
-        if (product.getTipPol() != null) {
-            String tipoPol = CatTipPolUtil.getKey(product.getTipPol());
-            hd.writeCharacters(TextUtil.valNulo(tipoPol));
+        // AMPLIACION RC
+        hd.writeStartElement(AMPLACIONRC);
+        if (paquete.getAmplRC().booleanValue()) {
+            hd.writeCharacters(SI);
         } else {
-            hd.writeCharacters(EMPTY);
+            hd.writeCharacters(NO);
         }
-        hd.writeEndElement(); // TIPOPOLIZA
+        hd.writeEndElement(); // AMPLACIONRC
 
-        // PRORRATEAR DERECHOS
-        hd.writeStartElement(PRORRATEARDERECHOS);
-        if (Boolean.valueOf(product.getProrDer())) {
-            hd.writeCharacters(TextUtil.valNulo("SI"));
+        // SERVICIOASISTENCIA
+        hd.writeStartElement(SERVICIOSASISTENCIA);
+        if (paquete.getServAsist()) {
+            hd.writeCharacters(SI);
         } else {
-            hd.writeCharacters(TextUtil.valNulo("NO"));
+            hd.writeCharacters(NO);
         }
-        hd.writeEndElement(); // PRORRATEARDERECHOS
+        hd.writeEndElement(); // SERVICIOSASISTENCIA
 
-        // MODELOS VALIDOS DE
-        hd.writeStartElement(MODELOSVALIDOSDE);
-        hd.writeCharacters(TextUtil.valObjNulo(product.getModValInf()));
-        hd.writeEndElement(); // MODELOSVALIDOSDE
-
-        // MODELOS VALIDOS A
-        hd.writeStartElement(MODELOSVALIDOSA);
-        hd.writeCharacters(TextUtil.valObjNulo(product.getModValsup()));
-        hd.writeEndElement(); // MODELOSVALIDOSA
-
-        // FORMAS DE PAGO
-        hd.writeStartElement(FORMAS_PAGO);
-        generarFormasDePago(product.getFormPagVal(), hd);
-        hd.writeEndElement(); // FORMAS_PAGO
-
-        // VIGENCIAS
-        hd.writeStartElement(VIGENCIAS);
-        generarVigencias(product.getVigVal(), hd);
-        hd.writeEndElement(); // VIGENCIAS
-
-        // SERIES
-        hd.writeStartElement(SERIES);
-
-        // SERIES AUTOEXPEDIBLES
-        hd.writeStartElement(SERIESAUTOEXPEDIBLES);
-        generarSeries(product.getSerieAuto(), hd);
-        hd.writeEndElement(); // SERIESAUTOEXPEDIBLES
-
-        // SERIES EMISION
-        hd.writeStartElement(SERIESEMISION);
-        generarSeries(product.getSerPolEmi(), hd);
-        hd.writeEndElement(); // SERIESEMISION
-
-        hd.writeEndElement(); // SERIES
-
-        // CONDICIONES EMISION
-        hd.writeStartElement(CONDICIONESEMISION);
-        obtenerCondicionEmision(product, hd);
-        hd.writeEndElement(); // CONDICIONESEMISION
-
-        // PAGO EN LINEA
-        hd.writeStartElement(PAGOENLINEA);
-
-        hd.writeStartElement(PAGOINMEDIATO);
-        String valorPagoInmediato = obtenValorChecksPago(product.getPagInmVo());
-        hd.writeCharacters(TextUtil.valNulo(valorPagoInmediato));
-        hd.writeEndElement(); // PAGOINMEDIATO
-
-        hd.writeStartElement(PAGOOBLIGATORIO);
-        String valorPagoObligatorio = obtenValorChecksPago(product.getPagOblVo());
-        // TODO: en el legacy este length() usaba valorPagoInmediato en vez de
-        // valorPagoObligatorio; se preserva igual por ser migración 1:1.
-        hd.writeCharacters(TextUtil.valNulo(valorPagoObligatorio));
-        hd.writeEndElement(); // PAGOOBLIGATORIO
-
-        if (valorPagoInmediato.equals("SI")) {
-            generaAfiliaciones(product.getAfilRela(), hd);
-        }
-
-        hd.writeEndElement(); // PAGOENLINEA
-
-        // OBLIGATORIEDAD
-        hd.writeStartElement(IS_OBLIGATORIO);
-        if (product.getObligatorio()) {
-            hd.writeCharacters(TextUtil.valNulo("SI"));
+        // DEDUCIBLE VALOR COMERCIAL
+        hd.writeStartElement(DEDUCIBLEVALORCOMERCIAL);
+        if (paquete.getDedValCom().booleanValue()) {
+            hd.writeCharacters(SI);
         } else {
-            hd.writeCharacters(TextUtil.valNulo("NO"));
+            hd.writeCharacters(NO);
         }
-        hd.writeEndElement(); // IS_OBLIGATORIO
+        hd.writeEndElement(); // DEDUCIBLEVALORCOMERCIAL
 
-        hd.writeEndElement(); // PRODUCTO
+        // DOBLE REMOLQUE
+        hd.writeStartElement(DOBLEREMOLQUE);
+        if (paquete.getDobRem().booleanValue()) {
+            hd.writeCharacters(SI);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // DOBLEREMOLQUE
+
+        // RC VIAJERO
+        hd.writeStartElement(RCVIAJERO);
+        if (paquete.getSumRCVia().booleanValue()) {
+            hd.writeCharacters(SI);
+        } else {
+            hd.writeCharacters(NO);
+        }
+        hd.writeEndElement(); // RCVIAJERO
+
+        hd.writeEndElement(); // PAQUETE
     }
 
-    hd.writeEndElement(); // PRODUCTOS
-    hd.writeEndDocument();
-    hd.flush();
-    hd.close();
+    private void generarTiposVehiculo(String tiposVehiculo, XMLStreamWriter hd, String subramo)
+            throws XMLStreamException {
 
-    strXml = xmlBytes.toString(ENCODE);
-    xmlBytes.close();
+        if (tiposVehiculo == null || tiposVehiculo.trim().equals(EMPTY)) {
+            return;
+        }
+        String[] tipoVehiculoIndividual = tiposVehiculo.split("[|]");
+        for (int i = 0; i < tipoVehiculoIndividual.length; i++) {
+            if (tipoVehiculoIndividual[i] != null && !tipoVehiculoIndividual[i].trim().equals(EMPTY)) {
+                String relacionSubRamo = CatalogosUtil.getSubramtipVeh(subramo);
+                if (relacionSubRamo != null) {
+                    String[] relacionesSubRamo = relacionSubRamo.split("[|]");
+                    for (int j = 0; j < relacionesSubRamo.length; j++) {
+                        if (relacionesSubRamo[j].equals(tipoVehiculoIndividual[i])) {
+                            hd.writeStartElement(TIPOVEHICULO);
+                            String tipoCatalogo = CatalogosUtil.getKeySubramTipVeh(tipoVehiculoIndividual[i]);
+                            hd.writeCharacters(TextUtil.valNulo(tipoCatalogo));
+                            hd.writeEndElement(); // TIPOVEHICULO
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-    logger.info("TERMINA::ArmaXmlPaquetesSB:getXml()");
+    private void generarTarifas(String tarifas, XMLStreamWriter hd) throws XMLStreamException {
+        if (tarifas == null || tarifas.trim().equals(EMPTY)) {
+            return;
+        }
+        String[] tarifaIndividual = tarifas.split("[|]");
+        for (int i = 0; i < tarifaIndividual.length; i++) {
+            if (tarifaIndividual[i] != null && !tarifaIndividual[i].trim().equals(EMPTY)) {
+                hd.writeStartElement(TARIFA);
+                hd.writeCharacters(TextUtil.valNulo(tarifaIndividual[i]));
+                hd.writeEndElement(); // TARIFA
+            }
+        }
+    }
 
-    return strXml;
+    private void generarTiposCarga(String strTiposCarga, XMLStreamWriter hd) throws XMLStreamException {
+        if (strTiposCarga == null || strTiposCarga.trim().equals(EMPTY)) {
+            return;
+        }
+        String[] arrTiposCarga = strTiposCarga.split("[|]");
+        for (int i = 0; i < arrTiposCarga.length; i++) {
+            if (arrTiposCarga[i] != null && !arrTiposCarga[i].trim().equals(EMPTY)) {
+                String strTipoCarga = CatalogosUtil.getKeyTipoCarga(arrTiposCarga[i]);
+                hd.writeStartElement(TIPOCARGA);
+                hd.writeCharacters(TextUtil.valNulo(strTipoCarga));
+                hd.writeEndElement(); // TIPOCARGA
+            }
+        }
+    }
+
+    private void generarSeries(String series, XMLStreamWriter hd) throws XMLStreamException {
+        if (series == null || series.trim().equals(EMPTY)) {
+            return;
+        }
+        String[] serieIndividual = series.split("[|]");
+        for (int i = 0; i < serieIndividual.length; i++) {
+            if (serieIndividual[i] != null && !serieIndividual[i].trim().equals(EMPTY)) {
+                hd.writeStartElement(SERIEPOLIZA);
+                hd.writeCharacters(TextUtil.valNulo(serieIndividual[i]));
+                hd.writeEndElement(); // SERIEPOLIZA
+            }
+        }
+    }
+
+    private void generarVigencias(String vigencias, XMLStreamWriter hd) throws XMLStreamException {
+        if (vigencias == null || vigencias.trim().equals(EMPTY)) {
+            return;
+        }
+        String[] vigencia = vigencias.split("[|]");
+        for (int i = 0; i < vigencia.length; i++) {
+            if (vigencia[i] != null && !vigencia[i].trim().equals(EMPTY)) {
+                hd.writeStartElement(VIGENCIA);
+                String vigenciaLeyenda = CatalogosUtil.getKeyVigencias(vigencia[i]);
+                hd.writeCharacters(TextUtil.valNulo(vigenciaLeyenda));
+                hd.writeEndElement(); // VIGENCIA
+            }
+        }
+    }
+
+    private void generarFormasDePago(String formasPago, XMLStreamWriter hd) throws XMLStreamException {
+        if (formasPago == null || formasPago.trim().equals(EMPTY)) {
+            return;
+        }
+        String[] formaPago = formasPago.split("[|]");
+        for (int i = 0; i < formaPago.length; i++) {
+            String[] claveFormaPago = formaPago[i].split(",");
+            if (claveFormaPago[0] != null && !claveFormaPago[0].trim().equals(EMPTY)) {
+                String formaPagoLeyenda = CatalogosUtil.getKeyFormaPago(claveFormaPago[0]);
+                if (formaPagoLeyenda != null && !formaPagoLeyenda.equals(EMPTY)) {
+                    hd.writeStartElement(FORMAPAGO);
+                    hd.writeCharacters(TextUtil.valNulo(formaPagoLeyenda));
+                    hd.writeEndElement(); // FORMAPAGO
+                }
+            }
+        }
+    }
+
+    private static void getDeducibles(PaqEmiDto paquete, XMLStreamWriter hd) throws Exception {
+        try {
+            hd.writeStartElement(DEDUCIBLES);
+
+            hd.writeStartElement(DANOSMATERIALES);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getDedDM()));
+            hd.writeEndElement(); // DANOSMATERIALES
+
+            hd.writeStartElement(ROBOTOTAL);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getDedRB()));
+            hd.writeEndElement(); // ROBOTOTAL
+
+            hd.writeStartElement(RESPONSABILIDADCIVIL);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getDedRC()));
+            hd.writeEndElement(); // RESPONSABILIDADCIVIL
+
+            hd.writeEndElement(); // DEDUCIBLES
+        } catch (XMLStreamException e) {
+            throw new Exception(ERROR_AL_GENERAR_XML, e);
+        }
+    }
+
+    private static void getSumas(PaqEmiDto paquete, XMLStreamWriter hd) throws Exception {
+        DecimalFormat decimalFormat = new DecimalFormat("#0");
+        String equipoEspecial;
+        String adaptaciones;
+        try {
+            hd.writeStartElement(SUMASASEGURADAS);
+
+            hd.writeStartElement(RCBIENES);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getSumRC()));
+            hd.writeEndElement(); // RCBIENES
+
+            hd.writeStartElement(GASTOSMEDICOS);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getSumGM()));
+            hd.writeEndElement(); // GASTOSMEDICOS
+
+            // EQUIPO ESPECIAL
+            if (paquete.getDblSumEE() != null) {
+                equipoEspecial = decimalFormat.format(paquete.getDblSumEE().doubleValue());
+            } else {
+                equipoEspecial = decimalFormat.format(new Double(0).doubleValue());
+            }
+            hd.writeStartElement(EQUIPOESPECIAL);
+            hd.writeCharacters(TextUtil.valNulo(equipoEspecial));
+            hd.writeEndElement(); // EQUIPOESPECIAL
+
+            // ADAPTACIONES
+            if (paquete.getSumAD() != null) {
+                adaptaciones = decimalFormat.format(paquete.getSumAD().doubleValue());
+            } else {
+                adaptaciones = decimalFormat.format(new Double(0).doubleValue());
+            }
+            hd.writeStartElement(ADAPTACIONES);
+            hd.writeCharacters(TextUtil.valNulo(adaptaciones));
+            hd.writeEndElement(); // ADAPTACIONES
+
+            hd.writeStartElement(ACCIDENTES);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getSumACC()));
+            hd.writeEndElement(); // ACCIDENTES
+
+            hd.writeStartElement(AUTOSUSTITUTO);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getSumAuSus()));
+            hd.writeEndElement(); // AUTOSUSTITUTO
+
+            hd.writeStartElement(FIANZA);
+            hd.writeCharacters(TextUtil.valObjNulo(paquete.getSumProl()));
+            hd.writeEndElement(); // FIANZA
+
+            hd.writeEndElement(); // SUMASASEGURADAS
+        } catch (XMLStreamException e) {
+            throw new Exception(ERROR_AL_GENERAR_XML, e);
+        }
+    }
+
+    public String obtenValorChecksPago(String check) {
+        String valor = EMPTY;
+        if (check != null && check.equals("1")) {
+            valor = SI;
+        } else {
+            valor = NO;
+        }
+        return valor;
+    }
+
+    public void generaAfiliaciones(List<AfiliacionesDto> lstAfiliacionesRelacionadas, XMLStreamWriter hd)
+            throws XMLStreamException {
+
+        for (AfiliacionesDto afiliacionesVo : lstAfiliacionesRelacionadas) {
+            hd.writeStartElement(AFILIACIONES);
+
+            hd.writeStartElement(AFILIACION);
+            hd.writeCharacters(TextUtil.valNulo(afiliacionesVo.getAfiliacion()));
+            hd.writeEndElement(); // AFILIACION
+
+            hd.writeStartElement(TIPOAFILIACION);
+            hd.writeCharacters(TextUtil.valNulo(afiliacionesVo.getDescTipAfil()));
+            hd.writeEndElement(); // TIPOAFILIACION
+
+            hd.writeEndElement(); // AFILIACIONES
+        }
+    }
 }
