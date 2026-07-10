@@ -29,15 +29,13 @@ public class EcmWSClient {
         SERVICE_QNAME = new QName(SERVICE_NAMESPACE, SERVICE_NAME);
     }
 
-    public EcmWSClient() {
-        service = new EcmWS_Service(WSDL_URL, SERVICE_QNAME);
-        port = service.getEcmWS();
-    }
-
     @PostConstruct
     private void conectEndPoint() {
         ParametrosValueObject parametrosVo = null;
         try {
+            service = new EcmWS_Service(WSDL_URL, SERVICE_QNAME);
+            port = service.getEcmWS();
+
             parametrosVo = parametrosService.getParametro(ConstantesParametros.URL_ECM);
             if (parametrosVo == null) {
                 throw new InvalidDataException(ConstantesMensajesError.ParametroEcmWs);
@@ -48,12 +46,12 @@ public class EcmWSClient {
             bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
                     parametrosVo.getChrValor());
         } catch (Exception e) {
-            // Antes este catch estaba vacío: si falla la configuración del endpoint,
-            // el bean queda con el endpoint por default del WSDL y todo el que llame a
+            // Antes este catch estaba vacío: si falla la inicialización del cliente o la
+            // configuración del endpoint, el bean queda a medio armar y todo el que llame a
             // getUrlPoliza() truena después con un error confuso, lejos de la causa real.
             // Como mínimo lo dejamos logueado; si quieres que además tumbe el arranque
             // del contexto de Spring (fail-fast), lo cambiamos a una RuntimeException.
-            logger.error("No se pudo configurar el endpoint de ECM: " + e.getMessage(), e);
+            logger.error("No se pudo inicializar EcmWSClient: " + e.getMessage(), e);
         }
     }
 
