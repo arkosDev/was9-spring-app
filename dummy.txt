@@ -1,128 +1,17 @@
-package com.ing.ia3.mx.seguros.autos.emisionpolizas.gestiondocumental.ecmws;
-
-// NOTA: varios imports estaban plegados en el IDE (el "⊕" junto a java.net.URL) y no los pude leer.
-// Deja los que ya tenías (BindingProvider, Log/LogFactory, QName, PostConstruct, Autowired, Component,
-// Scope, tus VOs/DTOs generados del WSDL, List/ArrayList/Iterator, etc.) — no invento paquetes que no vi.
-
-@Component
-@Scope("singleton")
-public class EcmWSClient {
-
-    private static final Log logger = LogFactory.getLog(EcmWSClient.class);
-
-    private static final String SERVICE_NAMESPACE = "http://empresa.mx/eip/dp/gestionDocumental/ecmWS";
-    private static final String SERVICE_NAME = "ecmWS";
-    private static final String PROJECT_NAME = "PEGASO";
-
-    private static final URL WSDL_URL;
-    private static final QName SERVICE_QNAME;
-
-    private BindingProvider bindingProvider;
-    private EcmWS_Service service;
-    private EcmWS port;
-
-    @Autowired
-    private ParametrosServiceSessionBean parametrosService;
-
-    static {
-        WSDL_URL = EcmWSClient.class.getClassLoader().getResource("META-INF/ecmWS.wsdl");
-        SERVICE_QNAME = new QName(SERVICE_NAMESPACE, SERVICE_NAME);
+public static byte[] subarray(byte[] array, int startIndexInclusive, int endIndexExclusive) {
+    if (array == null) {
+        return null;
     }
 
-    @PostConstruct
-    private void conectEndPoint() {
-        ParametrosValueObject parametrosVo = null;
-        try {
-            service = new EcmWS_Service(WSDL_URL, SERVICE_QNAME);
-            port = service.getEcmWS();
+    int start = Math.max(startIndexInclusive, 0);
+    int end = Math.min(endIndexExclusive, array.length);
+    int newSize = end - start;
 
-            parametrosVo = parametrosService.getParametro(ConstantesParametros.URL_ECM);
-            if (parametrosVo == null) {
-                throw new InvalidDataException(ConstantesMensajesError.ParametroEcmWs);
-            }
-            logger.info("Ecm endpoint --> " + parametrosVo.getChrValor());
-
-            bindingProvider = (BindingProvider) port;
-            bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-                    parametrosVo.getChrValor());
-        } catch (Exception e) {
-            // Antes este catch estaba vacío: si falla la inicialización del cliente o la
-            // configuración del endpoint, el bean queda a medio armar y todo el que llame a
-            // getUrlPoliza() truena después con un error confuso, lejos de la causa real.
-            // Como mínimo lo dejamos logueado; si quieres que además tumbe el arranque
-            // del contexto de Spring (fail-fast), lo cambiamos a una RuntimeException.
-            logger.error("No se pudo inicializar EcmWSClient: " + e.getMessage(), e);
-        }
+    if (newSize <= 0) {
+        return EMPTY_BYTE_ARRAY;
     }
 
-    public String getUrlPoliza(String poliza, String endoso, String ramo, String grouptype,
-            String doctype) throws Exception {
-
-        SchAndDwnDocType schAndDwnDocTypetype = new SchAndDwnDocType();
-        SchAndDwnDocTypeResponse schAndDwnDocTypeResponse = null;
-
-        MetaDataTypeArray metaDataTypeArray = new MetaDataTypeArray();
-        List<MetaDataType> listMetaDataType = new ArrayList<MetaDataType>();
-
-        try {
-
-            schAndDwnDocTypetype.setProjectName(PROJECT_NAME);
-
-            for (EcmElement ecmElement : EcmElement.values()) {
-                MetaDataType metaDataType = new MetaDataType();
-                metaDataType.setName(ecmElement.getName());
-                switch (ecmElement) {
-                    case POLIZA:
-                        metaDataType.setValue(poliza);
-                        break;
-                    case ENDOSO:
-                        metaDataType.setValue(endoso);
-                        break;
-                    case RAMO:
-                        metaDataType.setValue(ramo);
-                        break;
-                    case GROUPTYPE:
-                        metaDataType.setValue(grouptype);
-                        break;
-                    case DOCUMENTTYPE:
-                        metaDataType.setValue(doctype);
-                        break;
-                }
-
-                if (!metaDataType.getValue().isEmpty()) {
-                    listMetaDataType.add(metaDataType);
-                }
-            }
-
-            metaDataTypeArray.userMetaData = listMetaDataType;
-            schAndDwnDocTypetype.setMetaDataArray(metaDataTypeArray);
-
-            schAndDwnDocTypeResponse = port.searchAndDownloadDocument(schAndDwnDocTypetype);
-
-            HandlerError handlerError = schAndDwnDocTypeResponse.getHandlerError();
-
-            if (!handlerError.isStatusCode()) {
-                ErrorLists errorList = handlerError.getErrorList();
-                List<Error> errores = errorList.getError();
-                StringBuilder sError = new StringBuilder();
-
-                for (Error error : errores) {
-                    sError.append("code=");
-                    sError.append(error.getCode());
-                    sError.append(", origin= ");
-                    sError.append(error.getOrigin());
-                    sError.append(", developerMessage=");
-                    sError.append(error.getDeveloperMessage());
-                    sError.append("; ");
-                }
-
-                throw new Exception(sError.toString());
-            }
-
-        } catch (Exception e) {
-            throw new Exception(e.getMessage(), e);
-        }
-
-        return schAndDwnDocTypeResponse.getVisorURL();
-    }
+    byte[] subarray = new byte[newSize];
+    System.arraycopy(array, start, subarray, 0, newSize);
+    return subarray;
 }
