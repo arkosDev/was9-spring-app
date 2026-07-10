@@ -1,129 +1,130 @@
-package com.empresa.seguros.autos.serv.impl;
+package com.ing.ia3.mx.seguros.autos.emisionpolizas.gestiondocumental.ecmws;
 
-import static com.empresa.seguros.autos.util.ConstMsjError.EjecutarMetodo;
-import static com.empresa.seguros.autos.util.Constantes.EMPTY;
-import static com.empresa.seguros.autos.util.Constantes.SEPARADOR;
+// NOTA: varios imports estaban plegados en el IDE (el "⊕" junto a java.net.URL) y no los pude leer.
+// Deja los que ya tenías (BindingProvider, Log/LogFactory, QName, PostConstruct, Autowired, Component,
+// Scope, tus VOs/DTOs generados del WSDL, List/ArrayList/Iterator, etc.) — no invento paquetes que no vi.
 
-import com.empresa.seguros.autos.config.AppServerHolder;
-import com.empresa.seguros.autos.exception.ProgException;
-import com.empresa.seguros.autos.exception.ResSetCallbException;
-import com.empresa.seguros.autos.serv.EmmaPdfProxyServ;
-import com.progress.open4gl.ResultSetHolder;
-import com.progress.open4gl.Vector2ResultSet;
+@Component
+@Scope("singleton")
+public class EcmWSClient {
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Vector;
+    private static final Log logger = LogFactory.getLog(EcmWSClient.class);
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+    private static final String SERVICE_NAMESPACE = "http://empresa.mx/eip/dp/gestionDocumental/ecmWS";
+    private static final String SERVICE_NAME = "ecmWS";
+    private static final String PROJECT_NAME = "PEGASO";
 
-import CotEmiAutos.EmisionAutos;
+    private static final URL WSDL_URL;
+    private static final QName SERVICE_QNAME;
 
-@Service
-public class EmmaPdfProxyServImpl implements EmmaPdfProxyServ {
-
-    private static final Logger logger = LoggerFactory.getLogger(EmmaPdfProxyServImpl.class);
+    private BindingProvider bindingProvider;
+    private EcmWS_Service service;
+    private EcmWS port;
 
     @Autowired
-    AppServerHolder appSHolder;
+    private ParametrosServiceSessionBean parametrosService;
 
-    public Vector<Object> enviaImpresionEmmaProgress(Vector<Vector<Object>> ttDoctoImp)
-            throws ProgException {
+    static {
+        WSDL_URL = EcmWSClient.class.getClassLoader().getResource("META-INF/ecmWS.wsdl");
+        SERVICE_QNAME = new QName(SERVICE_NAMESPACE, SERVICE_NAME);
+    }
 
-        EmisionAutos emma = null;
-        Vector<Object> vectorRespuesta = null;
-        ResultSetHolder ttRespuesta = new ResultSetHolder();
+    public EcmWSClient() {
+        service = new EcmWS_Service(WSDL_URL, SERVICE_QNAME);
+        port = service.getEcmWS();
+    }
+
+    @PostConstruct
+    private void conectEndPoint() {
+        ParametrosValueObject parametrosVo = null;
+        try {
+            parametrosVo = parametrosService.getParametro(ConstantesParametros.URL_ECM);
+            if (parametrosVo == null) {
+                throw new InvalidDataException(ConstantesMensajesError.ParametroEcmWs);
+            }
+            logger.info("Ecm endpoint --> " + parametrosVo.getChrValor());
+
+            bindingProvider = (BindingProvider) port;
+            bindingProvider.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+                    parametrosVo.getChrValor());
+        } catch (Exception e) {
+            // Antes este catch estaba vacío: si falla la configuración del endpoint,
+            // el bean queda con el endpoint por default del WSDL y todo el que llame a
+            // getUrlPoliza() truena después con un error confuso, lejos de la causa real.
+            // Como mínimo lo dejamos logueado; si quieres que además tumbe el arranque
+            // del contexto de Spring (fail-fast), lo cambiamos a una RuntimeException.
+            logger.error("No se pudo configurar el endpoint de ECM: " + e.getMessage(), e);
+        }
+    }
+
+    public String getUrlPoliza(String poliza, String endoso, String ramo, String grouptype,
+            String doctype) throws Exception {
+
+        SchAndDwnDocType schAndDwnDocTypetype = new SchAndDwnDocType();
+        SchAndDwnDocTypeResponse schAndDwnDocTypeResponse = null;
+
+        MetaDataTypeArray metaDataTypeArray = new MetaDataTypeArray();
+        List<MetaDataType> listMetaDataType = new ArrayList<MetaDataType>();
 
         try {
-            emma = new EmisionAutos(appSHolder.getAppServer(), EMPTY, EMPTY, EMPTY);
-            emma.pstmenviaimpind(new Vector2ResultSet(ttDoctoImp), ttRespuesta);
 
-            vectorRespuesta = notifyResultSetProgressImprime(ttRespuesta);
+            schAndDwnDocTypetype.setProjectName(PROJECT_NAME);
 
-        } catch (Exception e) {
-            throw new ProgException(EjecutarMetodo + ": enviaImpresionEmmaProgress " + e.getMessage(), e);
-        } finally {
-            if (emma != null) {
-                try {
-                    emma._release();
-                    emma = null;
-                } catch (Exception e) {
-                    logger.info("La conexión no pudo ser liberada manualmente, será liberada por el pool de conexiones: "
-                            + e.getMessage());
+            for (EcmElement ecmElement : EcmElement.values()) {
+                MetaDataType metaDataType = new MetaDataType();
+                metaDataType.setName(ecmElement.getName());
+                switch (ecmElement) {
+                    case POLIZA:
+                        metaDataType.setValue(poliza);
+                        break;
+                    case ENDOSO:
+                        metaDataType.setValue(endoso);
+                        break;
+                    case RAMO:
+                        metaDataType.setValue(ramo);
+                        break;
+                    case GROUPTYPE:
+                        metaDataType.setValue(grouptype);
+                        break;
+                    case DOCUMENTTYPE:
+                        metaDataType.setValue(doctype);
+                        break;
+                }
+
+                if (!metaDataType.getValue().isEmpty()) {
+                    listMetaDataType.add(metaDataType);
                 }
             }
-        }
 
-        return vectorRespuesta;
-    }
+            metaDataTypeArray.userMetaData = listMetaDataType;
+            schAndDwnDocTypetype.setMetaDataArray(metaDataTypeArray);
 
-    public Vector<Object> notifyResultSetProgressImprime(ResultSetHolder rsh)
-            throws ResSetCallbException {
+            schAndDwnDocTypeResponse = port.searchAndDownloadDocument(schAndDwnDocTypetype);
 
-        logger.info("***En EmmaProxy::notifyResultSetProgressImprime");
+            HandlerError handlerError = schAndDwnDocTypeResponse.getHandlerError();
 
-        ResultSet rsCheck = rsh.getResultSetValue();
-        if (rsCheck == null) {
-            throw new ResSetCallbException(
-                    "EmmaProxy:notifyResultSetProgressImprime - null ResultSet parameter.");
-        }
+            if (!handlerError.isStatusCode()) {
+                ErrorLists errorList = handlerError.getErrorList();
+                List<Error> errores = errorList.getError();
+                StringBuilder sError = new StringBuilder();
 
-        try (ResultSet rs = rsCheck) {
+                for (Error error : errores) {
+                    sError.append("code=");
+                    sError.append(error.getCode());
+                    sError.append(", origin= ");
+                    sError.append(error.getOrigin());
+                    sError.append(", developerMessage=");
+                    sError.append(error.getDeveloperMessage());
+                    sError.append("; ");
+                }
 
-            Vector<Object> vectorRespuesta = new Vector<Object>();
-            StringBuilder strError = new StringBuilder();
-
-            while (rs.next()) {
-
-                agregarCampo(rs, "chrNumPoliza", "ERRORES: EMA no regreso el numero de Poliza", false, strError, vectorRespuesta);
-                agregarCampo(rs, "chrNumEndoso", "EMA no regreso el numero de Endoso", true, strError, vectorRespuesta);
-                agregarCampo(rs, "chrSecuenEndo", "EMA no regreso el consecutivo del Endoso", true, strError, vectorRespuesta);
-                agregarDescripcionError(rs, strError, vectorRespuesta);
+                throw new Exception(sError.toString());
             }
 
-            if (vectorRespuesta.size() == 0) {
-                vectorRespuesta.add("");
-                vectorRespuesta.add("");
-                vectorRespuesta.add("");
-                vectorRespuesta.add("Error: EMA regresa respuesta vacia!!");
-                logger.info("***En EmmaProxy::notifyResultSetProgressImprime");
-            }
-
-            return vectorRespuesta;
-
-        } catch (SQLException e) {
-            throw new ResSetCallbException(
-                    "notifyResultSetProgressImprime: Error getting the result set Progress: " + e, e);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage(), e);
         }
-    }
 
-    private void agregarCampo(ResultSet rs, String columna, String mensajeError, boolean anteponerSeparador,
-            StringBuilder strError, Vector<Object> vectorRespuesta) throws SQLException {
-
-        String aux = rs.getString(columna);
-        if (aux != null) {
-            vectorRespuesta.add(aux);
-        } else {
-            if (anteponerSeparador) {
-                strError.append(SEPARADOR);
-            }
-            strError.append(mensajeError);
-            vectorRespuesta.add("");
-        }
-    }
-
-    private void agregarDescripcionError(ResultSet rs, StringBuilder strError, Vector<Object> vectorRespuesta)
-            throws SQLException {
-
-        String aux = rs.getString("chrDescError");
-        if (aux != null) {
-            strError.append(SEPARADOR).append(aux);
-            vectorRespuesta.add(aux);
-        } else {
-            vectorRespuesta.add(strError.length() == 0 ? "" : strError.toString());
-        }
+        return schAndDwnDocTypeResponse.getVisorURL();
     }
 }
