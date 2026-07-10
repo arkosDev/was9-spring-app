@@ -73,45 +73,15 @@ public class EmmaPdfProxyServImpl implements EmmaPdfProxyServ {
 
         try (ResultSet rs = rsCheck) {
 
-            String aux;
-            StringBuilder strError = new StringBuilder();
             Vector<Object> vectorRespuesta = new Vector<Object>();
-            int contador = 0;
+            StringBuilder strError = new StringBuilder();
 
             while (rs.next()) {
-                contador = contador + 1;
 
-                aux = rs.getString("chrNumPoliza");
-                if (aux != null) {
-                    vectorRespuesta.add(aux);
-                } else {
-                    strError.append("ERRORES: EMA no regreso el numero de Poliza");
-                    vectorRespuesta.add("");
-                }
-
-                aux = rs.getString("chrNumEndoso");
-                if (aux != null) {
-                    vectorRespuesta.add(aux);
-                } else {
-                    strError.append(SEPARADOR).append("EMA no regreso el numero de Endoso");
-                    vectorRespuesta.add("");
-                }
-
-                aux = rs.getString("chrSecuenEndo");
-                if (aux != null) {
-                    vectorRespuesta.add(aux);
-                } else {
-                    strError.append(SEPARADOR).append("EMA no regreso el consecutivo del Endoso");
-                    vectorRespuesta.add("");
-                }
-
-                aux = rs.getString("chrDescError");
-                if (aux != null) {
-                    strError.append(SEPARADOR).append(aux);
-                    vectorRespuesta.add(aux);
-                } else {
-                    vectorRespuesta.add(strError.length() == 0 ? "" : strError.toString());
-                }
+                agregarCampo(rs, "chrNumPoliza", "ERRORES: EMA no regreso el numero de Poliza", false, strError, vectorRespuesta);
+                agregarCampo(rs, "chrNumEndoso", "EMA no regreso el numero de Endoso", true, strError, vectorRespuesta);
+                agregarCampo(rs, "chrSecuenEndo", "EMA no regreso el consecutivo del Endoso", true, strError, vectorRespuesta);
+                agregarDescripcionError(rs, strError, vectorRespuesta);
             }
 
             if (vectorRespuesta.size() == 0) {
@@ -127,6 +97,33 @@ public class EmmaPdfProxyServImpl implements EmmaPdfProxyServ {
         } catch (SQLException e) {
             throw new ResSetCallbException(
                     "notifyResultSetProgressImprime: Error getting the result set Progress: " + e, e);
+        }
+    }
+
+    private void agregarCampo(ResultSet rs, String columna, String mensajeError, boolean anteponerSeparador,
+            StringBuilder strError, Vector<Object> vectorRespuesta) throws SQLException {
+
+        String aux = rs.getString(columna);
+        if (aux != null) {
+            vectorRespuesta.add(aux);
+        } else {
+            if (anteponerSeparador) {
+                strError.append(SEPARADOR);
+            }
+            strError.append(mensajeError);
+            vectorRespuesta.add("");
+        }
+    }
+
+    private void agregarDescripcionError(ResultSet rs, StringBuilder strError, Vector<Object> vectorRespuesta)
+            throws SQLException {
+
+        String aux = rs.getString("chrDescError");
+        if (aux != null) {
+            strError.append(SEPARADOR).append(aux);
+            vectorRespuesta.add(aux);
+        } else {
+            vectorRespuesta.add(strError.length() == 0 ? "" : strError.toString());
         }
     }
 }
