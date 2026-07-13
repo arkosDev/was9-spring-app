@@ -1,3 +1,8 @@
-public static boolean isEquals(Object array1, Object array2) {
-    return Objects.deepEquals(array1, array2);
-}
+String clientSecret = FrameworkConfig.getProperty("oidc.oneaccount.clientSecret");
+String encoded = Base64.getEncoder().encodeToString(
+    (clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
+
+HttpPost post = new HttpPost(tokenEndpoint);
+post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+post.setHeader("Authorization", "Basic " + encoded);
+post.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
