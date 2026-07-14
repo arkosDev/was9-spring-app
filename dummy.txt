@@ -1,8 +1,10 @@
-String clientSecret = FrameworkConfig.getProperty("oidc.oneaccount.clientSecret");
-String encoded = Base64.getEncoder().encodeToString(
-    (clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
+public static List<String> sepConEsp(String texto, char separador) {
+    if (null == texto || texto.isEmpty()) {
+        return Collections.emptyList();
+    }
 
-HttpPost post = new HttpPost(tokenEndpoint);
-post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-post.setHeader("Authorization", "Basic " + encoded);
-post.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
+    return Arrays.stream(texto.split(java.util.regex.Pattern.quote(String.valueOf(separador))))
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.toList());
+}
