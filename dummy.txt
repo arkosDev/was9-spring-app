@@ -1,10 +1,1129 @@
-public static List<String> sepConEsp(String texto, char separador) {
-    if (null == texto || texto.isEmpty()) {
-        return Collections.emptyList();
+package com.ing.ia3.mx.seguros.autos.emisionpolizas.util;
+
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.misc.ConstantesXMLSalida;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.BeneficiarioValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.ClienteYOValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.CoberturasValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.ConductorRegistradoValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.EndososBValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.EndososValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.EquipoEspecialValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.PolizaValueObject;
+import com.ing.ia3.mx.seguros.autos.emisionpolizas.valueobject.RecibosValueObject;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Vector;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+public class ArmaXmlPolizas {
+
+    private Vector vConsPoliza = null;
+    private Vector vConsBeneficiario = null;
+    private Vector vConsClienteYO = null;
+    private Vector vConsEndosos = null;
+    private Vector vConsEndososB = null;
+    private Vector vConsRecibos = null;
+    private Vector vConsCoberturas = null;
+    private Vector vConsConductores = null;
+    private Vector vConsBeneficiariosAcc = null;
+    private Vector vConsEquipoEspecial = null;
+
+    private ByteArrayOutputStream xmlBytes = null;
+
+    public ArmaXmlPolizas() {}
+
+    public String getXmlPoliza() throws SAXException, IOException {
+
+        OutputFormat of = new OutputFormat("XML", "ISO-8859-1", true);
+        xmlBytes = new ByteArrayOutputStream();
+        String strXml = null;
+        of.setIndent(1);
+        of.setIndenting(true);
+        // of.setDoctype(null,"users.dtd");
+        XMLSerializer serializer = new XMLSerializer(xmlBytes, of);
+
+        ContentHandler hd = serializer.asContentHandler();
+
+        hd.startDocument();
+        hd.startElement("", "", ConstantesXMLSalida.POLIZA, new AttributesImpl());
+
+        addGenerales(hd);
+        addTitular(hd);
+        addCondicionesEmision(hd);
+        addBeneficiarioPreferente(hd);
+        addClienteYO(hd);
+        addConductoresRegistrados(hd);
+        addBeneficiariosAccidentes(hd);
+        addVehiculo(hd);
+        addEndosos(hd);
+
+        hd.endElement("", "", ConstantesXMLSalida.POLIZA);
+        hd.endDocument();
+        strXml = xmlBytes.toString();
+        xmlBytes.close();
+        xmlBytes = null;
+
+        return strXml;
     }
 
-    return Arrays.stream(texto.split(java.util.regex.Pattern.quote(String.valueOf(separador))))
-        .map(String::trim)
-        .filter(s -> !s.isEmpty())
-        .collect(Collectors.toList());
+    private void addGenerales(ContentHandler hd) throws SAXException {
+
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.GENERALES, atts);
+        if (vConsPoliza != null && !vConsPoliza.isEmpty()) {
+            String aux = null;
+
+            atts = new AttributesImpl();
+
+            PolizaValueObject polizaValueObject = (PolizaValueObject) vConsPoliza.get(0);
+            hd.startElement("", "", ConstantesXMLSalida.NUMEROPOLIZA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrNumPoliza()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrNumPoliza()).length());
+            hd.endElement("", "", ConstantesXMLSalida.NUMEROPOLIZA);
+            hd.startElement("", "", ConstantesXMLSalida.TIPO_POLIZA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrTipoPoliza()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrTipoPoliza()).length());
+            hd.endElement("", "", ConstantesXMLSalida.TIPO_POLIZA);
+            hd.startElement("", "", ConstantesXMLSalida.FECHADESDE, atts);
+            if (polizaValueObject.getDteFechaDesde() != null) {
+                hd.characters(
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaDesde()).toCharArray(), 0,
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaDesde()).length());
+            } else {
+                hd.characters("".toCharArray(), 0, "".length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.FECHADESDE);
+            hd.startElement("", "", ConstantesXMLSalida.FECHAHASTA, atts);
+            if (polizaValueObject.getDteFechaHasta() != null) {
+                hd.characters(
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaHasta()).toCharArray(), 0,
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaHasta()).length());
+            } else {
+                hd.characters("".toCharArray(), 0, "".length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.FECHAHASTA);
+            hd.startElement("", "", ConstantesXMLSalida.FECHA_EMISION, atts);
+            if (polizaValueObject.getDteFechaEmision() != null) {
+                hd.characters(
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaEmision()).toCharArray(), 0,
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaEmision()).length());
+            } else {
+                hd.characters("".toCharArray(), 0, "".length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.FECHA_EMISION);
+            hd.startElement("", "", ConstantesXMLSalida.ESTADO_POLIZA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrEstadoPol()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrEstadoPol()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ESTADO_POLIZA);
+            hd.startElement("", "", ConstantesXMLSalida.FECHA_CANCELACION, atts);
+            if (polizaValueObject.getDteFechaCance() != null) {
+                hd.characters(
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaCance()).toCharArray(), 0,
+                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaCance()).length());
+            } else {
+                hd.characters("".toCharArray(), 0, "".length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.FECHA_CANCELACION);
+            hd.startElement("", "", ConstantesXMLSalida.SUBRAMO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrSubramo()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrSubramo()).length());
+            hd.endElement("", "", ConstantesXMLSalida.SUBRAMO);
+            hd.startElement("", "", ConstantesXMLSalida.FORMAPAGO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrFormaPago()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrFormaPago()).length());
+            hd.endElement("", "", ConstantesXMLSalida.FORMAPAGO);
+            hd.startElement("", "", ConstantesXMLSalida.MONEDA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrMoneda()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrMoneda()).length());
+            hd.endElement("", "", ConstantesXMLSalida.MONEDA);
+            hd.startElement("", "", ConstantesXMLSalida.AGENTE, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntAgente()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntAgente()).length());
+            hd.endElement("", "", ConstantesXMLSalida.AGENTE);
+            hd.startElement("", "", ConstantesXMLSalida.CENTRO_COSTOS, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntCentroCosto()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntCentroCosto()).length());
+            hd.endElement("", "", ConstantesXMLSalida.CENTRO_COSTOS);
+            hd.startElement("", "", ConstantesXMLSalida.POLIZA_ANTERIOR, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrPolizaAnt()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrPolizaAnt()).length());
+            hd.endElement("", "", ConstantesXMLSalida.POLIZA_ANTERIOR);
+            hd.startElement("", "", ConstantesXMLSalida.POLIZA_SIGUIENTE, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrPolizaSig()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrPolizaSig()).length());
+            hd.endElement("", "", ConstantesXMLSalida.POLIZA_SIGUIENTE);
+            hd.startElement("", "", ConstantesXMLSalida.PAGO_ELECTRONICO, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcPagoTarjeta());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.PAGO_ELECTRONICO);
+            hd.startElement("", "", ConstantesXMLSalida.TARIFA_ALTA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrTarifaAlta()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrTarifaAlta()).length());
+            hd.endElement("", "", ConstantesXMLSalida.TARIFA_ALTA);
+            hd.startElement("", "", ConstantesXMLSalida.ARRENDADOR, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntArrendador()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntArrendador()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ARRENDADOR);
+            hd.startElement("", "", ConstantesXMLSalida.VERSION, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntVersion()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntVersion()).length());
+            hd.endElement("", "", ConstantesXMLSalida.VERSION);
+            hd.startElement("", "", ConstantesXMLSalida.DESCUENTO_POR_EXPERIENCIA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getDcmDescExp()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getDcmDescExp()).length());
+            hd.endElement("", "", ConstantesXMLSalida.DESCUENTO_POR_EXPERIENCIA);
+            hd.startElement("", "", ConstantesXMLSalida.DESCUENTO_POR_VOLUMEN, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getDcmDescVol()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getDcmDescVol()).length());
+            hd.endElement("", "", ConstantesXMLSalida.DESCUENTO_POR_VOLUMEN);
+            hd.startElement("", "", ConstantesXMLSalida.SERVIDORA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrServidora()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrServidora()).length());
+            hd.endElement("", "", ConstantesXMLSalida.SERVIDORA);
+            hd.startElement("", "", ConstantesXMLSalida.AFIANZADORA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrAfianzadora()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrAfianzadora()).length());
+            hd.endElement("", "", ConstantesXMLSalida.AFIANZADORA);
+            hd.startElement("", "", ConstantesXMLSalida.INDICETARIFA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntIndTar()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntIndTar()).length());
+            hd.endElement("", "", ConstantesXMLSalida.INDICETARIFA);
+            hd.startElement("", "", ConstantesXMLSalida.TARIFA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrTarifa()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrTarifa()).length());
+            hd.endElement("", "", ConstantesXMLSalida.TARIFA);
+        }
+        hd.endElement("", "", ConstantesXMLSalida.GENERALES);
+    }
+
+    private void addTitular(ContentHandler hd) throws SAXException {
+
+        AttributesImpl atts = null;
+        if (vConsPoliza != null && !vConsPoliza.isEmpty()) {
+            atts = new AttributesImpl();
+
+            PolizaValueObject polizaValueObject = (PolizaValueObject) vConsPoliza.get(0);
+            hd.startElement("", "", ConstantesXMLSalida.TITULAR, atts);
+            hd.startElement("", "", ConstantesXMLSalida.TIPO_PERSONA_TITULAR, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrTipoPersona()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrTipoPersona()).length());
+            hd.endElement("", "", ConstantesXMLSalida.TIPO_PERSONA_TITULAR);
+            hd.startElement("", "", ConstantesXMLSalida.NOMBRE, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrNombreCte()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrNombreCte()).length());
+            hd.endElement("", "", ConstantesXMLSalida.NOMBRE);
+            hd.startElement("", "", ConstantesXMLSalida.APELLIDO_PATERNO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrApPaternoCte()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrApPaternoCte()).length());
+            hd.endElement("", "", ConstantesXMLSalida.APELLIDO_PATERNO);
+            hd.startElement("", "", ConstantesXMLSalida.APELLIDO_MATERNO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrApMaternoCte()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrApMaternoCte()).length());
+            hd.endElement("", "", ConstantesXMLSalida.APELLIDO_MATERNO);
+            hd.startElement("", "", ConstantesXMLSalida.RFC, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrRFC()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrRFC()).length());
+            hd.endElement("", "", ConstantesXMLSalida.RFC);
+            hd.startElement("", "", ConstantesXMLSalida.DIRECCION, atts);
+            hd.startElement("", "", ConstantesXMLSalida.CALLE_NUMERO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrDireccion()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrDireccion()).length());
+            hd.endElement("", "", ConstantesXMLSalida.CALLE_NUMERO);
+            hd.startElement("", "", ConstantesXMLSalida.COLONIA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrColonia()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrColonia()).length());
+            hd.endElement("", "", ConstantesXMLSalida.COLONIA);
+            hd.startElement("", "", ConstantesXMLSalida.CODIGO_POSTAL, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntCodPostal()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntCodPostal()).length());
+            hd.endElement("", "", ConstantesXMLSalida.CODIGO_POSTAL);
+            hd.startElement("", "", ConstantesXMLSalida.ESTADO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrDescEstado()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrDescEstado()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ESTADO);
+            hd.startElement("", "", ConstantesXMLSalida.POBLACION, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrDescPobla()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrDescPobla()).length());
+            hd.endElement("", "", ConstantesXMLSalida.POBLACION);
+            hd.endElement("", "", ConstantesXMLSalida.DIRECCION);
+            hd.startElement("", "", ConstantesXMLSalida.TELEFONO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrTelefono()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrTelefono()).length());
+            hd.endElement("", "", ConstantesXMLSalida.TELEFONO);
+            hd.endElement("", "", ConstantesXMLSalida.TITULAR);
+        }
+    }
+
+    private void addVehiculo(ContentHandler hd) throws SAXException {
+        AttributesImpl atts = null;
+        if (vConsPoliza != null && !vConsPoliza.isEmpty()) {
+            atts = new AttributesImpl();
+            PolizaValueObject polizaValueObject = (PolizaValueObject) vConsPoliza.get(0);
+            hd.startElement("", "", ConstantesXMLSalida.VEHICULO, atts);
+            hd.startElement("", "", ConstantesXMLSalida.MODELO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntModelo()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntModelo()).length());
+            hd.endElement("", "", ConstantesXMLSalida.MODELO);
+            hd.startElement("", "", ConstantesXMLSalida.PAQUETE, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrPaqCont()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrPaqCont()).length());
+            hd.endElement("", "", ConstantesXMLSalida.PAQUETE);
+            hd.startElement("", "", ConstantesXMLSalida.MARCA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrMarca()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrMarca()).length());
+            hd.endElement("", "", ConstantesXMLSalida.MARCA);
+            hd.startElement("", "", ConstantesXMLSalida.DESCRIPCION, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrDescVeh()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrDescVeh()).length());
+            hd.endElement("", "", ConstantesXMLSalida.DESCRIPCION);
+            hd.startElement("", "", ConstantesXMLSalida.OCUPANTES, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntOcupantes()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntOcupantes()).length());
+            hd.endElement("", "", ConstantesXMLSalida.OCUPANTES);
+            hd.startElement("", "", ConstantesXMLSalida.MOTOR, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrMotor()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrMotor()).length());
+            hd.endElement("", "", ConstantesXMLSalida.MOTOR);
+            hd.startElement("", "", ConstantesXMLSalida.SERIE, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrSerieVeh()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrSerieVeh()).length());
+            hd.endElement("", "", ConstantesXMLSalida.SERIE);
+            hd.startElement("", "", ConstantesXMLSalida.PLACAS, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrPlacas()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrPlacas()).length());
+            hd.endElement("", "", ConstantesXMLSalida.PLACAS);
+            hd.startElement("", "", ConstantesXMLSalida.ESTADO_PLACAS, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrEdoPlacas()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrEdoPlacas()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ESTADO_PLACAS);
+            hd.startElement("", "", ConstantesXMLSalida.CLAVE_USO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntUso()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntUso()).length());
+            hd.endElement("", "", ConstantesXMLSalida.CLAVE_USO);
+            hd.startElement("", "", ConstantesXMLSalida.USO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrDescUso()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrDescUso()).length());
+            hd.endElement("", "", ConstantesXMLSalida.USO);
+            hd.startElement("", "", ConstantesXMLSalida.SERVICIO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrServicio()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrServicio()).length());
+            hd.endElement("", "", ConstantesXMLSalida.SERVICIO);
+            hd.startElement("", "", ConstantesXMLSalida.TIPO_CARGA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrTipoCarga()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrTipoCarga()).length());
+            hd.endElement("", "", ConstantesXMLSalida.TIPO_CARGA);
+            hd.startElement("", "", ConstantesXMLSalida.PORCENTAJE_SUMA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getDcmPorcSuma()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getDcmPorcSuma()).length());
+            hd.endElement("", "", ConstantesXMLSalida.PORCENTAJE_SUMA);
+            hd.startElement("", "", ConstantesXMLSalida.VALOR, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntValorVeh()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntValorVeh()).length());
+            hd.endElement("", "", ConstantesXMLSalida.VALOR);
+            hd.startElement("", "", ConstantesXMLSalida.CLAVE_AMIS, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrClaveAmis()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrClaveAmis()).length());
+            hd.endElement("", "", ConstantesXMLSalida.CLAVE_AMIS);
+            hd.endElement("", "", ConstantesXMLSalida.VEHICULO);
+        }
+    }
+
+    private void addCondicionesEmision(ContentHandler hd) throws SAXException {
+
+        AttributesImpl atts = null;
+        if (vConsPoliza != null && !vConsPoliza.isEmpty()) {
+            String aux = null;
+            atts = new AttributesImpl();
+
+            PolizaValueObject polizaValueObject = (PolizaValueObject) vConsPoliza.get(0);
+            hd.startElement("", "", ConstantesXMLSalida.CONDICIONESEMISION, atts);
+            hd.startElement("", "", ConstantesXMLSalida.ESVALORCOMERCIAL, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getChrValorCom()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getChrValorCom()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ESVALORCOMERCIAL);
+            hd.startElement("", "", ConstantesXMLSalida.DANOS_MATERIALES, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntDedDM()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntDedDM()).length());
+            hd.endElement("", "", ConstantesXMLSalida.DANOS_MATERIALES);
+            hd.startElement("", "", ConstantesXMLSalida.ROBO_TOTAL, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntDedRB()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntDedRB()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ROBO_TOTAL);
+            hd.startElement("", "", ConstantesXMLSalida.RESPONSABILIDAD_CIVIL, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntDedRC()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntDedRC()).length());
+            hd.endElement("", "", ConstantesXMLSalida.RESPONSABILIDAD_CIVIL);
+            hd.startElement("", "", ConstantesXMLSalida.RCBIENES, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaRC()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaRC()).length());
+            hd.endElement("", "", ConstantesXMLSalida.RCBIENES);
+            hd.startElement("", "", ConstantesXMLSalida.RCPERSONAS, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaRCP()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaRCP()).length());
+            hd.endElement("", "", ConstantesXMLSalida.RCPERSONAS);
+            hd.startElement("", "", ConstantesXMLSalida.ACCIDENTES, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaAcc()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaAcc()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ACCIDENTES);
+            hd.startElement("", "", ConstantesXMLSalida.AUTO_SUSTITUTO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaAutoSust()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaAutoSust()).length());
+            hd.endElement("", "", ConstantesXMLSalida.AUTO_SUSTITUTO);
+            hd.startElement("", "", ConstantesXMLSalida.GASTOS_MEDICOS, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaGtosMed()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaGtosMed()).length());
+            hd.endElement("", "", ConstantesXMLSalida.GASTOS_MEDICOS);
+            hd.startElement("", "", ConstantesXMLSalida.SERVICIO_ASISTENCIA, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcFianza());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.SERVICIO_ASISTENCIA);
+            hd.startElement("", "", ConstantesXMLSalida.SIGUE_CON_AUTO, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcSigueConAuto());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.SIGUE_CON_AUTO);
+            hd.startElement("", "", ConstantesXMLSalida.FIANZA, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaFianza()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaFianza()).length());
+            hd.endElement("", "", ConstantesXMLSalida.FIANZA);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.EQUIPO_ESPECIAL, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaEqEsp()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaEqEsp()).length());
+            hd.endElement("", "", ConstantesXMLSalida.EQUIPO_ESPECIAL);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.ADAPTACIONES, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaAdapta()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaAdapta()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ADAPTACIONES);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.ROBO_EXT, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaRoboExt()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaRoboExt()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ROBO_EXT);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.ROBO_INT, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaRoboInt()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaRoboInt()).length());
+            hd.endElement("", "", ConstantesXMLSalida.ROBO_INT);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.VIAJERO, atts);
+            hd.characters(assingSafeSring(polizaValueObject.getIntSumaViaj()).toCharArray(), 0,
+                assingSafeSring(polizaValueObject.getIntSumaViaj()).length());
+            hd.endElement("", "", ConstantesXMLSalida.VIAJERO);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.DOBLEREMOLQUE, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcDobleRemol());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.DOBLEREMOLQUE);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.AMPLIACION_RC, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcAmplRC());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.AMPLIACION_RC);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.EXENCION_DEDUCIBLE, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcPrix());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.EXENCION_DEDUCIBLE);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.EXTENSIONRC, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcExtRC());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.EXTENSIONRC);
+            //
+            hd.startElement("", "", ConstantesXMLSalida.SUVA, atts);
+            aux = assingSafeSring(polizaValueObject.getLgcSUVA());
+            if (!aux.equals("")) {
+                hd.characters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
+                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+            } else {
+                hd.characters(aux.toCharArray(), 0, aux.length());
+            }
+            hd.endElement("", "", ConstantesXMLSalida.SUVA);
+
+            hd.endElement("", "", ConstantesXMLSalida.CONDICIONESEMISION);
+        }
+    }
+
+    private void addClienteYO(ContentHandler hd) throws SAXException {
+        AttributesImpl atts = null;
+        if (vConsClienteYO != null && !vConsClienteYO.isEmpty()) {
+            atts = new AttributesImpl();
+            Iterator iterClienteYO = vConsClienteYO.iterator();
+            while (iterClienteYO.hasNext()) {
+                ClienteYOValueObject clienteYOValueObject = (ClienteYOValueObject) iterClienteYO.next();
+                hd.startElement("", "", ConstantesXMLSalida.CLIENTEYO, atts);
+
+                hd.startElement("", "", ConstantesXMLSalida.NUMEROPOLIZA, atts);
+                hd.characters(assingSafeSring(clienteYOValueObject.getChrNumPoliza()).toCharArray(), 0,
+                    assingSafeSring(clienteYOValueObject.getChrNumPoliza()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NUMEROPOLIZA);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.TIPO_PERSONA, atts);
+                hd.characters(
+                    assingSafeSring(clienteYOValueObject.getChrTipoPers()).toUpperCase().toCharArray(), 0,
+                    assingSafeSring(clienteYOValueObject.getChrTipoPers()).length());
+                hd.endElement("", "", ConstantesXMLSalida.TIPO_PERSONA);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.NOMBRE, atts);
+                hd.characters(assingSafeSring(clienteYOValueObject.getChrNombre()).toCharArray(), 0,
+                    assingSafeSring(clienteYOValueObject.getChrNombre()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NOMBRE);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.APELLIDO_PATERNO, atts);
+                hd.characters(assingSafeSring(clienteYOValueObject.getChrApPaterno()).toCharArray(), 0,
+                    assingSafeSring(clienteYOValueObject.getChrApPaterno()).length());
+                hd.endElement("", "", ConstantesXMLSalida.APELLIDO_PATERNO);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.APELLIDO_MATERNO, atts);
+                hd.characters(assingSafeSring(clienteYOValueObject.getChrApMaterno()).toCharArray(), 0,
+                    assingSafeSring(clienteYOValueObject.getChrApMaterno()).length());
+                hd.endElement("", "", ConstantesXMLSalida.APELLIDO_MATERNO);
+
+                hd.endElement("", "", ConstantesXMLSalida.CLIENTEYO);
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.CLIENTEYO, atts);
+            hd.endElement("", "", ConstantesXMLSalida.CLIENTEYO);
+        }
+    }
+
+    private void addConductoresRegistrados(ContentHandler hd) throws SAXException {
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.CONDUCTORES_REGISTRADOS, atts);
+        if (vConsConductores != null && !vConsConductores.isEmpty()) {
+            atts = new AttributesImpl();
+            for (Iterator iter = vConsConductores.iterator(); iter.hasNext();) {
+                ConductorRegistradoValueObject conductorRegistradoVO =
+                    (ConductorRegistradoValueObject) iter.next();
+                hd.startElement("", "", ConstantesXMLSalida.CONDUCTOR, atts);
+                hd.startElement("", "", ConstantesXMLSalida.NUMERO_POLIZA_COND, atts);
+                hd.characters(assingSafeSring(conductorRegistradoVO.getStrNumPoliza()).toCharArray(), 0,
+                    assingSafeSring(conductorRegistradoVO.getStrNumPoliza()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NUMERO_POLIZA_COND);
+                hd.startElement("", "", ConstantesXMLSalida.NUMERO_INCISO, atts);
+                hd.characters(assingSafeSring(conductorRegistradoVO.getIntNumInc()).toCharArray(), 0,
+                    assingSafeSring(conductorRegistradoVO.getIntNumInc()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NUMERO_INCISO);
+                hd.startElement("", "", ConstantesXMLSalida.CONSECUTIVO_CONDUCTOR, atts);
+                hd.characters(assingSafeSring(conductorRegistradoVO.getIntSecCond()).toCharArray(), 0,
+                    assingSafeSring(conductorRegistradoVO.getIntSecCond()).length());
+                hd.endElement("", "", ConstantesXMLSalida.CONSECUTIVO_CONDUCTOR);
+                hd.startElement("", "", ConstantesXMLSalida.NOMBRE, atts);
+                hd.characters(assingSafeSring(conductorRegistradoVO.getStrNombre()).toCharArray(), 0,
+                    assingSafeSring(conductorRegistradoVO.getStrNombre()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NOMBRE);
+                hd.startElement("", "", ConstantesXMLSalida.APELLIDO_PATERNO, atts);
+                hd.characters(assingSafeSring(conductorRegistradoVO.getStrApPaterno()).toCharArray(), 0,
+                    assingSafeSring(conductorRegistradoVO.getStrApPaterno()).length());
+                hd.endElement("", "", ConstantesXMLSalida.APELLIDO_PATERNO);
+                hd.startElement("", "", ConstantesXMLSalida.APELLIDO_MATERNO, atts);
+                hd.characters(assingSafeSring(conductorRegistradoVO.getStrApMaterno()).toCharArray(), 0,
+                    assingSafeSring(conductorRegistradoVO.getStrApMaterno()).length());
+                hd.endElement("", "", ConstantesXMLSalida.APELLIDO_MATERNO);
+                hd.startElement("", "", ConstantesXMLSalida.SEXO, atts);
+                hd.characters(assingSafeSring(conductorRegistradoVO.getStrSexo()).toCharArray(), 0,
+                    assingSafeSring(conductorRegistradoVO.getStrSexo()).length());
+                hd.endElement("", "", ConstantesXMLSalida.SEXO);
+                hd.startElement("", "", ConstantesXMLSalida.FECHA_NACIMIENTO, atts);
+                if (conductorRegistradoVO.getDteFechaNacimiento() != null) {
+                    hd.characters(
+                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaNacimiento())
+                            .toCharArray(),
+                        0,
+                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaNacimiento()).length());
+                } else {
+                    hd.characters("".toCharArray(), 0, 0);
+                }
+                hd.endElement("", "", ConstantesXMLSalida.FECHA_NACIMIENTO);
+                hd.startElement("", "", ConstantesXMLSalida.DET_PRIMA, atts);
+                if (!"".equals(assingSafeSring(conductorRegistradoVO.getLgcAlta()))) {
+                    hd.characters(
+                        (conductorRegistradoVO.getLgcAlta().toString().equalsIgnoreCase("true") ? "SI" : "NO")
+                            .toCharArray(),
+                        0, 2);
+                } else {
+                    hd.characters("".toCharArray(), 0, 0);
+                }
+                hd.endElement("", "", ConstantesXMLSalida.DET_PRIMA);
+                hd.startElement("", "", ConstantesXMLSalida.EXCLUIDO, atts);
+                if (!"".equals(assingSafeSring(conductorRegistradoVO.getLgcExcluye()))) {
+                    hd.characters(
+                        (conductorRegistradoVO.getLgcExcluye().toString().equalsIgnoreCase("true") ? "SI"
+                            : "NO").toCharArray(),
+                        0, 2);
+                } else {
+                    hd.characters("".toCharArray(), 0, 0);
+                }
+                hd.endElement("", "", ConstantesXMLSalida.EXCLUIDO);
+                hd.startElement("", "", ConstantesXMLSalida.FECHA_BAJA, atts);
+                if (conductorRegistradoVO.getDteFechaBaja() != null) {
+                    hd.characters(
+                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaBaja()).toCharArray(),
+                        0,
+                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaBaja()).length());
+                } else {
+                    hd.characters("".toCharArray(), 0, 0);
+                }
+                hd.endElement("", "", ConstantesXMLSalida.FECHA_BAJA);
+                hd.startElement("", "", ConstantesXMLSalida.ES_CONTRATANTE, atts);
+                if (!"".equals(assingSafeSring(conductorRegistradoVO.getLgcEsContratante()))) {
+                    hd.characters(
+                        (conductorRegistradoVO.getLgcEsContratante().toString().equalsIgnoreCase("true")
+                            ? "SI"
+                            : "NO").toCharArray(),
+                        0, 2);
+                } else {
+                    hd.characters("".toCharArray(), 0, 0);
+                }
+                hd.endElement("", "", ConstantesXMLSalida.ES_CONTRATANTE);
+                hd.endElement("", "", ConstantesXMLSalida.CONDUCTOR);
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.CONDUCTOR, atts);
+            hd.endElement("", "", ConstantesXMLSalida.CONDUCTOR);
+        }
+        hd.endElement("", "", ConstantesXMLSalida.CONDUCTORES_REGISTRADOS);
+    }
+
+    private void addBeneficiariosAccidentes(ContentHandler hd) throws SAXException {
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.BENEFICIARIO_ACC, atts);
+        if (vConsBeneficiariosAcc != null && !vConsBeneficiariosAcc.isEmpty()) {
+            atts = new AttributesImpl();
+            for (Iterator iter = vConsBeneficiariosAcc.iterator(); iter.hasNext();) {
+                BeneficiarioValueObject beneficiarioVO = (BeneficiarioValueObject) iter.next();
+                hd.startElement("", "", ConstantesXMLSalida.BENEFICIARIO, atts);
+                hd.startElement("", "", ConstantesXMLSalida.NUMERO_POLIZA_COND, atts);
+                hd.characters(assingSafeSring(beneficiarioVO.getChrNumPoliza()).toCharArray(), 0,
+                    assingSafeSring(beneficiarioVO.getChrNumPoliza()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NUMERO_POLIZA_COND);
+                hd.startElement("", "", ConstantesXMLSalida.FOLIO_CONSECUTIVO, atts);
+                hd.characters(assingSafeSring(beneficiarioVO.getFolioConsecutivo()).toCharArray(), 0,
+                    assingSafeSring(beneficiarioVO.getFolioConsecutivo()).length());
+                hd.endElement("", "", ConstantesXMLSalida.FOLIO_CONSECUTIVO);
+                hd.startElement("", "", ConstantesXMLSalida.NOMBRE, atts);
+                hd.characters(assingSafeSring(beneficiarioVO.getChrBeneficiario()).toCharArray(), 0,
+                    assingSafeSring(beneficiarioVO.getChrBeneficiario()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NOMBRE);
+                hd.startElement("", "", ConstantesXMLSalida.PORCENTAJE, atts);
+                hd.characters(assingSafeSring(beneficiarioVO.getIntPorcentaje()).toCharArray(), 0,
+                    assingSafeSring(beneficiarioVO.getIntPorcentaje()).length());
+                hd.endElement("", "", ConstantesXMLSalida.PORCENTAJE);
+                hd.endElement("", "", ConstantesXMLSalida.BENEFICIARIO);
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.BENEFICIARIO, atts);
+            hd.endElement("", "", ConstantesXMLSalida.BENEFICIARIO);
+        }
+        hd.endElement("", "", ConstantesXMLSalida.BENEFICIARIO_ACC);
+    }
+
+    private void addEquipoEspecial(ContentHandler hd, EquipoEspecialValueObject equipoEspecialVO)
+        throws SAXException {
+        AttributesImpl atts = new AttributesImpl();
+        hd.startElement("", "", ConstantesXMLSalida.EQUIPO_ESPECIAL, atts);
+        hd.startElement("", "", ConstantesXMLSalida.NUMERO_POLIZA_COND, atts);
+        hd.characters(assingSafeSring(equipoEspecialVO.getStrNumPoliza()).toCharArray(), 0,
+            assingSafeSring(equipoEspecialVO.getStrNumPoliza()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMERO_POLIZA_COND);
+        hd.startElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO, atts);
+        hd.characters(assingSafeSring(equipoEspecialVO.getStrNumEndoso()).toCharArray(), 0,
+            assingSafeSring(equipoEspecialVO.getStrNumEndoso()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO);
+        hd.startElement("", "", ConstantesXMLSalida.CLAVE_ESPEFICICACION, atts);
+        hd.characters(assingSafeSring(equipoEspecialVO.getStrCveEspecificacion()).toCharArray(), 0,
+            assingSafeSring(equipoEspecialVO.getStrCveEspecificacion()).length());
+        hd.endElement("", "", ConstantesXMLSalida.CLAVE_ESPEFICICACION);
+        hd.startElement("", "", ConstantesXMLSalida.DESC_ESPECIFICACION, atts);
+        hd.characters(assingSafeSring(equipoEspecialVO.getStrDescripcionEsp()).toCharArray(), 0,
+            assingSafeSring(equipoEspecialVO.getStrDescripcionEsp()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DESC_ESPECIFICACION);
+        hd.startElement("", "", ConstantesXMLSalida.SUMAASEGURADA, atts);
+        hd.characters(assingSafeSring(equipoEspecialVO.getIntSumaAsegurada()).toCharArray(), 0,
+            assingSafeSring(equipoEspecialVO.getIntSumaAsegurada()).length());
+        hd.endElement("", "", ConstantesXMLSalida.SUMAASEGURADA);
+        hd.endElement("", "", ConstantesXMLSalida.EQUIPO_ESPECIAL);
+    }
+
+    private void addBeneficiarioPreferente(ContentHandler hd) throws SAXException {
+
+        AttributesImpl atts = null;
+        if (vConsBeneficiario != null && !vConsBeneficiario.isEmpty()) {
+            atts = new AttributesImpl();
+            Iterator iterBeneficiario = vConsBeneficiario.iterator();
+            while (iterBeneficiario.hasNext()) {
+                BeneficiarioValueObject beneficiarioValueObject =
+                    (BeneficiarioValueObject) iterBeneficiario.next();
+                hd.startElement("", "", ConstantesXMLSalida.BENEFICIARIO_PREFERENTE, atts);
+                hd.startElement("", "", ConstantesXMLSalida.NUMEROPOLIZA, atts);
+                hd.characters(assingSafeSring(beneficiarioValueObject.getChrNumPoliza()).toCharArray(), 0,
+                    assingSafeSring(beneficiarioValueObject.getChrNumPoliza()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NUMEROPOLIZA);
+                hd.startElement("", "", ConstantesXMLSalida.NOMBRE, atts);
+                hd.characters(assingSafeSring(beneficiarioValueObject.getChrBeneficiario()).toCharArray(),
+                    0, assingSafeSring(beneficiarioValueObject.getChrBeneficiario()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NOMBRE);
+                hd.endElement("", "", ConstantesXMLSalida.BENEFICIARIO_PREFERENTE);
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.BENEFICIARIO_PREFERENTE, atts);
+            hd.endElement("", "", ConstantesXMLSalida.BENEFICIARIO_PREFERENTE);
+        }
+    }
+
+    private void addEndosos(ContentHandler hd) throws SAXException {
+
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.ENDOSOS, atts);
+        if (vConsEndosos != null && !vConsEndosos.isEmpty()) {
+            atts = new AttributesImpl();
+            Iterator iterEndosos = vConsEndosos.iterator();
+            while (iterEndosos.hasNext()) {
+                EndososValueObject endososValueObject = (EndososValueObject) iterEndosos.next();
+                hd.startElement("", "", ConstantesXMLSalida.ENDOSO, atts);
+                hd.startElement("", "", ConstantesXMLSalida.NUMEROPOLIZA, atts);
+                hd.characters(assingSafeSring(endososValueObject.getChrPoliza()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getChrPoliza()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NUMEROPOLIZA);
+                hd.startElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO, atts);
+                hd.characters(assingSafeSring(endososValueObject.getChrEndoso()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getChrEndoso()).length());
+                hd.endElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO);
+                hd.startElement("", "", ConstantesXMLSalida.DESCRIPCION, atts);
+                hd.characters(assingSafeSring(endososValueObject.getChrDescEndoso()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getChrDescEndoso()).length());
+                hd.endElement("", "", ConstantesXMLSalida.DESCRIPCION);
+                hd.startElement("", "", ConstantesXMLSalida.FECHATRABAJO, atts);
+                if (endososValueObject.getDteTrabajo() != null) {
+                    hd.characters(
+                        UtilServiceDate.formatDate(endososValueObject.getDteTrabajo()).toCharArray(), 0,
+                        UtilServiceDate.formatDate(endososValueObject.getDteTrabajo()).length());
+                } else {
+                    hd.characters("".toCharArray(), 0, "".length());
+                }
+                hd.endElement("", "", ConstantesXMLSalida.FECHATRABAJO);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.FECHADESDE, atts);
+                if (endososValueObject.getDteDesde() != null) {
+                    hd.characters(UtilServiceDate.formatDate(endososValueObject.getDteDesde()).toCharArray(),
+                        0, UtilServiceDate.formatDate(endososValueObject.getDteDesde()).length());
+                } else {
+                    hd.characters("".toCharArray(), 0, "".length());
+                }
+                hd.endElement("", "", ConstantesXMLSalida.FECHADESDE);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.FECHAHASTA, atts);
+                if (endososValueObject.getDteHasta() != null) {
+                    hd.characters(UtilServiceDate.formatDate(endososValueObject.getDteHasta()).toCharArray(),
+                        0, UtilServiceDate.formatDate(endososValueObject.getDteHasta()).length());
+                } else {
+                    hd.characters("".toCharArray(), 0, "".length());
+                }
+                hd.endElement("", "", ConstantesXMLSalida.FECHAHASTA);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.TARIFA, atts);
+                hd.characters(assingSafeSring(endososValueObject.getChrTarifa()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getChrTarifa()).length());
+                hd.endElement("", "", ConstantesXMLSalida.TARIFA);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.PRIMANETA, atts);
+                hd.characters(assingSafeSring(endososValueObject.getDcmPrimaNeta()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getDcmPrimaNeta()).length());
+                hd.endElement("", "", ConstantesXMLSalida.PRIMANETA);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.RECARGO, atts);
+                hd.characters(assingSafeSring(endososValueObject.getDcmRecargo()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getDcmRecargo()).length());
+                hd.endElement("", "", ConstantesXMLSalida.RECARGO);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.DERECHO, atts);
+                hd.characters(assingSafeSring(endososValueObject.getDcmDerecho()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getDcmDerecho()).length());
+                hd.endElement("", "", ConstantesXMLSalida.DERECHO);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.IMPUESTO, atts);
+                hd.characters(assingSafeSring(endososValueObject.getDcmImpuesto()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getDcmImpuesto()).length());
+                hd.endElement("", "", ConstantesXMLSalida.IMPUESTO);
+                //
+                hd.startElement("", "", ConstantesXMLSalida.PRIMATOTAL, atts);
+                hd.characters(assingSafeSring(endososValueObject.getDcmPrimaTotal()).toCharArray(), 0,
+                    assingSafeSring(endososValueObject.getDcmPrimaTotal()).length());
+                hd.endElement("", "", ConstantesXMLSalida.PRIMATOTAL);
+
+                addCoberturas(hd, endososValueObject.getChrEndoso());
+                addRecibos(hd, endososValueObject.getChrEndoso());
+                addMovimientos(hd, endososValueObject.getChrEndoso());
+                addEquiposEspeciales(hd, endososValueObject.getChrEndoso());
+
+                hd.endElement("", "", ConstantesXMLSalida.ENDOSO);
+            }
+
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.ENDOSO, atts);
+            addCoberturas(hd, null);
+            addRecibos(hd, null);
+            addMovimientos(hd, null);
+            addEquiposEspeciales(hd, null);
+            hd.endElement("", "", ConstantesXMLSalida.ENDOSO);
+        }
+
+        hd.endElement("", "", ConstantesXMLSalida.ENDOSOS);
+    }
+
+    private void addCoberturas(ContentHandler hd, String endoso) throws SAXException {
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.COBERTURAS, atts);
+        if (vConsCoberturas != null && !vConsCoberturas.isEmpty()) {
+            atts = new AttributesImpl();
+            Iterator iterCoberturas = vConsCoberturas.iterator();
+            if (endoso != null && !endoso.equals("")) {
+                // FILTRADOS POR ENDOSO
+                while (iterCoberturas.hasNext()) {
+                    CoberturasValueObject coberturasValueObject =
+                        (CoberturasValueObject) iterCoberturas.next();
+
+                    if (coberturasValueObject.getChrEndoso().equals(endoso)) {
+                        addCobertura(hd, coberturasValueObject);
+                    }
+                }
+            } else {
+                // TODOS
+                while (iterCoberturas.hasNext()) {
+                    CoberturasValueObject coberturasValueObject =
+                        (CoberturasValueObject) iterCoberturas.next();
+
+                    addCobertura(hd, coberturasValueObject);
+                }
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.COBERTURA, atts);
+            hd.endElement("", "", ConstantesXMLSalida.COBERTURA);
+        }
+
+        hd.endElement("", "", ConstantesXMLSalida.COBERTURAS);
+    }
+
+    private void addCobertura(ContentHandler hd, CoberturasValueObject coberturasValueObject)
+        throws SAXException {
+
+        AttributesImpl atts = new AttributesImpl();
+
+        hd.startElement("", "", ConstantesXMLSalida.COBERTURA, atts);
+
+        hd.startElement("", "", ConstantesXMLSalida.NUMEROPOLIZA, atts);
+        hd.characters(assingSafeSring(coberturasValueObject.getChrPoliza()).toCharArray(), 0,
+            assingSafeSring(coberturasValueObject.getChrPoliza()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMEROPOLIZA);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO, atts);
+        hd.characters(assingSafeSring(coberturasValueObject.getChrEndoso()).toCharArray(), 0,
+            assingSafeSring(coberturasValueObject.getChrEndoso()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.DESCRIPCION, atts);
+        hd.characters(assingSafeSring(coberturasValueObject.getChrCobertura()).toCharArray(), 0,
+            assingSafeSring(coberturasValueObject.getChrCobertura()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DESCRIPCION);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.SUMA, atts);
+        hd.characters(assingSafeSring(coberturasValueObject.getChrSuma()).trim().toCharArray(), 0,
+            assingSafeSring(coberturasValueObject.getChrSuma()).trim().length());
+        hd.endElement("", "", ConstantesXMLSalida.SUMA);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.DEDUCIBLE, atts);
+        hd.characters(assingSafeSring(coberturasValueObject.getChrDed()).toCharArray(), 0,
+            assingSafeSring(coberturasValueObject.getChrDed()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DEDUCIBLE);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.DEDUCIBLE_CALCULADO, atts);
+        hd.characters(assingSafeSring(coberturasValueObject.getChrDedCalc()).toCharArray(), 0,
+            assingSafeSring(coberturasValueObject.getChrDedCalc()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DEDUCIBLE_CALCULADO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.PRIMATOTAL, atts);
+        hd.characters(assingSafeSring(coberturasValueObject.getChrPrima()).trim().toCharArray(), 0,
+            assingSafeSring(coberturasValueObject.getChrPrima()).trim().length());
+        hd.endElement("", "", ConstantesXMLSalida.PRIMATOTAL);
+
+        hd.endElement("", "", ConstantesXMLSalida.COBERTURA);
+    }
+
+    private void addRecibos(ContentHandler hd, String endoso) throws SAXException {
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.RECIBOS, atts);
+        if (vConsRecibos != null && !vConsRecibos.isEmpty()) {
+            atts = new AttributesImpl();
+            Iterator iterRecibos = vConsRecibos.iterator();
+            if (endoso != null && !endoso.equals("")) {
+                // FILTRADOS POR ENDOSO
+                while (iterRecibos.hasNext()) {
+                    RecibosValueObject recibosValueObject = (RecibosValueObject) iterRecibos.next();
+
+                    if (recibosValueObject.getChrEndoso().equals(endoso)) {
+                        addRecibo(hd, recibosValueObject);
+                    }
+                }
+            } else {
+                // TODOS
+                while (iterRecibos.hasNext()) {
+                    RecibosValueObject recibosValueObject = (RecibosValueObject) iterRecibos.next();
+
+                    addRecibo(hd, recibosValueObject);
+                }
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.RECIBO, atts);
+            hd.endElement("", "", ConstantesXMLSalida.RECIBO);
+        }
+
+        hd.endElement("", "", ConstantesXMLSalida.RECIBOS);
+    }
+
+    private void addRecibo(ContentHandler hd, RecibosValueObject recibosValueObject)
+        throws SAXException {
+
+        AttributesImpl atts = new AttributesImpl();
+
+        hd.startElement("", "", ConstantesXMLSalida.RECIBO, atts);
+
+        hd.startElement("", "", ConstantesXMLSalida.NUMEROPOLIZA, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getChrPoliza()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getChrPoliza()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMEROPOLIZA);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getChrEndoso()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getChrEndoso()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.FECHATRABAJO, atts);
+        if (recibosValueObject.getDteTrabajo() != null) {
+            hd.characters(UtilServiceDate.formatDate(recibosValueObject.getDteTrabajo()).toCharArray(), 0,
+                UtilServiceDate.formatDate(recibosValueObject.getDteTrabajo()).length());
+        } else {
+            hd.characters("".toCharArray(), 0, "".length());
+        }
+        hd.endElement("", "", ConstantesXMLSalida.FECHATRABAJO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.FECHADESDE, atts);
+        if (recibosValueObject.getDteDesde() != null) {
+            hd.characters(UtilServiceDate.formatDate(recibosValueObject.getDteDesde()).toCharArray(), 0,
+                UtilServiceDate.formatDate(recibosValueObject.getDteDesde()).length());
+        } else {
+            hd.characters("".toCharArray(), 0, "".length());
+        }
+        hd.endElement("", "", ConstantesXMLSalida.FECHADESDE);
+
+        hd.startElement("", "", ConstantesXMLSalida.FECHAHASTA, atts);
+        if (recibosValueObject.getDteHasta() != null) {
+            hd.characters(UtilServiceDate.formatDate(recibosValueObject.getDteHasta()).toCharArray(), 0,
+                UtilServiceDate.formatDate(recibosValueObject.getDteHasta()).length());
+        } else {
+            hd.characters("".toCharArray(), 0, "".length());
+        }
+        hd.endElement("", "", ConstantesXMLSalida.FECHAHASTA);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.COMPROBANTE_PAGO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getChrComprobPago()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getChrComprobPago()).length());
+        hd.endElement("", "", ConstantesXMLSalida.COMPROBANTE_PAGO);
+        //
+        // JLSM
+        hd.startElement("", "", ConstantesXMLSalida.MED_PAG, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getChrMedPag()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getChrMedPag()).length());
+        hd.endElement("", "", ConstantesXMLSalida.MED_PAG);
+
+        // JLSM
+        hd.startElement("", "", ConstantesXMLSalida.FECHA_PAGO, atts);
+        if (recibosValueObject.getDtePago() != null) {
+            hd.characters(UtilServiceDate.formatDate(recibosValueObject.getDtePago()).toCharArray(), 0,
+                UtilServiceDate.formatDate(recibosValueObject.getDtePago()).length());
+        } else {
+            hd.characters("".toCharArray(), 0, "".length());
+        }
+        hd.endElement("", "", ConstantesXMLSalida.FECHA_PAGO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.FECHA_IMPRESION, atts);
+        if (recibosValueObject.getDteImpresion() != null) {
+            hd.characters(UtilServiceDate.formatDate(recibosValueObject.getDteImpresion()).toCharArray(),
+                0, UtilServiceDate.formatDate(recibosValueObject.getDteImpresion()).length());
+        } else {
+            hd.characters("".toCharArray(), 0, "".length());
+        }
+        hd.endElement("", "", ConstantesXMLSalida.FECHA_IMPRESION);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.SERIE_RECIBO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getIntSerieRecibo()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getIntSerieRecibo()).length());
+        hd.endElement("", "", ConstantesXMLSalida.SERIE_RECIBO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.ESTADO_RECIBO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getChrEdoRecibo()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getChrEdoRecibo()).length());
+        hd.endElement("", "", ConstantesXMLSalida.ESTADO_RECIBO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.FOLIO_RECIBO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getChrFolio()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getChrFolio()).length());
+        hd.endElement("", "", ConstantesXMLSalida.FOLIO_RECIBO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.PRIMANETA, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getDcmPrimaNeta()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getDcmPrimaNeta()).length());
+        hd.endElement("", "", ConstantesXMLSalida.PRIMANETA);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.RECARGO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getDcmRecargo()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getDcmRecargo()).length());
+        hd.endElement("", "", ConstantesXMLSalida.RECARGO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.DERECHO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getDcmDerecho()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getDcmDerecho()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DERECHO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.IMPUESTO, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getDcmImpuesto()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getDcmImpuesto()).length());
+        hd.endElement("", "", ConstantesXMLSalida.IMPUESTO);
+        //
+        hd.startElement("", "", ConstantesXMLSalida.PRIMATOTAL, atts);
+        hd.characters(assingSafeSring(recibosValueObject.getDcmPrimaTotal()).toCharArray(), 0,
+            assingSafeSring(recibosValueObject.getDcmPrimaTotal()).length());
+        hd.endElement("", "", ConstantesXMLSalida.PRIMATOTAL);
+
+        hd.endElement("", "", ConstantesXMLSalida.RECIBO);
+    }
+
+    private void addEquiposEspeciales(ContentHandler hd, String endoso) throws SAXException {
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.EQUIPO_ESP_ADAP, atts);
+        if (vConsEquipoEspecial != null && !vConsEquipoEspecial.isEmpty()) {
+            atts = new AttributesImpl();
+            Iterator iterEquipoEspecial = vConsEquipoEspecial.iterator();
+            if (endoso != null && !endoso.equals("")) {
+                while (iterEquipoEspecial.hasNext()) {
+                    EquipoEspecialValueObject equipoEspecialVO =
+                        (EquipoEspecialValueObject) iterEquipoEspecial.next();
+                    if (equipoEspecialVO.getStrNumEndoso().equals(endoso)) {
+                        addEquipoEspecial(hd, equipoEspecialVO);
+                    }
+                }
+            } else {
+                while (iterEquipoEspecial.hasNext()) {
+                    EquipoEspecialValueObject equipoEspecialVO =
+                        (EquipoEspecialValueObject) iterEquipoEspecial.next();
+                    addEquipoEspecial(hd, equipoEspecialVO);
+                }
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.EQUIPO_ESPECIAL, atts);
+            hd.endElement("", "", ConstantesXMLSalida.EQUIPO_ESPECIAL);
+        }
+        hd.endElement("", "", ConstantesXMLSalida.EQUIPO_ESP_ADAP);
+    }
+
+    private void addMovimientos(ContentHandler hd, String endoso) throws SAXException {
+        AttributesImpl atts = null;
+        hd.startElement("", "", ConstantesXMLSalida.MOVIMIENTOS, atts);
+        if (vConsEndososB != null && !vConsEndososB.isEmpty()) {
+            atts = new AttributesImpl();
+            Iterator iterEndososB = vConsEndososB.iterator();
+            if (endoso != null && !endoso.equals("")) {
+                while (iterEndososB.hasNext()) {
+                    EndososBValueObject endososBValueObject = (EndososBValueObject) iterEndososB.next();
+                    if (endososBValueObject.getChrEndoso().equals(endoso)) {
+                        addMovimiento(hd, endososBValueObject);
+                    }
+                }
+            } else {
+                while (iterEndososB.hasNext()) {
+                    EndososBValueObject endososBValueObject = (EndososBValueObject) iterEndososB.next();
+                    addMovimiento(hd, endososBValueObject);
+                }
+            }
+        } else {
+            hd.startElement("", "", ConstantesXMLSalida.MOVIMIENTO, atts);
+            hd.endElement("", "", ConstantesXMLSalida.MOVIMIENTO);
+        }
+
+        hd.endElement("", "", ConstantesXMLSalida.MOVIMIENTOS);
+    }
+
+    private void addMovimiento(ContentHandler hd, EndososBValueObject endososBValueObject)
+        throws SAXException {
+        AttributesImpl atts = new AttributesImpl();
+        hd.startElement("", "", ConstantesXMLSalida.MOVIMIENTO, atts);
+        hd.startElement("", "", ConstantesXMLSalida.NUMEROPOLIZA, atts);
+        hd.characters(assingSafeSring(endososBValueObject.getChrPoliza()).toCharArray(), 0,
+            assingSafeSring(endososBValueObject.getChrPoliza()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMEROPOLIZA);
+        hd.startElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO, atts);
+        hd.characters(assingSafeSring(endososBValueObject.getChrEndoso()).toCharArray(), 0,
+            assingSafeSring(endososBValueObject.getChrEndoso()).length());
+        hd.endElement("", "", ConstantesXMLSalida.NUMERO_ENDOSO);
+        hd.startElement("", "", ConstantesXMLSalida.DESCRIPCION, atts);
+        hd.characters(assingSafeSring(endososBValueObject.getChrDescEndoso()).toCharArray(), 0,
+            assingSafeSring(endososBValueObject.getChrDescEndoso()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DESCRIPCION);
+        hd.startElement("", "", ConstantesXMLSalida.DATO_ANTERIOR, atts);
+        hd.characters(assingSafeSring(endososBValueObject.getChrDatoAnterior()).toCharArray(), 0,
+            assingSafeSring(endososBValueObject.getChrDatoAnterior()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DATO_ANTERIOR);
+        hd.startElement("", "", ConstantesXMLSalida.DATO_ACTUAL, atts);
+        hd.characters(assingSafeSring(endososBValueObject.getChrDatoActual()).toCharArray(), 0,
+            assingSafeSring(endososBValueObject.getChrDatoActual()).length());
+        hd.endElement("", "", ConstantesXMLSalida.DATO_ACTUAL);
+        hd.endElement("", "", ConstantesXMLSalida.MOVIMIENTO);
+    }
+
+    private static String assingSafeSring(Object value) {
+        if (value == null) {
+            return "";
+        }
+        return value.toString();
+    }
 }
