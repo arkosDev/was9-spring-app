@@ -83,148 +83,120 @@ public class ArmaXmlPolizas {
             PolizaDto polizaValueObject = respEmmDto.getVConsPoliza().get(0);
 
             hd.writeStartElement(NUMEROPOLIZA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrNumPoliza()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrNumPoliza()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrNumPoliza()));
             hd.writeEndElement();
 
             hd.writeStartElement(TIPO_POLIZA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTipoPoliza()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrTipoPoliza()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTipoPoliza()));
             hd.writeEndElement();
 
             hd.writeStartElement(FECHADESDE);
             if (polizaValueObject.getDteFechaDesde() != null) {
-                hd.writeCharacters(
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaDesde()).toCharArray(), 0,
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaDesde()).length());
+                hd.writeCharacters(UtilServiceDate.formatDate(polizaValueObject.getDteFechaDesde()));
             } else {
-                hd.writeCharacters("".toCharArray(), 0, "".length());
+                hd.writeCharacters("");
             }
             hd.writeEndElement();
 
             hd.writeStartElement(FECHAHASTA);
             if (polizaValueObject.getDteFechaHasta() != null) {
-                hd.writeCharacters(
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaHasta()).toCharArray(), 0,
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaHasta()).length());
+                hd.writeCharacters(UtilServiceDate.formatDate(polizaValueObject.getDteFechaHasta()));
             } else {
-                hd.writeCharacters("".toCharArray(), 0, "".length());
+                hd.writeCharacters("");
             }
             hd.writeEndElement();
 
             hd.writeStartElement(FECHA_EMISION);
             if (polizaValueObject.getDteFechaEmision() != null) {
-                hd.writeCharacters(
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaEmision()).toCharArray(), 0,
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaEmision()).length());
+                hd.writeCharacters(UtilServiceDate.formatDate(polizaValueObject.getDteFechaEmision()));
             } else {
-                hd.writeCharacters("".toCharArray(), 0, "".length());
+                hd.writeCharacters("");
             }
             hd.writeEndElement();
 
             hd.writeStartElement(ESTADO_POLIZA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrEstadoPol()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrEstadoPol()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrEstadoPol()));
             hd.writeEndElement();
 
             hd.writeStartElement(FECHA_CANCELACION);
             if (polizaValueObject.getDteFechaCance() != null) {
-                hd.writeCharacters(
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaCance()).toCharArray(), 0,
-                    UtilServiceDate.formatDate(polizaValueObject.getDteFechaCance()).length());
+                hd.writeCharacters(UtilServiceDate.formatDate(polizaValueObject.getDteFechaCance()));
             } else {
-                hd.writeCharacters("".toCharArray(), 0, "".length());
+                hd.writeCharacters("");
             }
             hd.writeEndElement();
 
             hd.writeStartElement(SUBRAMO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrSubramo()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrSubramo()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrSubramo()));
             hd.writeEndElement();
 
             hd.writeStartElement(FORMAPAGO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrFormaPago()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrFormaPago()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrFormaPago()));
             hd.writeEndElement();
 
             hd.writeStartElement(MONEDA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrMoneda()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrMoneda()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrMoneda()));
             hd.writeEndElement();
 
             hd.writeStartElement(AGENTE);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntAgente()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntAgente()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntAgente()));
             hd.writeEndElement();
 
             hd.writeStartElement(CENTRO_COSTOS);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntCentroCosto()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntCentroCosto()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntCentroCosto()));
             hd.writeEndElement();
 
             hd.writeStartElement(POLIZA_ANTERIOR);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPolizaAnt()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrPolizaAnt()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPolizaAnt()));
             hd.writeEndElement();
 
             hd.writeStartElement(POLIZA_SIGUIENTE);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPolizaSig()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrPolizaSig()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPolizaSig()));
             hd.writeEndElement();
 
             hd.writeStartElement(PAGO_ELECTRONICO);
             aux = assingSafeSring(polizaValueObject.getLgcPagoTarjeta());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
 
             hd.writeStartElement(TARIFA_ALTA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTarifaAlta()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrTarifaAlta()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTarifaAlta()));
             hd.writeEndElement();
 
             hd.writeStartElement(ARRENDADOR);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntArrendador()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntArrendador()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntArrendador()));
             hd.writeEndElement();
 
             hd.writeStartElement(VERSION);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntVersion()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntVersion()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntVersion()));
             hd.writeEndElement();
 
             hd.writeStartElement(DESCUENTO_POR_EXPERIENCIA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getDcmDescExp()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getDcmDescExp()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getDcmDescExp()));
             hd.writeEndElement();
 
             hd.writeStartElement(DESCUENTO_POR_VOLUMEN);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getDcmDescVol()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getDcmDescVol()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getDcmDescVol()));
             hd.writeEndElement();
 
             hd.writeStartElement(SERVIDORA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrServidora()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrServidora()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrServidora()));
             hd.writeEndElement();
 
             hd.writeStartElement(AFIANZADORA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrAfianzadora()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrAfianzadora()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrAfianzadora()));
             hd.writeEndElement();
 
             hd.writeStartElement(INDICETARIFA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntIndTar()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntIndTar()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntIndTar()));
             hd.writeEndElement();
 
             hd.writeStartElement(TARIFA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTarifa()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrTarifa()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTarifa()));
             hd.writeEndElement();
         }
         hd.writeEndElement(); // GENERALES
@@ -238,50 +210,39 @@ public class ArmaXmlPolizas {
             PolizaDto polizaValueObject = respEmmDto.getVConsPoliza().get(0);
             hd.writeStartElement(TITULAR);
             hd.writeStartElement(TIPO_PERSONA_TITULAR);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTipoPersona()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrTipoPersona()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTipoPersona()));
             hd.writeEndElement();
             hd.writeStartElement(NOMBRE);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrNombreCte()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrNombreCte()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrNombreCte()));
             hd.writeEndElement();
             hd.writeStartElement(APELLIDO_PATERNO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrApPaternoCte()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrApPaternoCte()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrApPaternoCte()));
             hd.writeEndElement();
             hd.writeStartElement(APELLIDO_MATERNO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrApMaternoCte()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrApMaternoCte()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrApMaternoCte()));
             hd.writeEndElement();
             hd.writeStartElement(RFC);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrRFC()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrRFC()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrRFC()));
             hd.writeEndElement();
             hd.writeStartElement(DIRECCION);
             hd.writeStartElement(CALLE_NUMERO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDireccion()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrDireccion()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDireccion()));
             hd.writeEndElement();
             hd.writeStartElement(COLONIA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrColonia()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrColonia()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrColonia()));
             hd.writeEndElement();
             hd.writeStartElement(CODIGO_POSTAL);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntCodPostal()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntCodPostal()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntCodPostal()));
             hd.writeEndElement();
             hd.writeStartElement(ESTADO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescEstado()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrDescEstado()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescEstado()));
             hd.writeEndElement();
             hd.writeStartElement(POBLACION);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescPobla()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrDescPobla()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescPobla()));
             hd.writeEndElement();
             hd.writeEndElement(); // DIRECCION
             hd.writeStartElement(TELEFONO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTelefono()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrTelefono()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTelefono()));
             hd.writeEndElement();
             hd.writeEndElement(); // TITULAR
         }
@@ -294,68 +255,52 @@ public class ArmaXmlPolizas {
             PolizaDto polizaValueObject = respEmmDto.getVConsPoliza().get(0);
             hd.writeStartElement(VEHICULO);
             hd.writeStartElement(MODELO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntModelo()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntModelo()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntModelo()));
             hd.writeEndElement();
             hd.writeStartElement(PAQUETE);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPaqCont()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrPaqCont()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPaqCont()));
             hd.writeEndElement();
             hd.writeStartElement(MARCA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrMarca()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrMarca()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrMarca()));
             hd.writeEndElement();
             hd.writeStartElement(DESCRIPCION);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescVeh()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrDescVeh()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescVeh()));
             hd.writeEndElement();
             hd.writeStartElement(OCUPANTES);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntOcupantes()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntOcupantes()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntOcupantes()));
             hd.writeEndElement();
             hd.writeStartElement(MOTOR);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrMotor()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrMotor()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrMotor()));
             hd.writeEndElement();
             hd.writeStartElement(SERIE);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrSerieVeh()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrSerieVeh()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrSerieVeh()));
             hd.writeEndElement();
             hd.writeStartElement(PLACAS);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPlacas()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrPlacas()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrPlacas()));
             hd.writeEndElement();
             hd.writeStartElement(ESTADO_PLACAS);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrEdoPlacas()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrEdoPlacas()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrEdoPlacas()));
             hd.writeEndElement();
             hd.writeStartElement(CLAVE_USO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntUso()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntUso()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntUso()));
             hd.writeEndElement();
             hd.writeStartElement(USO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescUso()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrDescUso()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrDescUso()));
             hd.writeEndElement();
             hd.writeStartElement(SERVICIO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrServicio()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrServicio()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrServicio()));
             hd.writeEndElement();
             hd.writeStartElement(TIPO_CARGA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTipoCarga()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrTipoCarga()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrTipoCarga()));
             hd.writeEndElement();
             hd.writeStartElement(PORCENTAJE_SUMA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getDcmPorcSuma()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getDcmPorcSuma()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getDcmPorcSuma()));
             hd.writeEndElement();
             hd.writeStartElement(VALOR);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntValorVeh()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntValorVeh()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntValorVeh()));
             hd.writeEndElement();
             hd.writeStartElement(CLAVE_AMIS);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrClaveAmis()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrClaveAmis()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrClaveAmis()));
             hd.writeEndElement();
             hd.writeEndElement(); // VEHICULO
         }
@@ -370,126 +315,104 @@ public class ArmaXmlPolizas {
             PolizaDto polizaValueObject = respEmmDto.getVConsPoliza().get(0);
             hd.writeStartElement(CONDICIONESEMISION);
             hd.writeStartElement(ESVALORCOMERCIAL);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrValorCom()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getChrValorCom()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getChrValorCom()));
             hd.writeEndElement();
             hd.writeStartElement(DANOS_MATERIALES);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntDedDM()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntDedDM()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntDedDM()));
             hd.writeEndElement();
             hd.writeStartElement(ROBO_TOTAL);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntDedRB()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntDedRB()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntDedRB()));
             hd.writeEndElement();
             hd.writeStartElement(RESPONSABILIDAD_CIVIL);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntDedRC()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntDedRC()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntDedRC()));
             hd.writeEndElement();
             hd.writeStartElement(RCBIENES);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRC()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaRC()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRC()));
             hd.writeEndElement();
             hd.writeStartElement(RCPERSONAS);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRCP()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaRCP()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRCP()));
             hd.writeEndElement();
             hd.writeStartElement(ACCIDENTES);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaAcc()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaAcc()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaAcc()));
             hd.writeEndElement();
             hd.writeStartElement(AUTO_SUSTITUTO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaAutoSust()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaAutoSust()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaAutoSust()));
             hd.writeEndElement();
             hd.writeStartElement(GASTOS_MEDICOS);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaGtosMed()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaGtosMed()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaGtosMed()));
             hd.writeEndElement();
             hd.writeStartElement(SERVICIO_ASISTENCIA);
             aux = assingSafeSring(polizaValueObject.getLgcFianza());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
             hd.writeStartElement(SIGUE_CON_AUTO);
             aux = assingSafeSring(polizaValueObject.getLgcSigueConAuto());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
             hd.writeStartElement(FIANZA);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaFianza()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaFianza()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaFianza()));
             hd.writeEndElement();
             hd.writeStartElement(EQUIPO_ESPECIAL);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaEqEsp()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaEqEsp()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaEqEsp()));
             hd.writeEndElement();
             hd.writeStartElement(ADAPTACIONES);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaAdapta()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaAdapta()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaAdapta()));
             hd.writeEndElement();
             hd.writeStartElement(ROBO_EXT);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRoboExt()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaRoboExt()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRoboExt()));
             hd.writeEndElement();
             hd.writeStartElement(ROBO_INT);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRoboInt()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaRoboInt()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaRoboInt()));
             hd.writeEndElement();
             hd.writeStartElement(VIAJERO);
-            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaViaj()).toCharArray(), 0,
-                assingSafeSring(polizaValueObject.getIntSumaViaj()).length());
+            hd.writeCharacters(assingSafeSring(polizaValueObject.getIntSumaViaj()));
             hd.writeEndElement();
             hd.writeStartElement(DOBLEREMOLQUE);
             aux = assingSafeSring(polizaValueObject.getLgcDobleRemol());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
             hd.writeStartElement(AMPLIACION_RC);
             aux = assingSafeSring(polizaValueObject.getLgcAmplRC());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
             hd.writeStartElement(EXENCION_DEDUCIBLE);
             aux = assingSafeSring(polizaValueObject.getLgcPrix());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
             hd.writeStartElement(EXTENSIONRC);
             aux = assingSafeSring(polizaValueObject.getLgcExtRC());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
             hd.writeStartElement(SUVA);
             aux = assingSafeSring(polizaValueObject.getLgcSUVA());
             if (!aux.equals("")) {
-                hd.writeCharacters((aux.equalsIgnoreCase("true") ? "SI" : "NO").toCharArray(), 0,
-                    (aux.equalsIgnoreCase("true") ? "SI" : "NO").length());
+                hd.writeCharacters(aux.equalsIgnoreCase("true") ? "SI" : "NO");
             } else {
-                hd.writeCharacters(aux.toCharArray(), 0, aux.length());
+                hd.writeCharacters(aux);
             }
             hd.writeEndElement();
 
@@ -507,29 +430,23 @@ public class ArmaXmlPolizas {
                 hd.writeStartElement(CLIENTEYO);
 
                 hd.writeStartElement(NUMEROPOLIZA);
-                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrNumPoliza()).toCharArray(), 0,
-                    assingSafeSring(clienteYOValueObject.getChrNumPoliza()).length());
+                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrNumPoliza()));
                 hd.writeEndElement();
 
                 hd.writeStartElement(TIPO_PERSONA);
-                hd.writeCharacters(
-                    assingSafeSring(clienteYOValueObject.getChrTipoPers()).toUpperCase().toCharArray(), 0,
-                    assingSafeSring(clienteYOValueObject.getChrTipoPers()).length());
+                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrTipoPers()).toUpperCase());
                 hd.writeEndElement();
 
                 hd.writeStartElement(NOMBRE);
-                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrNombre()).toCharArray(), 0,
-                    assingSafeSring(clienteYOValueObject.getChrNombre()).length());
+                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrNombre()));
                 hd.writeEndElement();
 
                 hd.writeStartElement(APELLIDO_PATERNO);
-                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrApPaterno()).toCharArray(), 0,
-                    assingSafeSring(clienteYOValueObject.getChrApPaterno()).length());
+                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrApPaterno()));
                 hd.writeEndElement();
 
                 hd.writeStartElement(APELLIDO_MATERNO);
-                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrApMaterno()).toCharArray(), 0,
-                    assingSafeSring(clienteYOValueObject.getChrApMaterno()).length());
+                hd.writeCharacters(assingSafeSring(clienteYOValueObject.getChrApMaterno()));
                 hd.writeEndElement();
 
                 hd.writeEndElement(); // CLIENTEYO
@@ -549,83 +466,63 @@ public class ArmaXmlPolizas {
                 CondRegistDto conductorRegistradoVO = iter.next();
                 hd.writeStartElement(CONDUCTOR);
                 hd.writeStartElement(NUMERO_POLIZA_COND);
-                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrNumPoliza()).toCharArray(), 0,
-                    assingSafeSring(conductorRegistradoVO.getStrNumPoliza()).length());
+                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrNumPoliza()));
                 hd.writeEndElement();
                 hd.writeStartElement(NUMERO_INCISO);
-                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getIntNumInc()).toCharArray(), 0,
-                    assingSafeSring(conductorRegistradoVO.getIntNumInc()).length());
+                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getIntNumInc()));
                 hd.writeEndElement();
                 hd.writeStartElement(CONSECUTIVO_CONDUCTOR);
-                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getIntSecCond()).toCharArray(), 0,
-                    assingSafeSring(conductorRegistradoVO.getIntSecCond()).length());
+                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getIntSecCond()));
                 hd.writeEndElement();
                 hd.writeStartElement(NOMBRE);
-                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrNombre()).toCharArray(), 0,
-                    assingSafeSring(conductorRegistradoVO.getStrNombre()).length());
+                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrNombre()));
                 hd.writeEndElement();
                 hd.writeStartElement(APELLIDO_PATERNO);
-                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrApPaterno()).toCharArray(), 0,
-                    assingSafeSring(conductorRegistradoVO.getStrApPaterno()).length());
+                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrApPaterno()));
                 hd.writeEndElement();
                 hd.writeStartElement(APELLIDO_MATERNO);
-                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrApMaterno()).toCharArray(), 0,
-                    assingSafeSring(conductorRegistradoVO.getStrApMaterno()).length());
+                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrApMaterno()));
                 hd.writeEndElement();
                 hd.writeStartElement(SEXO);
-                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrSexo()).toCharArray(), 0,
-                    assingSafeSring(conductorRegistradoVO.getStrSexo()).length());
+                hd.writeCharacters(assingSafeSring(conductorRegistradoVO.getStrSexo()));
                 hd.writeEndElement();
                 hd.writeStartElement(FECHA_NACIMIENTO);
                 if (conductorRegistradoVO.getDteFechaNacimiento() != null) {
-                    hd.writeCharacters(
-                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaNacimiento())
-                            .toCharArray(),
-                        0,
-                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaNacimiento()).length());
+                    hd.writeCharacters(UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaNacimiento()));
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, 0);
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeStartElement(DET_PRIMA);
                 if (!"".equals(assingSafeSring(conductorRegistradoVO.getLgcAlta()))) {
                     hd.writeCharacters(
-                        (conductorRegistradoVO.getLgcAlta().toString().equalsIgnoreCase("true") ? "SI" : "NO")
-                            .toCharArray(),
-                        0, 2);
+                        conductorRegistradoVO.getLgcAlta().toString().equalsIgnoreCase("true") ? "SI" : "NO");
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, 0);
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeStartElement(EXCLUIDO);
                 if (!"".equals(assingSafeSring(conductorRegistradoVO.getLgcExcluye()))) {
                     hd.writeCharacters(
-                        (conductorRegistradoVO.getLgcExcluye().toString().equalsIgnoreCase("true") ? "SI"
-                            : "NO").toCharArray(),
-                        0, 2);
+                        conductorRegistradoVO.getLgcExcluye().toString().equalsIgnoreCase("true") ? "SI" : "NO");
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, 0);
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeStartElement(FECHA_BAJA);
                 if (conductorRegistradoVO.getDteFechaBaja() != null) {
-                    hd.writeCharacters(
-                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaBaja()).toCharArray(),
-                        0,
-                        UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaBaja()).length());
+                    hd.writeCharacters(UtilServiceDate.formatDate(conductorRegistradoVO.getDteFechaBaja()));
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, 0);
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeStartElement(ES_CONTRATANTE);
                 if (!"".equals(assingSafeSring(conductorRegistradoVO.getLgcEsContratante()))) {
                     hd.writeCharacters(
-                        (conductorRegistradoVO.getLgcEsContratante().toString().equalsIgnoreCase("true")
-                            ? "SI"
-                            : "NO").toCharArray(),
-                        0, 2);
+                        conductorRegistradoVO.getLgcEsContratante().toString().equalsIgnoreCase("true")
+                            ? "SI" : "NO");
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, 0);
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeEndElement(); // CONDUCTOR
@@ -646,20 +543,16 @@ public class ArmaXmlPolizas {
                 BeneficiarioDto beneficiarioVO = iter.next();
                 hd.writeStartElement(BENEFICIARIO);
                 hd.writeStartElement(NUMERO_POLIZA_COND);
-                hd.writeCharacters(assingSafeSring(beneficiarioVO.getChrNumPoliza()).toCharArray(), 0,
-                    assingSafeSring(beneficiarioVO.getChrNumPoliza()).length());
+                hd.writeCharacters(assingSafeSring(beneficiarioVO.getChrNumPoliza()));
                 hd.writeEndElement();
                 hd.writeStartElement(FOLIO_CONSECUTIVO);
-                hd.writeCharacters(assingSafeSring(beneficiarioVO.getFolioConsecutivo()).toCharArray(), 0,
-                    assingSafeSring(beneficiarioVO.getFolioConsecutivo()).length());
+                hd.writeCharacters(assingSafeSring(beneficiarioVO.getFolioConsecutivo()));
                 hd.writeEndElement();
                 hd.writeStartElement(NOMBRE);
-                hd.writeCharacters(assingSafeSring(beneficiarioVO.getChrBeneficiario()).toCharArray(), 0,
-                    assingSafeSring(beneficiarioVO.getChrBeneficiario()).length());
+                hd.writeCharacters(assingSafeSring(beneficiarioVO.getChrBeneficiario()));
                 hd.writeEndElement();
                 hd.writeStartElement(PORCENTAJE);
-                hd.writeCharacters(assingSafeSring(beneficiarioVO.getIntPorcentaje()).toCharArray(), 0,
-                    assingSafeSring(beneficiarioVO.getIntPorcentaje()).length());
+                hd.writeCharacters(assingSafeSring(beneficiarioVO.getIntPorcentaje()));
                 hd.writeEndElement();
                 hd.writeEndElement(); // BENEFICIARIO
             }
@@ -675,24 +568,19 @@ public class ArmaXmlPolizas {
 
         hd.writeStartElement(EQUIPO_ESPECIAL);
         hd.writeStartElement(NUMERO_POLIZA_COND);
-        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrNumPoliza()).toCharArray(), 0,
-            assingSafeSring(equipoEspecialVO.getStrNumPoliza()).length());
+        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrNumPoliza()));
         hd.writeEndElement();
         hd.writeStartElement(NUMERO_ENDOSO);
-        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrNumEndoso()).toCharArray(), 0,
-            assingSafeSring(equipoEspecialVO.getStrNumEndoso()).length());
+        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrNumEndoso()));
         hd.writeEndElement();
         hd.writeStartElement(CLAVE_ESPEFICICACION);
-        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrCveEspecificacion()).toCharArray(), 0,
-            assingSafeSring(equipoEspecialVO.getStrCveEspecificacion()).length());
+        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrCveEspecificacion()));
         hd.writeEndElement();
         hd.writeStartElement(DESC_ESPECIFICACION);
-        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrDescripcionEsp()).toCharArray(), 0,
-            assingSafeSring(equipoEspecialVO.getStrDescripcionEsp()).length());
+        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getStrDescripcionEsp()));
         hd.writeEndElement();
         hd.writeStartElement(SUMAASEGURADA);
-        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getIntSumaAsegurada()).toCharArray(), 0,
-            assingSafeSring(equipoEspecialVO.getIntSumaAsegurada()).length());
+        hd.writeCharacters(assingSafeSring(equipoEspecialVO.getIntSumaAsegurada()));
         hd.writeEndElement();
         hd.writeEndElement(); // EQUIPO_ESPECIAL
     }
@@ -706,12 +594,10 @@ public class ArmaXmlPolizas {
                 BeneficiarioDto beneficiarioValueObject = iterBeneficiario.next();
                 hd.writeStartElement(BENEFICIARIO_PREFERENTE);
                 hd.writeStartElement(NUMEROPOLIZA);
-                hd.writeCharacters(assingSafeSring(beneficiarioValueObject.getChrNumPoliza()).toCharArray(), 0,
-                    assingSafeSring(beneficiarioValueObject.getChrNumPoliza()).length());
+                hd.writeCharacters(assingSafeSring(beneficiarioValueObject.getChrNumPoliza()));
                 hd.writeEndElement();
                 hd.writeStartElement(NOMBRE);
-                hd.writeCharacters(assingSafeSring(beneficiarioValueObject.getChrBeneficiario()).toCharArray(),
-                    0, assingSafeSring(beneficiarioValueObject.getChrBeneficiario()).length());
+                hd.writeCharacters(assingSafeSring(beneficiarioValueObject.getChrBeneficiario()));
                 hd.writeEndElement();
                 hd.writeEndElement(); // BENEFICIARIO_PREFERENTE
             }
@@ -731,65 +617,52 @@ public class ArmaXmlPolizas {
                 EndososSOAPDto endososValueObject = iterEndosos.next();
                 hd.writeStartElement(ENDOSO);
                 hd.writeStartElement(NUMEROPOLIZA);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getChrPoliza()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getChrPoliza()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getChrPoliza()));
                 hd.writeEndElement();
                 hd.writeStartElement(NUMERO_ENDOSO);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getChrEndoso()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getChrEndoso()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getChrEndoso()));
                 hd.writeEndElement();
                 hd.writeStartElement(DESCRIPCION);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getChrDescEndoso()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getChrDescEndoso()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getChrDescEndoso()));
                 hd.writeEndElement();
                 hd.writeStartElement(FECHATRABAJO);
                 if (endososValueObject.getDteTrabajo() != null) {
-                    hd.writeCharacters(
-                        UtilServiceDate.formatDate(endososValueObject.getDteTrabajo()).toCharArray(), 0,
-                        UtilServiceDate.formatDate(endososValueObject.getDteTrabajo()).length());
+                    hd.writeCharacters(UtilServiceDate.formatDate(endososValueObject.getDteTrabajo()));
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, "".length());
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeStartElement(FECHADESDE);
                 if (endososValueObject.getDteDesde() != null) {
-                    hd.writeCharacters(UtilServiceDate.formatDate(endososValueObject.getDteDesde()).toCharArray(),
-                        0, UtilServiceDate.formatDate(endososValueObject.getDteDesde()).length());
+                    hd.writeCharacters(UtilServiceDate.formatDate(endososValueObject.getDteDesde()));
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, "".length());
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeStartElement(FECHAHASTA);
                 if (endososValueObject.getDteHasta() != null) {
-                    hd.writeCharacters(UtilServiceDate.formatDate(endososValueObject.getDteHasta()).toCharArray(),
-                        0, UtilServiceDate.formatDate(endososValueObject.getDteHasta()).length());
+                    hd.writeCharacters(UtilServiceDate.formatDate(endososValueObject.getDteHasta()));
                 } else {
-                    hd.writeCharacters("".toCharArray(), 0, "".length());
+                    hd.writeCharacters("");
                 }
                 hd.writeEndElement();
                 hd.writeStartElement(TARIFA);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getChrTarifa()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getChrTarifa()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getChrTarifa()));
                 hd.writeEndElement();
                 hd.writeStartElement(PRIMANETA);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmPrimaNeta()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getDcmPrimaNeta()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmPrimaNeta()));
                 hd.writeEndElement();
                 hd.writeStartElement(RECARGO);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmRecargo()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getDcmRecargo()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmRecargo()));
                 hd.writeEndElement();
                 hd.writeStartElement(DERECHO);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmDerecho()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getDcmDerecho()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmDerecho()));
                 hd.writeEndElement();
                 hd.writeStartElement(IMPUESTO);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmImpuesto()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getDcmImpuesto()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmImpuesto()));
                 hd.writeEndElement();
                 hd.writeStartElement(PRIMATOTAL);
-                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmPrimaTotal()).toCharArray(), 0,
-                    assingSafeSring(endososValueObject.getDcmPrimaTotal()).length());
+                hd.writeCharacters(assingSafeSring(endososValueObject.getDcmPrimaTotal()));
                 hd.writeEndElement();
 
                 addCoberturas(respEmmDto, hd, endososValueObject.getChrEndoso());
@@ -849,32 +722,25 @@ public class ArmaXmlPolizas {
         hd.writeStartElement(COBERTURA);
 
         hd.writeStartElement(NUMEROPOLIZA);
-        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrPoliza()).toCharArray(), 0,
-            assingSafeSring(coberturasValueObject.getChrPoliza()).length());
+        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrPoliza()));
         hd.writeEndElement();
         hd.writeStartElement(NUMERO_ENDOSO);
-        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrEndoso()).toCharArray(), 0,
-            assingSafeSring(coberturasValueObject.getChrEndoso()).length());
+        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrEndoso()));
         hd.writeEndElement();
         hd.writeStartElement(DESCRIPCION);
-        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrCobertura()).toCharArray(), 0,
-            assingSafeSring(coberturasValueObject.getChrCobertura()).length());
+        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrCobertura()));
         hd.writeEndElement();
         hd.writeStartElement(SUMA);
-        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrSuma()).trim().toCharArray(), 0,
-            assingSafeSring(coberturasValueObject.getChrSuma()).trim().length());
+        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrSuma()).trim());
         hd.writeEndElement();
         hd.writeStartElement(DEDUCIBLE);
-        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrDed()).toCharArray(), 0,
-            assingSafeSring(coberturasValueObject.getChrDed()).length());
+        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrDed()));
         hd.writeEndElement();
         hd.writeStartElement(DEDUCIBLE_CALCULADO);
-        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrDedCalc()).toCharArray(), 0,
-            assingSafeSring(coberturasValueObject.getChrDedCalc()).length());
+        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrDedCalc()));
         hd.writeEndElement();
         hd.writeStartElement(PRIMATOTAL);
-        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrPrima()).trim().toCharArray(), 0,
-            assingSafeSring(coberturasValueObject.getChrPrima()).trim().length());
+        hd.writeCharacters(assingSafeSring(coberturasValueObject.getChrPrima()).trim());
         hd.writeEndElement();
 
         hd.writeEndElement(); // COBERTURA
@@ -917,94 +783,77 @@ public class ArmaXmlPolizas {
         hd.writeStartElement(RECIBO);
 
         hd.writeStartElement(NUMEROPOLIZA);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrPoliza()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getChrPoliza()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrPoliza()));
         hd.writeEndElement();
         hd.writeStartElement(NUMERO_ENDOSO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrEndoso()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getChrEndoso()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrEndoso()));
         hd.writeEndElement();
         hd.writeStartElement(FECHATRABAJO);
         if (recibosValueObject.getDteTrabajo() != null) {
-            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteTrabajo()).toCharArray(), 0,
-                UtilServiceDate.formatDate(recibosValueObject.getDteTrabajo()).length());
+            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteTrabajo()));
         } else {
-            hd.writeCharacters("".toCharArray(), 0, "".length());
+            hd.writeCharacters("");
         }
         hd.writeEndElement();
         hd.writeStartElement(FECHADESDE);
         if (recibosValueObject.getDteDesde() != null) {
-            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteDesde()).toCharArray(), 0,
-                UtilServiceDate.formatDate(recibosValueObject.getDteDesde()).length());
+            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteDesde()));
         } else {
-            hd.writeCharacters("".toCharArray(), 0, "".length());
+            hd.writeCharacters("");
         }
         hd.writeEndElement();
         hd.writeStartElement(FECHAHASTA);
         if (recibosValueObject.getDteHasta() != null) {
-            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteHasta()).toCharArray(), 0,
-                UtilServiceDate.formatDate(recibosValueObject.getDteHasta()).length());
+            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteHasta()));
         } else {
-            hd.writeCharacters("".toCharArray(), 0, "".length());
+            hd.writeCharacters("");
         }
         hd.writeEndElement();
         hd.writeStartElement(COMPROBANTE_PAGO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrComprobPago()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getChrComprobPago()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrComprobPago()));
         hd.writeEndElement();
         // JLSM
         hd.writeStartElement(MED_PAG);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrMedPag()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getChrMedPag()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrMedPag()));
         hd.writeEndElement();
         // JLSM
         hd.writeStartElement(FECHA_PAGO);
         if (recibosValueObject.getDtePago() != null) {
-            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDtePago()).toCharArray(), 0,
-                UtilServiceDate.formatDate(recibosValueObject.getDtePago()).length());
+            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDtePago()));
         } else {
-            hd.writeCharacters("".toCharArray(), 0, "".length());
+            hd.writeCharacters("");
         }
         hd.writeEndElement();
         hd.writeStartElement(FECHA_IMPRESION);
         if (recibosValueObject.getDteImpresion() != null) {
-            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteImpresion()).toCharArray(),
-                0, UtilServiceDate.formatDate(recibosValueObject.getDteImpresion()).length());
+            hd.writeCharacters(UtilServiceDate.formatDate(recibosValueObject.getDteImpresion()));
         } else {
-            hd.writeCharacters("".toCharArray(), 0, "".length());
+            hd.writeCharacters("");
         }
         hd.writeEndElement();
         hd.writeStartElement(SERIE_RECIBO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getIntSerieRecibo()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getIntSerieRecibo()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getIntSerieRecibo()));
         hd.writeEndElement();
         hd.writeStartElement(ESTADO_RECIBO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrEdoRecibo()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getChrEdoRecibo()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrEdoRecibo()));
         hd.writeEndElement();
         hd.writeStartElement(FOLIO_RECIBO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrFolio()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getChrFolio()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getChrFolio()));
         hd.writeEndElement();
         hd.writeStartElement(PRIMANETA);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmPrimaNeta()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getDcmPrimaNeta()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmPrimaNeta()));
         hd.writeEndElement();
         hd.writeStartElement(RECARGO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmRecargo()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getDcmRecargo()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmRecargo()));
         hd.writeEndElement();
         hd.writeStartElement(DERECHO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmDerecho()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getDcmDerecho()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmDerecho()));
         hd.writeEndElement();
         hd.writeStartElement(IMPUESTO);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmImpuesto()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getDcmImpuesto()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmImpuesto()));
         hd.writeEndElement();
         hd.writeStartElement(PRIMATOTAL);
-        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmPrimaTotal()).toCharArray(), 0,
-            assingSafeSring(recibosValueObject.getDcmPrimaTotal()).length());
+        hd.writeCharacters(assingSafeSring(recibosValueObject.getDcmPrimaTotal()));
         hd.writeEndElement();
 
         hd.writeEndElement(); // RECIBO
@@ -1068,24 +917,19 @@ public class ArmaXmlPolizas {
 
         hd.writeStartElement(MOVIMIENTO);
         hd.writeStartElement(NUMEROPOLIZA);
-        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrPoliza()).toCharArray(), 0,
-            assingSafeSring(endososBValueObject.getChrPoliza()).length());
+        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrPoliza()));
         hd.writeEndElement();
         hd.writeStartElement(NUMERO_ENDOSO);
-        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrEndoso()).toCharArray(), 0,
-            assingSafeSring(endososBValueObject.getChrEndoso()).length());
+        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrEndoso()));
         hd.writeEndElement();
         hd.writeStartElement(DESCRIPCION);
-        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrDescEndoso()).toCharArray(), 0,
-            assingSafeSring(endososBValueObject.getChrDescEndoso()).length());
+        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrDescEndoso()));
         hd.writeEndElement();
         hd.writeStartElement(DATO_ANTERIOR);
-        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrDatoAnterior()).toCharArray(), 0,
-            assingSafeSring(endososBValueObject.getChrDatoAnterior()).length());
+        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrDatoAnterior()));
         hd.writeEndElement();
         hd.writeStartElement(DATO_ACTUAL);
-        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrDatoActual()).toCharArray(), 0,
-            assingSafeSring(endososBValueObject.getChrDatoActual()).length());
+        hd.writeCharacters(assingSafeSring(endososBValueObject.getChrDatoActual()));
         hd.writeEndElement();
         hd.writeEndElement(); // MOVIMIENTO
     }
