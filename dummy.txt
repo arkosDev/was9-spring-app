@@ -9,8 +9,8 @@ private PaqEmiDto getValueObjectFromForm(PaqEmisionReq form) throws ProcessingEx
                 .sumRC(form.getSumRC())
                 .sumRCPE(form.getSumRCPE())
                 .sumGM(form.getSumGM())
-                .sumEE(0)
-                .sumAD(0)
+                .sumEE(form.getSumEE())
+                .sumAD(form.getSumAD())
                 .sumACC(form.getSumACC())
                 .sumAuSus(form.getSumAuSus())
                 .sumProl(form.getSumProl())
@@ -22,6 +22,7 @@ private PaqEmiDto getValueObjectFromForm(PaqEmisionReq form) throws ProcessingEx
                 .servAsist(Boolean.TRUE.equals(form.getServAsist()))
                 .sumRCVia(Boolean.TRUE.equals(form.getBsumRCVia()))
                 .rCExt(Boolean.TRUE.equals(form.getRCExt()))
+                .sigConauto(Boolean.TRUE.equals(form.getSigConauto()))
                 .build();
     } catch (Exception ex) {
         String errorMsg = "Error in PaquetesEmisionAction.getValueObjectFromForm(): " + ex;
