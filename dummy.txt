@@ -1,10 +1,22 @@
-private boolean validaNombreNoRepetido(final PaqEmiDto paqEmiDto) {
-    try {
-        final List<PaqEmiDto> paquz = paqRepo.findNomPaq(paqEmiDto.getNomPaq());
-        return paquz.stream()
-                .noneMatch(paqDto -> !paqEmiDto.getIdPaqEmi().equals(paqDto.getIdPaqEmi()));
-    } catch (Exception ex) {
-        logger.error(ex.getMessage());
-        return false;
-    }
-} 
+curl -X POST "https://zdnsma208e.ppprivmgmt.intraxa:20082/EmisionPolizasWS/services/SolicitudPolizasService" \
+  -H "Content-Type: text/xml; charset=UTF-8" \
+  -H "SOAPAction: \"\"" \
+  -H "Authorization: Basic bGltb246ZHVtbXkwMA==" \
+  --data-binary @- <<'EOF'
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wsf="http://wsfacade.emisionpolizas.autos.seguros.mx.ia3.ing.com">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <wsf:consultaAutorizacionPago soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+      <solicitudID xsi:type="xsd:long">5646465</solicitudID>
+    </wsf:consultaAutorizacionPago>
+  </soapenv:Body>
+</soapenv:Envelope>
+EOF
+
+curl -X POST "https://zdnsma208e.ppprivmgmt.intraxa:20082/EmisionPolizasWS/services/SolicitudPolizasService" ^
+  -H "Content-Type: text/xml; charset=UTF-8" ^
+  -H "SOAPAction: \"\"" ^
+  -H "Authorization: Basic bGltb246ZHVtbXkwMA==" ^
+  --data-binary @body.xml
+
