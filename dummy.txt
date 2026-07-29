@@ -1,31 +1,10 @@
-private PaqEmiDto getValueObjectFromForm(PaqEmisionReq form) throws ProcessingException {
+private boolean validaNombreNoRepetido(final PaqEmiDto paqEmiDto) {
     try {
-        return PaqEmiDto.builder()
-                .nomPaq(form.getNomPaq())
-                .idSubRamo(form.getSubRamFk())
-                .dedDM(form.getDedDM())
-                .dedRB(form.getDedRB())
-                .dedRC(form.getDedRC())
-                .sumRC(form.getSumRC())
-                .sumRCPE(form.getSumRCPE())
-                .sumGM(form.getSumGM())
-                .sumEE(form.getSumEE())
-                .sumAD(form.getSumAD())
-                .sumACC(form.getSumACC())
-                .sumAuSus(form.getSumAuSus())
-                .sumProl(form.getSumProl())
-                .valPrix(Boolean.TRUE.equals(form.getValPrix()))
-                .extRC(Boolean.TRUE.equals(form.getExtRC()))
-                .amplRC(Boolean.TRUE.equals(form.getAmplRC()))
-                .dobRem(Boolean.TRUE.equals(form.getDobleRem()))
-                .dedValCom(Boolean.TRUE.equals(form.getDedValCom()))
-                .servAsist(Boolean.TRUE.equals(form.getServAsist()))
-                .sumRCVia(Boolean.TRUE.equals(form.getBsumRCVia()))
-                .rCExt(Boolean.TRUE.equals(form.getRCExt()))
-                .sigConauto(Boolean.TRUE.equals(form.getSigConauto()))
-                .build();
+        final List<PaqEmiDto> paquz = paqRepo.findNomPaq(paqEmiDto.getNomPaq());
+        return paquz.stream()
+                .noneMatch(paqDto -> !paqEmiDto.getIdPaqEmi().equals(paqDto.getIdPaqEmi()));
     } catch (Exception ex) {
-        String errorMsg = "Error in PaquetesEmisionAction.getValueObjectFromForm(): " + ex;
-        throw new ProcessingException(errorMsg, ex);
+        logger.error(ex.getMessage());
+        return false;
     }
-}
+} 
