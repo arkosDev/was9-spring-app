@@ -1,67 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                  xmlns:paq="http://axa.com.mx/EmisionPolizasWS/paqemi">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <paq:crearPaqueteEmision>
-         <paqEmisionReq>
-            <idSolicitante>SOL-2026-00145</idSolicitante>
-            <searchNombrePaquete>PAQUETE_AUTO_PLUS</searchNombrePaquete>
-            <idPaquetesEmision>987654</idPaquetesEmision>
-            <nombrePaquete>Paquete Auto Plus 2026</nombrePaquete>
-            <dedDM>5000</dedDM>
-            <dedRB>3000</dedRB>
-            <dedRC>10000</dedRC>
-            <sumaRC>3000000</sumaRC>
-            <sumaRCPE>500000</sumaRCPE>
-            <sumaGM>200000</sumaGM>
-            <sumaEE>150000</sumaEE>
-            <sumaAD>100000</sumaAD>
-            <sumaACC>50000</sumaACC>
-            <sumaAuSus>75000</sumaAuSus>
-            <sumaProl>25000</sumaProl>
-            <prix>true</prix>
-            <extRC>true</extRC>
-            <amplRC>false</amplRC>
-            <dobleRem>false</dobleRem>
-            <rCExtranjero>true</rCExtranjero>
-            <dedValCom>true</dedValCom>
-            <dedValConvenido>false</dedValConvenido>
-            <servicioAsistencia>true</servicioAsistencia>
-            <sumaRCVia>true</sumaRCVia>
-            <intSumaRCVia>1500000</intSumaRCVia>
-            <idUsuarioModificador>USR_MOD_7788</idUsuarioModificador>
-            <Modificacion>2026-07-30T15:30:00</Modificacion>
-            <dblSumaAD>125000.50</dblSumaAD>
-            <dblSumaEE>180000.75</dblSumaEE>
-            <editType>NEW</editType>
-            <subRamo>15</subRamo>
-            <habilitaDedDM>true</habilitaDedDM>
-            <habilitaDedRB>true</habilitaDedRB>
-            <habilitaDedRC>true</habilitaDedRC>
-            <habilitaSumaRC>true</habilitaSumaRC>
-            <habilitaSumaRCPE>true</habilitaSumaRCPE>
-            <habilitaSumaGM>true</habilitaSumaGM>
-            <habilitaSumaEE>true</habilitaSumaEE>
-            <habilitaSumaAD>true</habilitaSumaAD>
-            <habilitaSumaACC>false</habilitaSumaACC>
-            <habilitaSumaAuSus>true</habilitaSumaAuSus>
-            <habilitaSumaProl>false</habilitaSumaProl>
-            <habilitaPrix>true</habilitaPrix>
-            <habilitaExtRC>true</habilitaExtRC>
-            <habilitaAmplRC>false</habilitaAmplRC>
-            <habilitaRCExtranjero>true</habilitaRCExtranjero>
-            <habilitaDobleRem>false</habilitaDobleRem>
-            <habilitaDedValCom>true</habilitaDedValCom>
-            <habilitaDedValConvenido>false</habilitaDedValConvenido>
-            <habilitaSevicioAsistencia>true</habilitaSevicioAsistencia>
-            <habilitaSumaRCVia>true</habilitaSumaRCVia>
-            <habilitaSigueConAuto>false</habilitaSigueConAuto>
-            <sigueConAuto>false</sigueConAuto>
-            <nombre>Juan Pérez López</nombre>
-            <nombreProducto>Seguro Auto Premium</nombreProducto>
-            <valorComercial>true</valorComercial>
-         </paqEmisionReq>
-      </paq:crearPaqueteEmision>
-   </soapenv:Body>
-</soapenv:Envelope>
+git log -G"palabra" --source --all -- "*.java"
+
+git log -S"palabra" --source --all -- "*.java"
+
+git log -p -S"palabra" --all -- "*.java"
+
+git rev-list --all | xargs git grep "palabra" -- "*.java"
+
