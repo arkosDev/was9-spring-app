@@ -8,4 +8,7 @@
 openssl s_client -connect wso2is.example.com:9443 -showcerts < NUL 2> NUL | openssl x509 -outform PEM -out wso2is.crt
 
 
+keytool -exportcert -alias wso2carbon -keystore "%WSO2IS_HOME%\repository\resources\security\wso2carbon.p12" -storepass wso2carbon -storetype PKCS12 -file wso2is.crt
+
+keytool -importcert -alias wso2is -file wso2is.crt -keystore "%WAS_HOME%\java\8.0\jre\lib\security\cacerts" -storepass changeit
 
