@@ -1,8 +1,7 @@
-git log -G"palabra" --source --all -- "*.java"
+-Dcom.ibm.ssl.trustManager=IBMX509
+-Dcom.ibm.jsse2.overrideDefaultTLS=true
+-Djavax.net.debug=ssl
 
-git log -S"palabra" --source --all -- "*.java"
 
-git log -p -S"palabra" --all -- "*.java"
-
-git rev-list --all | xargs git grep "palabra" -- "*.java"
+-Dcom.ibm.jsse2.overrideDefaultTLS=true
 
