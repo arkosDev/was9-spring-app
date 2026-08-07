@@ -5,3 +5,7 @@
 
 -Dcom.ibm.jsse2.overrideDefaultTLS=true
 
+openssl s_client -connect wso2is.example.com:9443 -showcerts < NUL 2> NUL | openssl x509 -outform PEM -out wso2is.crt
+
+
+
