@@ -1,7 +1,8 @@
+C:\jdk_IBM\jre\bin\keytool -selfcert -alias wso2carbon -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storepass wso2carbon -storetype PKCS12 -validity 3650
 
+C:\jdk_IBM\jre\bin\keytool -exportcert -alias wso2carbon -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storepass wso2carbon -storetype PKCS12 -file wso2is.crt
 
+C:\jdk_IBM\jre\bin\keytool -delete -alias wso2carbon -keystore "C:\jdk_IBM\jre\lib\security\cacerts" -storepass changeit
 
-keytool -exportcert -alias wso2carbon -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storepass wso2carbon -storetype PKCS12 -file wso2is.crt
-
-C:\jdk_IBM\jre\bin\keytool -importcert -alias wso2carbon -file wso2is.crt -keystore "C:\jdk_IBM\jre\lib\security\cacerts" -storepass changeit
+C:\jdk_IBM\jre\bin\keytool -importcert -alias wso2carbon -file wso2is.crt -keystore "C:\jdk_IBM\jre\lib\security\cacerts" -storepass changeit -noprompt
 
