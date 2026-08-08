@@ -8,3 +8,7 @@ C:\jdk_IBM\jre\bin\keytool -importcert -alias wso2carbon -file wso2is.crt -keyst
 
 C:\jdk_IBM\jre\bin\keytool -genkeypair -alias wso2carbon -keyalg RSA -keysize 2048 -validity 3650 -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storetype PKCS12 -storepass wso2carbon -dname "CN=localhost, OU=WSO2, O=WSO2, L=Santa Clara, ST=CA, C=US" -ext BasicConstraints:critical=ca:true
 
+C:\jdk_IBM\jre\bin\keytool -delete -alias wso2carbon -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storepass wso2carbon -storetype PKCS12
+
+
+
