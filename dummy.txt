@@ -1,17 +1,25 @@
-C:\jdk_IBM\jre\bin\keytool -delete -alias wso2carbon -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storepass wso2carbon -storetype PKCS12
+package com.iarcos.soapservice.controller;
 
-C:\jdk_IBM\jre\bin\keytool -genkeypair -alias wso2carbon -keyalg RSA -keysize 2048 -validity 3650 -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storetype PKCS12 -storepass wso2carbon -dname "CN=localhost, OU=WSO2, O=WSO2, L=Santa Clara, ST=CA, C=US" -ext BasicConstraints:critical=ca:true
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-C:\jdk_IBM\jre\bin\keytool -exportcert -alias wso2carbon -keystore "C:\wso2is\repository\resources\security\wso2carbon.p12" -storepass wso2carbon -storetype PKCS12 -file wso2is.crt
+import java.io.IOException;
 
-C:\jdk_IBM\jre\bin\keytool -delete -alias wso2carbon -keystore "C:\wso2is\repository\resources\security\client-truststore.p12" -storepass wso2carbon -storetype PKCS12
+@RestController
+public class PdfController {
 
-C:\jdk_IBM\jre\bin\keytool -importcert -alias wso2carbon -file wso2is.crt -keystore "C:\wso2is\repository\resources\security\client-truststore.p12" -storepass wso2carbon -storetype PKCS12 -noprompt
+    @GetMapping("/descargas/manual.pdf")
+    public ResponseEntity<Resource> descargarPdf() throws IOException {
+        Resource resource = new ClassPathResource("pdf/manual.pdf");
 
-C:\jdk_IBM\jre\bin\keytool -delete -alias wso2carbon -keystore "C:\jdk_IBM\jre\lib\security\cacerts" -storepass changeit
-
-C:\jdk_IBM\jre\bin\keytool -importcert -alias wso2carbon -file wso2is.crt -keystore "C:\jdk_IBM\jre\lib\security\cacerts" -storepass changeit -noprompt
-
-Security → SSL certificate and key management → Key stores and certificates → NodeDefaultTrustStore → Signer certificates → Add
-
-
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"manual.pdf\"")
+                .body(resource);
+    }
+}
