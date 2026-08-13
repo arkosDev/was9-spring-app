@@ -1,25 +1,9 @@
-package com.iarcos.soapservice.controller;
+De las fotos que mandaste veo que es WSO2 IS 7.x (los logs dicen org.wso2.carbon.identity).
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+En la consola de WSO2 IS 7.x:
 
-import java.io.IOException;
+Console → Applications → tu app → Protocol → OAuth2/OpenID Connect
 
-@RestController
-public class PdfController {
+Ahí en Allowed grant types asegúrate de tener marcado Implicit además de Authorization Code.
 
-    @GetMapping("/descargas/manual.pdf")
-    public ResponseEntity<Resource> descargarPdf() throws IOException {
-        Resource resource = new ClassPathResource("pdf/manual.pdf");
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"manual.pdf\"")
-                .body(resource);
-    }
-}
+Y en User Attributes, agrega el claim member_of y marca la opción Include in ID token.
