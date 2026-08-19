@@ -1,9 +1,51 @@
-De las fotos que mandaste veo que es WSO2 IS 7.x (los logs dicen org.wso2.carbon.identity).
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-En la consola de WSO2 IS 7.x:
+    <groupId>com.ejemplo</groupId>
+    <artifactId>mi-app</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
 
-Console → Applications → tu app → Protocol → OAuth2/OpenID Connect
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-Ahí en Allowed grant types asegúrate de tener marcado Implicit además de Authorization Code.
+    <build>
+        <finalName>mi-app</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.ejemplo.App</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
 
-Y en User Attributes, agrega el claim member_of y marca la opción Include in ID token.
+
+package com.ejemplo;
+
+public class App {
+
+    public static void main(String[] args) {
+        System.out.println("Hola, la app arrancó correctamente.");
+
+        if (args.length > 0) {
+            System.out.println("Argumentos recibidos:");
+            for (String arg : args) {
+                System.out.println(" - " + arg);
+            }
+        }
+    }
+}
