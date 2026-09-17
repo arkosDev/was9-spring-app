@@ -1,4 +1,20 @@
-curl -X POST "https://zdnsma208e.ppprivmgmt.intraxa:20082/EmisoresAdmWebColWS/services/DatosPoliza" \
-  -H "Content-Type: text/xml; charset=UTF-8" \
-  -H "SOA bGltb246ZHVtbXkwMA==" \
-  --data-binary $'<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:dat="http://axa.com.mx/EmisoresAdmWebColWS/serv">\n  <soapenv:Header/>\n  <soapenv:Body>\n    <dat:createCSV>\n      <idSolicitud>228736524586039</idSolicitud>\n    </dat:createCSV>\n  </soapenv:Body>\n</soapenv:Envelope>' -i
+try (MockedStatic<MessageContext> mocked = Mockito.mockStatic(MessageContext.class)) {
+    MessageContext mcMock = Mockito.mock(MessageContext.class);
+    
+    Mockito.when(mcMock.getUsername()).thenReturn("MXS00101736A");
+    Mockito.when(mcMock.getPassword()).thenReturn("dummy00");
+    
+    // ← ESTO ES LO QUE FALTA
+    HttpServlet servletMock = Mockito.mock(HttpServlet.class);
+    ServletContext servletContextMock = Mockito.mock(ServletContext.class);
+    
+    Mockito.when(mcMock.getProperty(HTTPConstants.MC_HTTP_SERVLET))
+           .thenReturn(servletMock);
+    Mockito.when(servletMock.getServletContext()).thenReturn(servletContextMock);
+    Mockito.when(servletContextMock.getRealPath(anyString()))
+           .thenReturn("src/test/resources/xsd/tu-esquema.xsd"); // ajusta la ruta
+    
+    mocked.when(MessageContext::getCurrentContext).thenReturn(mcMock);
+
+    facade.createSolicitudPolizasInmediata(xmlContent);
+}
