@@ -1,20 +1,62 @@
-try (MockedStatic<MessageContext> mocked = Mockito.mockStatic(MessageContext.class)) {
-    MessageContext mcMock = Mockito.mock(MessageContext.class);
-    
-    Mockito.when(mcMock.getUsername()).thenReturn("MXS00101736A");
-    Mockito.when(mcMock.getPassword()).thenReturn("dummy00");
-    
-    // ← ESTO ES LO QUE FALTA
-    HttpServlet servletMock = Mockito.mock(HttpServlet.class);
-    ServletContext servletContextMock = Mockito.mock(ServletContext.class);
-    
-    Mockito.when(mcMock.getProperty(HTTPConstants.MC_HTTP_SERVLET))
-           .thenReturn(servletMock);
-    Mockito.when(servletMock.getServletContext()).thenReturn(servletContextMock);
-    Mockito.when(servletContextMock.getRealPath(anyString()))
-           .thenReturn("src/test/resources/xsd/tu-esquema.xsd"); // ajusta la ruta
-    
-    mocked.when(MessageContext::getCurrentContext).thenReturn(mcMock);
 
-    facade.createSolicitudPolizasInmediata(xmlContent);
+
+@Override
+public String searchSchema(String xml, String attributeName)
+        throws IOException, SAXException {
+
+    String schemaURI = null;
+
+    XMLInputFactory factory = XMLInputFactory.newInstance();
+    // Evitar XXE: sin DTD, sin entidades externas
+    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    factory.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
+
+    XMLStreamReader reader = null;
+    try {
+        reader = factory.createXMLStreamReader(new StringReader(xml));
+        while (reader.hasNext()) {
+            int event = reader.next();
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                // Primer START_ELEMENT = root. Tomo el atributo y corto.
+                schemaURI = buscarAtributo(reader, attributeName);
+                break;
+            }
+        }
+    } catch (XMLStreamException e) {
+        throw new SAXException("Error al convertir el Xml (XMLStreamException): " + e.getMessage(), e);
+    } finally {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (XMLStreamException e) {
+                // ignorar al cerrar
+            }
+        }
+    }
+
+    if (null == schemaURI) {
+        throw new SAXException("El atributo: '" + attributeName + "' no se encuentra en el XML de entrada: " + xml);
+    }
+    return schemaURI;
+}
+
+/**
+ * Recorre los atributos del elemento actual comparando por localName,
+ * ignorando el namespace y el prefijo.
+ */
+private String buscarAtributo(XMLStreamReader reader, String attributeName) {
+    String buscado = attributeName;
+    int sep = buscado.indexOf(':');
+    if (sep >= 0) {
+        buscado = buscado.substring(sep + 1);
+    }
+    for (int i = 0; i < reader.getAttributeCount(); i++) {
+        if (buscado.equals(reader.getAttributeLocalName(i))) {
+            String valor = reader.getAttributeValue(i);
+            if (valor != null && !valor.trim().isEmpty()) {
+                return valor.trim();
+            }
+        }
+    }
+    return null;
 }
