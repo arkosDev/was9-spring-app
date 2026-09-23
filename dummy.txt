@@ -1,62 +1,52 @@
+private static ByteArrayOutputStream generaPDF(String repository) throws Exception {
 
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    HttpsURLConnection conn = null;
 
-@Override
-public String searchSchema(String xml, String attributeName)
-        throws IOException, SAXException {
-
-    String schemaURI = null;
-
-    XMLInputFactory factory = XMLInputFactory.newInstance();
-    // Evitar XXE: sin DTD, sin entidades externas
-    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-    factory.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
-
-    XMLStreamReader reader = null;
     try {
-        reader = factory.createXMLStreamReader(new StringReader(xml));
-        while (reader.hasNext()) {
-            int event = reader.next();
-            if (event == XMLStreamConstants.START_ELEMENT) {
-                // Primer START_ELEMENT = root. Tomo el atributo y corto.
-                schemaURI = buscarAtributo(reader, attributeName);
-                break;
+        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(null, null, null);
+        final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+        URL url = new URL(repository);
+        conn = (HttpsURLConnection) url.openConnection();
+        conn.setSSLSocketFactory(sslSocketFactory);
+        conn.setDoOutput(true);
+        conn.setRequestMethod("GET");
+        conn.connect();
+
+        int responseCode = conn.getResponseCode();
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try (InputStream inputStream = conn.getInputStream()) {
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesRead);
+                }
             }
+        } else {
+            try (InputStream errorStream = conn.getErrorStream()) {
+                if (errorStream != null) {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            logger.info(line);
+                        }
+                    }
+                }
+            }
+            logger.error("Response code: " + responseCode);
         }
-    } catch (XMLStreamException e) {
-        throw new SAXException("Error al convertir el Xml (XMLStreamException): " + e.getMessage(), e);
+
+    } catch (Exception e) {
+        logger.error("Error conexion repositorio PolizaPDF: " + e);
+        throw e;
     } finally {
-        if (reader != null) {
-            try {
-                reader.close();
-            } catch (XMLStreamException e) {
-                // ignorar al cerrar
-            }
+        if (conn != null) {
+            conn.disconnect();
         }
     }
 
-    if (null == schemaURI) {
-        throw new SAXException("El atributo: '" + attributeName + "' no se encuentra en el XML de entrada: " + xml);
-    }
-    return schemaURI;
-}
-
-/**
- * Recorre los atributos del elemento actual comparando por localName,
- * ignorando el namespace y el prefijo.
- */
-private String buscarAtributo(XMLStreamReader reader, String attributeName) {
-    String buscado = attributeName;
-    int sep = buscado.indexOf(':');
-    if (sep >= 0) {
-        buscado = buscado.substring(sep + 1);
-    }
-    for (int i = 0; i < reader.getAttributeCount(); i++) {
-        if (buscado.equals(reader.getAttributeLocalName(i))) {
-            String valor = reader.getAttributeValue(i);
-            if (valor != null && !valor.trim().isEmpty()) {
-                return valor.trim();
-            }
-        }
-    }
-    return null;
+    return baos;
 }
