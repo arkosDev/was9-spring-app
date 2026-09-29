@@ -1,52 +1,195 @@
-private static ByteArrayOutputStream generaPDF(String repository) throws Exception {
+public class DatPolCRowMapper implements RowMapper<DatPolizaCDto> {
 
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    HttpsURLConnection conn = null;
+    @Override
+    public DatPolizaCDto mapRow(@NonNull ResultSet rs, int rowNum) throws SQLException {
 
-    try {
-        final SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-        sslContext.init(null, null, null);
-        final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+        final DatPolizaCDto dto = DatPolizaCDto.builder()
+                .idDaPol(882015514960617578L)
+                .idSolPol(6247084962348334215L)
+                .idProd(5414449814703127889L)
+                .estatus(2)
+                .fecEst(null) // 17/12/24 12:50:34.000000000
+                .obsvz(null)
+                .tipPol("COL")
+                .movto("POL")
+                .noPol(null)
+                .inciso(0)
+                .fDesde(null) // 31/07/24
+                .fHasta(null) // 31/07/25
+                .tipPers(1)
+                .nomTit("RODRIGO PRUEBA")
+                .apPatTit("DURANPRUEBA")
+                .apMatTit("ESPINOPRUEBA")
+                .valRFC("COFG7009107X9")
+                .nomYO("NOMYO")
+                .apPatYO("PATYO")
+                .apMatYO("MATYO")
+                .tipPerYO(1)
+                .direccion("CDA MANUEL OROZCO 17")
+                .colonia("PRESIDENTES EJIDALES")
+                .descPob(null)
+                .cveEdo(8)
+                .cvePob(0)
+                .codPos(4470)
+                .telef("815554374260")
+                .benfPref("SCOTIABANK INVERLAT SA")
+                .cveBenf(1)
+                .contrato(null)
+                .sector("P")
+                .fPago("C")
+                .moneda("N")
+                .cveIVA(16.0f)
+                .tipNeg(0)
+                .subramo(2)
+                .tipVeh("01")
+                .polAnt(null)
+                .agente(350035)
+                .cesComis(0.0f)
+                .otrAgnt(null)
+                .repTel(null)
+                .afian(0)
+                .marca(42)
+                .valTip(7)
+                .clase(1)
+                .modelo(2020)
+                .porcVal(100.0f)
+                .valComer(false)
+                .valVeh(329500)
+                .descAuto(null)
+                .valRFV(null)
+                .serieVeh("ACBXSTREAM624062320")
+                .motor("123456789012345678901234567890")
+                .placas("PERMISO")
+                .dedDM(5)
+                .dedRB(10)
+                .dedRC(0)
+                .sumRC(1000)
+                .sumRCPE(3000)
+                .sumGM(40000)
+                .sumEE(0)
+                .sumACC(0)
+                .sumAD(0)
+                .sumAuSus(0)
+                .prix(false)
+                .tipCarga(null)
+                .dobRem(false)
+                .extRC(false)
+                .servAsist(true)
+                .amplRC(false)
+                .tonelaje(0.0f)
+                .valUso(0)
+                .servicio("A")
+                .sumProl(0)
+                .sumRCVia(false)
+                .ocupantes(0)
+                .servidora(0)
+                .pmaNeta(0.0f)
+                .tarifa("TM2017")
+                .edoPlacas(8)
+                .valSexo("M")
+                .valEdad(0)
+                .dedValCom(false)
+                .nomCHab("CONDNOM")
+                .apPatCHab("CONDPAT")
+                .apMatCHab("CONDMAT")
+                .cURPCHab("COFJ340317HDGIWG85")
+                .rFCCHab(null)
+                .ampCHab(false)
+                .sexoCHab("M")
+                .edadCHab(56)
+                .ocupacion(null)
+                .dirCHab(null)
+                .colCHab(null)
+                .poblCHab(null)
+                .cveEdoCHab(0)
+                .cvePobCHab(0)
+                .codPosCHab(0)
+                .pagTC(false)
+                .renAutTC(false)
+                .tipNegTC(0)
+                .nomTC(null)
+                .apPatTC(null)
+                .apMatTC(null)
+                .miemDes(0)
+                .cveBan1(0)
+                .tipTarj1(0)
+                .plaza1(0)
+                .sucursal1(0)
+                .noTarj1("0")
+                .noCta1("0")
+                .cveBanc2(0)
+                .tipTarj2(0)
+                .plaza2(0)
+                .sucursal2(0)
+                .noTarj2("0")
+                .noCta2("0")
+                .kmVehic(0)
+                .kmDiarios(0)
+                .garageCasa(false)
+                .estOfic(false)
+                .edoCivil("SOLTERO")
+                .nacTit("MEXICANA")
+                .fecConstTit(null) // 21/01/23
+                .entNaciTit(15)
+                .extrResTit("NO")
+                .tipPersBenfPref(2)
+                .sexoBenfPref("M")
+                .curpBenfPref(null)
+                .rfcBenfPref("EKU9003173C9")
+                .fecNaciBenfPref(null) // 16/05/95
+                .fecConstBenfPref(null) // 21/01/23
+                .nacBenfPref("MEXICANA")
+                .extrResBenfPref("NO")
+                .entNaciBenfPref(15)
+                .curpYO("DUER950516HMCRSD08")
+                .rfcYO("DUER950516")
+                .sexoYO("M")
+                .fecNacYO(null) // 16/05/95
+                .fecConstYO(null) // 21/01/23
+                .nacYO("MEXICANA")
+                .extrResYO("NO")
+                .entNacYO(15)
+                .fecNaciCHab(null) // 16/05/95
+                .nacCHab("MEXICANA")
+                .extrResCHab("NO")
+                .entNaciCHab(15)
+                .valCURP("AGER960312MMCRSD02")
+                .elector(null)
+                .derProrr("SI")
+                .serPol("IEA0")
+                .tipVig("A")
+                // Inicia KMPS
+                .descPorVol(0.0)
+                .porCoaseguro(0.0)
+                // termina KMPS
+                .pagAnioExp1("0")
+                .pagMesExp1("0")
+                .pagAut1(null)
+                .pagBatch1(null)
+                .pagTran1(null)
+                .pagRec1(null)
+                .pagImpt1(0.0)
+                .pagCodResp1(null)
+                .mensPag1(null)
+                .pagAnioExp2("0")
+                .pagMesExp2("0")
+                .pagAut2(null)
+                .pagBatch2(null)
+                .pagTran2(null)
+                .pagRec2(null)
+                .pagImpt2(0.0)
+                .pagCodResp2(null)
+                .mensPag2(null)
+                .sigAuto(false)
+                .idCurpTit(0)
+                .idRfcTit(0)
+                .idCurpYO(0)
+                .idRfcYO(0)
+                .idCurpBenPref(0)
+                .idRfcBenPref(0)
+                .idCurpCHab(0)
+                .build();
 
-        URL url = new URL(repository);
-        conn = (HttpsURLConnection) url.openConnection();
-        conn.setSSLSocketFactory(sslSocketFactory);
-        conn.setDoOutput(true);
-        conn.setRequestMethod("GET");
-        conn.connect();
-
-        int responseCode = conn.getResponseCode();
-
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            try (InputStream inputStream = conn.getInputStream()) {
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    baos.write(buffer, 0, bytesRead);
-                }
-            }
-        } else {
-            try (InputStream errorStream = conn.getErrorStream()) {
-                if (errorStream != null) {
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            logger.info(line);
-                        }
-                    }
-                }
-            }
-            logger.error("Response code: " + responseCode);
-        }
-
-    } catch (Exception e) {
-        logger.error("Error conexion repositorio PolizaPDF: " + e);
-        throw e;
-    } finally {
-        if (conn != null) {
-            conn.disconnect();
-        }
+        return dto;
     }
-
-    return baos;
 }
