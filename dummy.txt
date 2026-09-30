@@ -1,36 +1,61 @@
-@Override
+private static final Map<String, ValidaToken> SERVICIOS_VALIDATOKEN = new ConcurrentHashMap<>();
+
+    @Override
     public ValidaTokenResponse validaToken(String tokenClabe, SolicitanteDto datSolic, String nombre,
             String apPaterno, String apMaterno) {
 
         logger.info("***En ValidaTokenClient::validaToken");
 
+        if (datSolic == null) {
+            logger.warn("***En ValidaTokenClient::validaToken datSolic es null, no se invoca el servicio");
+            return new ValidaTokenResponse();
+        }
+
         try {
             final ParametroDto paramDto = paramServ.getParametroPorNombre(URL_VALIDATOKEN);
-            logger.info("***En ValidaTokenClient::validaToken url servicio " + paramDto.getValor());
+            final String urlServicio = paramDto.getValor();
+            logger.info("***En ValidaTokenClient::validaToken url servicio {}", urlServicio);
 
-            final URL urlWsdl = new URL(paramDto.getValor() + "?wsdl");
-
-            final String targetNs = ValidaTokenPortType.class.getAnnotation(WebService.class).targetNamespace();
-            final ValidaToken valTok = new ValidaToken(urlWsdl, new QName(targetNs, "ValTokenService"));
-            final ValidaTokenPortType port = valTok.getPort(ValidaTokenPortType.class);
-
-            final Map<String, Object> requestContext = ((BindingProvider) port).getRequestContext();
-            requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-                    "http://localhost:7575/services/pci/services/validaToken");
+            final URL urlWsdl = new URL(urlServicio + "?wsdl");
+            final ValidaToken servicio = SERVICIOS_VALIDATOKEN.computeIfAbsent(urlServicio,
+                    k -> crearServicio(urlWsdl));
+            final ValidaTokenPortType port = servicio.getPort(ValidaTokenPortType.class);
 
             final ValidaTokenRequest valTokReqType = new ValidaTokenRequest();
             valTokReqType.setAXAHeaderReq(PciUtil.getHeaderReqPci(datSolic.getSolId()));
             valTokReqType.setData(getDatosReqValidatoken(tokenClabe, nombre, apPaterno, apMaterno));
 
-            final ValidaTokenResponse valResp = port.validaToken(valTokReqType);
-            logger.info(valResp.toString());
+            if (logger.isDebugEnabled()) {
+                logger.debug(requestToXml(valTokReqType));
+            }
 
-            return valResp;
+            final Map<String, Object> requestContext = ((BindingProvider) port).getRequestContext();
+            requestContext.put(BindingProvider.USERNAME_PROPERTY, datSolic.getSolId());
+            requestContext.put(BindingProvider.PASSWORD_PROPERTY, datSolic.getContsen());
+            requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, urlServicio);
+
+            return port.validaToken(valTokReqType);
 
         } catch (MalformedURLException | ParametroExcept | NullPointerException expo) {
             logger.error("validaToken", expo);
-        } catch (WebServiceException expo) {
-            logger.error("validaToken - fallo de conexión con el servicio", expo);
         }
         return new ValidaTokenResponse();
+    }
+
+    private static ValidaToken crearServicio(URL urlWsdl) {
+        final String targetNs = ValidaTokenPortType.class.getAnnotation(WebService.class).targetNamespace();
+        return new ValidaToken(urlWsdl, new QName(targetNs, "ValTokenService"));
+    }
+
+    private static String requestToXml(ValidaTokenRequest request) {
+        try {
+            final Marshaller m = JAXBContext.newInstance(ValidaTokenRequest.class).createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            final StringWriter sw = new StringWriter();
+            m.marshal(request, sw);
+            return sw.toString();
+        } catch (JAXBException expo) {
+            logger.error("validaToken", expo);
+            return "";
+        }
     }
