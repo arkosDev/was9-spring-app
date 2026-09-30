@@ -10,8 +10,9 @@
 
             final URL urlWsdl = new URL(paramDto.getValor() + "?wsdl");
 
-            final ValidaToken valTok = new ValidaToken(urlWsdl);
-            final ValidaTokenPortType port = valTok.getValidaTokenPort();
+            final String targetNs = ValidaTokenPortType.class.getAnnotation(WebService.class).targetNamespace();
+            final ValidaToken valTok = new ValidaToken(urlWsdl, new QName(targetNs, "ValTokenService"));
+            final ValidaTokenPortType port = valTok.getPort(ValidaTokenPortType.class);
 
             final Map<String, Object> requestContext = ((BindingProvider) port).getRequestContext();
             requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
