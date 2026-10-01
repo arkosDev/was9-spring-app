@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+
+    <xs:simpleType name="FechaType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\d{2}/\d{2}/\d{4}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="Emision">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="SolicitudID" type="xs:string"/>
+                <xs:element name="Poliza" type="PolizaType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="PolizaType">
+        <xs:sequence>
+            <xs:element name="Generales" type="GeneralesType"/>
+            <xs:element name="Titular" type="TitularType"/>
+            <xs:element name="Vehiculo" type="VehiculoType"/>
+            <xs:element name="CondicionesEmision" type="CondicionesEmisionType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="GeneralesType">
+        <xs:sequence>
+            <xs:element name="Solicitud" type="xs:string"/>
+            <xs:element name="Consecutivo" type="xs:int"/>
+            <xs:element name="Numero-Poliza" type="xs:string"/>
+            <xs:element name="FormaPago" type="xs:string"/>
+            <xs:element name="FechaDesde" type="FechaType"/>
+            <xs:element name="FechaHasta" type="FechaType"/>
+            <xs:element name="Tarifa" type="xs:string"/>
+            <xs:element name="IndiceTarifa" type="xs:int"/>
+            <xs:element name="FechaTrabajo" type="FechaType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TitularType">
+        <xs:sequence>
+            <xs:element name="Nombre" type="xs:string"/>
+            <xs:element name="NumeroCliente" type="xs:string"/>
+            <xs:element name="RFC" type="xs:string"/>
+            <xs:element name="Sexo" type="xs:string"/>
+            <xs:element name="Edad" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="VehiculoType">
+        <xs:sequence>
+            <xs:element name="Descripcion" type="xs:string"/>
+            <xs:element name="Modelo" type="xs:int"/>
+            <xs:element name="Placas" type="xs:string"/>
+            <xs:element name="Motor" type="xs:string"/>
+            <xs:element name="Serie" type="xs:string"/>
+            <xs:element name="Valor" type="xs:decimal"/>
+            <xs:element name="EsValorComercial" type="xs:string"/>
+            <xs:element name="Uso" type="xs:string"/>
+            <xs:element name="Servicio" type="xs:string"/>
+            <xs:element name="Ocupantes" type="xs:int"/>
+            <xs:element name="Tonelaje" type="xs:decimal"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CondicionesEmisionType">
+        <xs:sequence>
+            <xs:element name="DescuentoPorNoSiniestro" type="xs:decimal"/>
+            <xs:element name="ExtensionRC" type="xs:string"/>
+            <xs:element name="AmpliarRC" type="xs:string"/>
+            <xs:element name="DobleRemolque" type="xs:string"/>
+            <xs:element name="RecibosSubsecuentes" type="xs:int"/>
+            <xs:element name="Importes-Recibos" type="ImportesRecibosType"/>
+            <xs:element name="Coberturas" type="CoberturasType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ImportesRecibosType">
+        <xs:sequence>
+            <xs:element name="DetalleImporte" type="DetalleImporteType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DetalleImporteType">
+        <xs:sequence>
+            <xs:element name="PrimaNeta" type="xs:decimal"/>
+            <xs:element name="CesionComision" type="xs:decimal"/>
+            <xs:element name="Recargos" type="xs:decimal"/>
+            <xs:element name="Derechos" type="xs:decimal"/>
+            <xs:element name="Impuesto" type="xs:decimal"/>
+            <xs:element name="PrimaTotal" type="xs:decimal"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CoberturasType">
+        <xs:sequence>
+            <xs:element name="Cobertura" type="CoberturaType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CoberturaType">
+        <xs:sequence>
+            <xs:element name="Nombre" type="xs:string"/>
+            <xs:element name="Deducible" type="xs:decimal"/>
+            <xs:element name="SumaAsegurada" type="xs:decimal"/>
+            <xs:element name="PrimaNeta" type="xs:decimal"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
