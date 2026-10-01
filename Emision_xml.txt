@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Emision xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="***">
+    <SolicitudID>7320793584857251894</SolicitudID>
+    <Poliza>
+        <PagoElectronico>
+            <RenovacionAutomatica>SI</RenovacionAutomatica>
+            <TipoNegocioTC>NORMAL</TipoNegocioTC>
+            <NombreTitular>Jose Luis</NombreTitular>
+            <PaternoTitular>Hernandez</PaternoTitular>
+            <MaternoTitular>Ramirez</MaternoTitular>
+            <MiembroDesde>2015</MiembroDesde>
+            <Tarjetas>
+                <Tarjeta>
+                    <Credito>
+                        <Numero>4111111111111A11</Numero>
+                        <ClaveBanco>12</ClaveBanco>
+                        <PagoInmediato>
+                            <AnioExpira>28</AnioExpira>
+                            <MesExpira>09</MesExpira>
+                            <Afiliacion>AF123456</Afiliacion>
+                            <NumeroAutorizacion>123456789012</NumeroAutorizacion>
+                        </PagoInmediato>
+                    </Credito>
+                </Tarjeta>
+            </Tarjetas>
+        </PagoElectronico>
+        <Generales>
+            <Solicitud>IEH0</Solicitud>
+            <Consecutivo>1</Consecutivo>
+            <Numero-Poliza>CO00002109</Numero-Poliza>
+            <FormaPago>CONTADO</FormaPago>
+            <FechaDesde>11/11/2021</FechaDesde>
+            <FechaHasta>11/11/2022</FechaHasta>
+            <Tarifa>TM2017</Tarifa>
+            <IndiceTarifa>700101</IndiceTarifa>
+            <FechaTrabajo>11/11/2021</FechaTrabajo>
+        </Generales>
+        <Titular>
+            <Nombre>prueba altius PATERNOTIT MATERNOTIT</Nombre>
+            <NumeroCliente></NumeroCliente>
+            <RFC></RFC>
+            <Sexo>MASCULINO</Sexo>
+            <Edad>26</Edad>
+        </Titular>
+        <Vehiculo>
+            <Descripcion>MAZDA 3 SEDAN S ABS STD 4P 4CIL QC</Descripcion>
+            <Modelo>2016</Modelo>
+            <Placas>PERMISO</Placas>
+            <Motor></Motor>
+            <Serie>XXXXXXXX111</Serie>
+            <Valor>160300</Valor>
+            <EsValorComercial>SI</EsValorComercial>
+            <Uso>PROTECT APP</Uso>
+            <Servicio>PARTICULAR</Servicio>
+            <Ocupantes>5</Ocupantes>
+            <Tonelaje>0.0</Tonelaje>
+        </Vehiculo>
+        <CondicionesEmision>
+            <DescuentoPorNoSiniestro>0.0</DescuentoPorNoSiniestro>
+            <ExtensionRC>NO</ExtensionRC>
+            <AmpliarRC>NO</AmpliarRC>
+            <DobleRemolque>NO</DobleRemolque>
+            <RecibosSubsecuentes>0</RecibosSubsecuentes>
+            <Importes-Recibos>
+                <DetalleImporte>
+                    <PrimaNeta>19699.35</PrimaNeta>
+                    <CesionComision>0</CesionComision>
+                    <Recargos>0</Recargos>
+                    <Derechos>430</Derechos>
+                    <Impuesto>3220.7</Impuesto>
+                    <PrimaTotal>23350.05</PrimaTotal>
+                </DetalleImporte>
+                <DetalleImporte>
+                    <PrimaNeta>19699.35</PrimaNeta>
+                    <CesionComision>0</CesionComision>
+                    <Recargos>0</Recargos>
+                    <Derechos>430</Derechos>
+                    <Impuesto>3220.7</Impuesto>
+                    <PrimaTotal>23350.05</PrimaTotal>
+                </DetalleImporte>
+            </Importes-Recibos>
+            <Coberturas>
+                <Cobertura>
+                    <Nombre>Daños Materiales</Nombre>
+                    <Deducible>10</Deducible>
+                    <SumaAsegurada>160300</SumaAsegurada>
+                    <PrimaNeta>10824.41</PrimaNeta>
+                </Cobertura>
+                <Cobertura>
+                    <Nombre>Robo Total</Nombre>
+                    <Deducible>20</Deducible>
+                    <SumaAsegurada>160300</SumaAsegurada>
+                    <PrimaNeta>3711.96</PrimaNeta>
+                </Cobertura>
+            </Coberturas>
+        </CondicionesEmision>
+    </Poliza>
+</Emision>
