@@ -18,10 +18,52 @@
 
     <xs:complexType name="PolizaType">
         <xs:sequence>
+            <xs:element name="PagoElectronico" type="PagoElectronicoType"/>
             <xs:element name="Generales" type="GeneralesType"/>
             <xs:element name="Titular" type="TitularType"/>
             <xs:element name="Vehiculo" type="VehiculoType"/>
             <xs:element name="CondicionesEmision" type="CondicionesEmisionType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PagoElectronicoType">
+        <xs:sequence>
+            <xs:element name="RenovacionAutomatica" type="xs:string"/>
+            <xs:element name="TipoNegocioTC" type="xs:string"/>
+            <xs:element name="NombreTitular" type="xs:string"/>
+            <xs:element name="PaternoTitular" type="xs:string"/>
+            <xs:element name="MaternoTitular" type="xs:string"/>
+            <xs:element name="MiembroDesde" type="xs:int"/>
+            <xs:element name="Tarjetas" type="TarjetasType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TarjetasType">
+        <xs:sequence>
+            <xs:element name="Tarjeta" type="TarjetaType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TarjetaType">
+        <xs:sequence>
+            <xs:element name="Credito" type="CreditoType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="CreditoType">
+        <xs:sequence>
+            <xs:element name="Numero" type="xs:string"/>
+            <xs:element name="ClaveBanco" type="xs:string"/>
+            <xs:element name="PagoInmediato" type="PagoInmediatoType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PagoInmediatoType">
+        <xs:sequence>
+            <xs:element name="AnioExpira" type="xs:string"/>
+            <xs:element name="MesExpira" type="xs:string"/>
+            <xs:element name="Afiliacion" type="xs:string"/>
+            <xs:element name="NumeroAutorizacion" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
 
